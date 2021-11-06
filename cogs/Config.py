@@ -5,9 +5,9 @@ import discord
 from dotenv import load_dotenv
 
 load_dotenv()
-insertPURL = os.getenv('IP_URL')
-deletePURL = os.getenv('DP_URL')
-geturl = os.getenv('GET_URL')
+updatePURL = os.getenv('UP_URL')
+removePURL = os.getenv('RP_URL')
+getPURL = os.getenv('GP_URL')
 
 class Config(commands.Cog, name="Configuration"):
     def __init__(self, bot):
@@ -21,7 +21,7 @@ class Config(commands.Cog, name="Configuration"):
     async def prefix(self, ctx, new_prefix=None):
         if(new_prefix):
             obj = {"f1": ctx.message.guild.id, "f2": new_prefix}
-            result = requests.post(insertPURL, data=obj, headers={"User-Agent": "XY"})
+            result = requests.post(updatePURL, data=obj, headers={"User-Agent": "XY"})
             print(result.status_code)
             await ctx.send(f"Changed the prefix to: {new_prefix}")  
         else:

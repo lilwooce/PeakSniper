@@ -8,15 +8,15 @@ from dotenv import load_dotenv
 
 def get_prefix(client, message):
     obj = {"f1": "server", "q1": message.guild.id}
-    result = requests.get(geturl, params=obj, headers={"User-Agent": "XY"})
+    result = requests.get(getPURL, params=obj, headers={"User-Agent": "XY"})
     prefix = result.text.strip('\"')
     return prefix
 
 
 load_dotenv()   
-insertPURL = os.getenv('IP_URL')
-deletePURL = os.getenv('DP_URL')
-geturl = os.getenv('GET_URL')
+updatePURL = os.getenv('UP_URL')
+removePURL = os.getenv('RP_URL')
+getPURL = os.getenv('GP_URL')
 token = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix=get_prefix, description="The Best Snipe Bot")
 
@@ -52,13 +52,13 @@ async def on_raw_reaction_add(payload):
 @bot.event
 async def on_guild_join(guild):
     obj = {"f1": guild.id, "q1": '!'}
-    result = requests.post(insertPURL, data=obj, headers={"User-Agent": "XY"})
+    result = requests.post(updatePURL, data=obj, headers={"User-Agent": "XY"})
     print(result.status_code)
 
 @bot.event
 async def on_guild_remove(guild):
     obj = {"q1": guild.id}
-    result = requests.post(deletePURL, data=obj, headers={"User-Agent": "XY"})
+    result = requests.post(removePURL, data=obj, headers={"User-Agent": "XY"})
     print(result.status_code)
 
 
