@@ -103,22 +103,6 @@ class Snipe(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.command()
-    async def translate(self, ctx):
-        newString = ""
-        trans = ctx.message.content
-        with open("translator\\translation.json", "r") as f:
-            translations = json.load(f)
-
-        length = len(trans)
-
-        for i in range(11, length, 3):
-            newString += f"{translations[trans[i:i+2]]} "
-            i+=3
-        
-        await ctx.channel.send(newString)
-    
-
-    @commands.command()
     async def coin(self, ctx):
         heads = discord.File("pointsbot\\images\\usoppheads.png")
         tails = discord.File("pointsbot\\images\\sogekingtails.png")

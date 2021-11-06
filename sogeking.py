@@ -7,11 +7,16 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 def get_prefix(client, message):
-    with open("snipe bot\\prefixes.json", "r") as f:
-        prefixes = json.load(f)
-    return prefixes[str(message.guild.id)]
+    obj = {"f1": "server", "q1": message.guild.id}
+    result = requests.get(geturl, params=obj, headers={"User-Agent": "XY"})
+    prefix = result.text.strip('\"')
+    return prefix
 
-load_dotenv()
+
+load_dotenv()   
+insertPURL = os.getenv('IP_URL')
+deletePURL = os.getenv('DP_URL')
+geturl = os.getenv('GET_URL')
 token = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix=get_prefix, description="The Best Snipe Bot")
 
@@ -46,23 +51,15 @@ async def on_raw_reaction_add(payload):
 
 @bot.event
 async def on_guild_join(guild):
-    with open("snipe bot\\prefixes.json", "r") as f:
-        prefixes = json.load(f)
-    
-    prefixes[str(guild.id)] = "!" # default value, implemented when bot joins for the first time
-
-    with open("snipe bot\\prefixes.json", "w") as f:
-        json.dump(prefixes, f, indent=4)
+    obj = {"f1": guild.id, "q1": '!'}
+    result = requests.post(insertPURL, data=obj, headers={"User-Agent": "XY"})
+    print(result.status_code)
 
 @bot.event
 async def on_guild_remove(guild):
-    with open("snipe bot\\prefixes.json", "r") as f:
-        prefixes = json.load(f)
-
-    prefixes.pop(str(guild.id))
-
-    with open("snipe bot\\prefixes.json", "w") as f:
-        json.dump(prefixes, f, indent=4)
+    obj = {"q1": guild.id}
+    result = requests.post(deletePURL, data=obj, headers={"User-Agent": "XY"})
+    print(result.status_code)
 
 
 for extension in initial_extensions:
