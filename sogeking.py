@@ -2,10 +2,9 @@ import discord
 import os
 import sys
 import traceback
-import json, asyncio
+import requests
 from discord.ext import commands
 from dotenv import load_dotenv
-import cogs.Snipe
 
 def get_prefix(client, message):
     with open("snipe bot\\prefixes.json", "r") as f:
