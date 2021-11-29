@@ -170,10 +170,6 @@ class Music(commands.Cog, name="Music"):
     def __init__(self, bot):
         self.bot = bot
         self.players = {}
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        print(f"{self.__class__.__name__} Cog has been loaded\n----")
          
     async def cleanup(self, guild):
         try:
@@ -215,6 +211,10 @@ class Music(commands.Cog, name="Music"):
             self.players[ctx.guild.id] = player
 
         return player
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     @commands.command(name='connect', aliases=['join'])
     async def connect_(self, ctx, *, channel: discord.VoiceChannel=None):
@@ -270,7 +270,7 @@ class Music(commands.Cog, name="Music"):
 
         # If download is False, source will be a dict which will be used later to regather the stream.
         # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
+        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=True)
 
         await player.queue.put(source)
 
