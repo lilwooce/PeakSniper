@@ -123,6 +123,7 @@ class MusicPlayer:
     async def player_loop(self):
         """Our main player loop."""
         await self.bot.wait_until_ready()
+        print(self.queue)
 
         while not self.bot.is_closed():
             self.next.clear()
@@ -227,8 +228,10 @@ class Music(commands.Cog, name="Music"):
 
             # If download is False, source will be a dict which will be used later to regather the stream.
             # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
+            print("attempting to create song source")
             source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
 
+            print("trying to queue source")
             await player.queue.put(source)
 
     @commands.command()
