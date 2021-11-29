@@ -2,3 +2,9 @@ discord.py
 python-dotenv
 pytz
 requests
+ffmpeg
+PyNaCl
+discord.py
+pip
+youtube-dl
+discord.py[voice]
