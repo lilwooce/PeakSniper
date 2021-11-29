@@ -61,7 +61,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         filename = data['url'] if stream else ytdl.prepare_filename(data)
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
-class Roadtrip(commands.Cog, name="Roadtrip"):
+class Music(commands.Cog, name="Music"):
     def __init__(self, bot):
         self.bot = bot
 
@@ -138,4 +138,4 @@ class Roadtrip(commands.Cog, name="Roadtrip"):
             
 
 def setup(bot):
-    bot.add_cog(Roadtrip(bot))
+    bot.add_cog(Music(bot))
