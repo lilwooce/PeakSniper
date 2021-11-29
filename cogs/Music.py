@@ -192,14 +192,15 @@ class Music(commands.Cog, name="Music"):
 
    
     @commands.command(pass_context=True, brief="This will play a song 'play [url]'", aliases=['p'])
-    async def play(self, ctx, *, url):
-        """Streams from a url (same as yt, but doesn't predownload)"""
-
+    async def play(self, ctx, *, search: str):
         async with ctx.typing():
-            player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=True)
-            ctx.voice_client.play(player, after=lambda e: print(f'Player error: {e}') if e else None)
+            player = self.get_player(ctx)
 
-        await ctx.send(f'Now playing: {player.title}')
+            # If download is False, source will be a dict which will be used later to regather the stream.
+            # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
+            source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
+
+            await player.queue.put(source)
 
     @commands.command()
     async def volume(self, ctx, volume: int):
