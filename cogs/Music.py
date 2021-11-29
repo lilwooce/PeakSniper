@@ -222,14 +222,38 @@ class Music(commands.Cog, name="Music"):
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
-    @commands.command()
-    async def join(self, ctx, *, channel: discord.VoiceChannel):
-        """Joins a voice channel"""
+    @commands.command(name='connect', aliases=['join'])
+    async def connect_(self, ctx, *, channel: discord.VoiceChannel=None):
+        """Connect to voice.
+        Parameters
+        ------------
+        channel: discord.VoiceChannel [Optional]
+            The channel to connect to. If a channel is not specified, an attempt to join the voice channel you are in
+            will be made.
+        This command also handles moving the bot to different channels.
+        """
+        if not channel:
+            try:
+                channel = ctx.author.voice.channel
+            except AttributeError:
+                raise InvalidVoiceChannel('No channel to join. Please either specify a valid channel or join one.')
 
-        if ctx.voice_client is not None:
-            return await ctx.voice_client.move_to(channel)
+        vc = ctx.voice_client
 
-        await channel.connect()
+        if vc:
+            if vc.channel.id == channel.id:
+                return
+            try:
+                await vc.move_to(channel)
+            except asyncio.TimeoutError:
+                raise VoiceConnectionError(f'Moving to channel: <{channel}> timed out.')
+        else:
+            try:
+                await channel.connect()
+            except asyncio.TimeoutError:
+                raise VoiceConnectionError(f'Connecting to channel: <{channel}> timed out.')
+
+        await ctx.send(f'Connected to: **{channel}**', delete_after=20)
 
    
     @commands.command(pass_context=True, brief="This will play a song 'play [url]'", aliases=['p'])
@@ -355,7 +379,7 @@ class Music(commands.Cog, name="Music"):
         player.volume = vol / 100
         await ctx.send(f'**`{ctx.author}`**: Set the volume to **{vol}%**')
 
-    @commands.command(name='stop')
+    @commands.command(name='stop', aliases=['leave'])
     async def stop_(self, ctx):
         """Stop the currently playing song and destroy the player.
         !Warning!
