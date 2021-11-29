@@ -235,14 +235,17 @@ class Music(commands.Cog, name="Music"):
     @commands.command(pass_context=True, brief="This will play a song 'play [url]'", aliases=['p'])
     async def play(self, ctx, *, search: str):
         async with ctx.typing():
+            vc = ctx.voice_client
+
+            if not vc:
+                await ctx.invoke(self.connect_)
+
             player = self.get_player(ctx)
 
             # If download is False, source will be a dict which will be used later to regather the stream.
             # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
-            print("attempting to create song source")
             source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
 
-            print("trying to queue source")
             await player.queue.put(source)
 
     @commands.command(name='pause')
