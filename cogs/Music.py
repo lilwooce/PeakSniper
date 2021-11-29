@@ -171,6 +171,10 @@ class Music(commands.Cog, name="Music"):
         self.bot = bot
         self.players = {}
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"{self.__class__.__name__} Cog has been loaded\n----")
+        
     async def cleanup(self, guild):
         try:
             await guild.voice_client.disconnect()
