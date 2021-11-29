@@ -23,6 +23,7 @@ bot = commands.Bot(command_prefix=get_prefix, description="The Best Snipe Bot")
 initial_extensions = {
     "cogs.Config",
     "cogs.Snipe"
+    "cogs.Music"
 }
 
 
