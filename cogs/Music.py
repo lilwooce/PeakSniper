@@ -245,32 +245,125 @@ class Music(commands.Cog, name="Music"):
             print("trying to queue source")
             await player.queue.put(source)
 
-    @commands.command()
-    async def volume(self, ctx, volume: int):
-        """Changes the player's volume"""
+    @commands.command(name='pause')
+    async def pause_(self, ctx):
+        """Pause the currently playing song."""
+        vc = ctx.voice_client
 
-        if ctx.voice_client is None:
-            return await ctx.send("Not connected to a voice channel.")
+        if not vc or not vc.is_playing():
+            return await ctx.send('I am not currently playing anything!', delete_after=20)
+        elif vc.is_paused():
+            return
 
-        ctx.voice_client.source.volume = volume / 100
-        await ctx.send(f"Changed volume to {volume}%")
+        vc.pause()
+        await ctx.send(f'**`{ctx.author}`**: Paused the song!')
 
-    @commands.command()
-    async def stop(self, ctx):
-        """Stops and disconnects the bot from voice"""
+    @commands.command(name='resume')
+    async def resume_(self, ctx):
+        """Resume the currently paused song."""
+        vc = ctx.voice_client
 
-        await ctx.voice_client.disconnect()
+        if not vc or not vc.is_connected():
+            return await ctx.send('I am not currently playing anything!', delete_after=20)
+        elif not vc.is_paused():
+            return
 
-    @play.before_invoke
-    async def ensure_voice(self, ctx):
-        if ctx.voice_client is None:
-            if ctx.author.voice:
-                await ctx.author.voice.channel.connect()
-            else:
-                await ctx.send("You are not connected to a voice channel.")
-                raise commands.CommandError("Author not connected to a voice channel.")
-        elif ctx.voice_client.is_playing():
-            ctx.voice_client.stop()
+        vc.resume()
+        await ctx.send(f'**`{ctx.author}`**: Resumed the song!')
+
+    @commands.command(name='skip')
+    async def skip_(self, ctx):
+        """Skip the song."""
+        vc = ctx.voice_client
+
+        if not vc or not vc.is_connected():
+            return await ctx.send('I am not currently playing anything!', delete_after=20)
+
+        if vc.is_paused():
+            pass
+        elif not vc.is_playing():
+            return
+
+        vc.stop()
+        await ctx.send(f'**`{ctx.author}`**: Skipped the song!')
+
+    @commands.command(name='queue', aliases=['q', 'playlist'])
+    async def queue_info(self, ctx):
+        """Retrieve a basic queue of upcoming songs."""
+        vc = ctx.voice_client
+
+        if not vc or not vc.is_connected():
+            return await ctx.send('I am not currently connected to voice!', delete_after=20)
+
+        player = self.get_player(ctx)
+        if player.queue.empty():
+            return await ctx.send('There are currently no more queued songs.')
+
+        # Grab up to 5 entries from the queue...
+        upcoming = list(itertools.islice(player.queue._queue, 0, 5))
+
+        fmt = '\n'.join(f'**`{_["title"]}`**' for _ in upcoming)
+        embed = discord.Embed(title=f'Upcoming - Next {len(upcoming)}', description=fmt)
+
+        await ctx.send(embed=embed)
+
+    @commands.command(name='now_playing', aliases=['np', 'current', 'currentsong', 'playing'])
+    async def now_playing_(self, ctx):
+        """Display information about the currently playing song."""
+        vc = ctx.voice_client
+
+        if not vc or not vc.is_connected():
+            return await ctx.send('I am not currently connected to voice!', delete_after=20)
+
+        player = self.get_player(ctx)
+        if not player.current:
+            return await ctx.send('I am not currently playing anything!')
+
+        try:
+            # Remove our previous now_playing message.
+            await player.np.delete()
+        except discord.HTTPException:
+            pass
+
+        player.np = await ctx.send(f'**Now Playing:** `{vc.source.title}` '
+                                   f'requested by `{vc.source.requester}`')
+
+    @commands.command(name='volume', aliases=['vol'])
+    async def change_volume(self, ctx, *, vol: float):
+        """Change the player volume.
+        Parameters
+        ------------
+        volume: float or int [Required]
+            The volume to set the player to in percentage. This must be between 1 and 100.
+        """
+        vc = ctx.voice_client
+
+        if not vc or not vc.is_connected():
+            return await ctx.send('I am not currently connected to voice!', delete_after=20)
+
+        if not 0 < vol < 101:
+            return await ctx.send('Please enter a value between 1 and 100.')
+
+        player = self.get_player(ctx)
+
+        if vc.source:
+            vc.source.volume = vol / 100
+
+        player.volume = vol / 100
+        await ctx.send(f'**`{ctx.author}`**: Set the volume to **{vol}%**')
+
+    @commands.command(name='stop')
+    async def stop_(self, ctx):
+        """Stop the currently playing song and destroy the player.
+        !Warning!
+            This will destroy the player assigned to your guild, also deleting any queued songs and settings.
+        """
+        vc = ctx.voice_client
+
+        if not vc or not vc.is_connected():
+            return await ctx.send('I am not currently playing anything!', delete_after=20)
+
+        await self.cleanup(ctx.guild)
             
 
 def setup(bot):
