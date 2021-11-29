@@ -174,7 +174,7 @@ class Music(commands.Cog, name="Music"):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
-        
+         
     async def cleanup(self, guild):
         try:
             await guild.voice_client.disconnect()
@@ -270,7 +270,7 @@ class Music(commands.Cog, name="Music"):
 
         # If download is False, source will be a dict which will be used later to regather the stream.
         # If download is True, source will be a discord.FFmpegPCMAudio with a VolumeTransformer.
-        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=False)
+        source = await YTDLSource.create_source(ctx, search, loop=self.bot.loop, download=True)
 
         await player.queue.put(source)
 
