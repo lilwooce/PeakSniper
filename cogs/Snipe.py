@@ -56,6 +56,7 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
+        sniped = "No Message Sent"
         eastern = timezone('US/Eastern')
         embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
         embed.timestamp = datetime.datetime.now(eastern)
