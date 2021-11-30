@@ -60,10 +60,11 @@ def endSong(guild, path):
     os.remove(path)
 
 class YTDLSource(discord.PCMVolumeTransformer):
-    def __init__(self, source, *, data, volume=0.5):
+    def __init__(self, source, *, data, volume=0.5, requester):
         super().__init__(source, volume)
 
         self.data = data
+        self.requester = requester
 
         self.title = data.get('title')
         self.url = data.get('url')
