@@ -1,17 +1,15 @@
-
 from discord.ext import commands
 import os
 import requests
 import discord 
 from dotenv import load_dotenv
-import asyncio
-import itertools
+import traceback
 import sys
 import youtube_dl
-import traceback
-from async_timeout import timeout
-from functools import partial
+import asyncio
 from discord.utils import get
+import itertools
+from async_timeout import timeout
 
 load_dotenv()
 asurl = os.getenv("AS_URL")
@@ -53,54 +51,25 @@ def endSong(guild, path):
     os.remove(path)
 
 class YTDLSource(discord.PCMVolumeTransformer):
-    
-    def __init__(self, source, *, data, requester):
-        super().__init__(source)
-        self.requester = requester
+    def __init__(self, source, *, data, volume=0.5):
+        super().__init__(source, volume)
+
+        self.data = data
 
         self.title = data.get('title')
-        self.web_url = data.get('webpage_url')
-
-        # YTDL info dicts (data) have other useful information you might want
-        # https://github.com/rg3/youtube-dl/blob/master/README.md
-
-    def __getitem__(self, item: str):
-        """Allows us to access attributes similar to a dict.
-        This is only useful when you are NOT downloading.
-        """
-        return self.__getattribute__(item)
+        self.url = data.get('url')
 
     @classmethod
-    async def create_source(cls, ctx, search: str, *, loop, download=False):
+    async def from_url(cls, url, *, loop=None, stream=False):
         loop = loop or asyncio.get_event_loop()
-
-        to_run = partial(ytdl.extract_info, url=search, download=download)
-        data = await loop.run_in_executor(None, to_run)
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
 
         if 'entries' in data:
             # take first item from a playlist
             data = data['entries'][0]
 
-        await ctx.send(f'```ini\n[Added {data["title"]} to the Queue.]\n```', delete_after=15)
-
-        if download:
-            source = ytdl.prepare_filename(data)
-        else:
-            return {'webpage_url': data['webpage_url'], 'requester': ctx.author, 'title': data['title']}
-
-        return cls(discord.FFmpegPCMAudio(source), data=data, requester=ctx.author)
-
-    @classmethod
-    async def regather_stream(cls, data, *, loop):
-        """Used for preparing a stream, instead of downloading.
-        Since Youtube Streaming links expire."""
-        loop = loop or asyncio.get_event_loop()
-        requester = data['requester']
-
-        to_run = partial(ytdl.extract_info, url=data['webpage_url'], download=False)
-        data = await loop.run_in_executor(None, to_run)
-
-        return cls(discord.FFmpegPCMAudio(data['url']), data=data, requester=requester)
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
+        return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 class MusicPlayer:
     __slots__ = ('bot', '_guild', '_channel', '_cog', 'queue', 'next', 'current', 'np', 'volume')
@@ -162,7 +131,7 @@ class MusicPlayer:
                 await self.np.delete()
             except discord.HTTPException:
                 pass
-
+        
     def destroy(self, guild):
         """Disconnect and cleanup the player."""
         return self.bot.loop.create_task(self._cog.cleanup(guild))
@@ -395,3 +364,4 @@ class Music(commands.Cog, name="Music"):
 
 def setup(bot):
     bot.add_cog(Music(bot))
+
