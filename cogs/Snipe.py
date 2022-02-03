@@ -49,8 +49,9 @@ class Snipe(commands.Cog):
     @commands.command()
     async def roll(self, ctx, arg: int):
         try:
+            rig = 2
             randValue = random.randint(1, arg)
-            await ctx.channel.send(f"{ctx.author.mention}, rolled a `{randValue}`")
+            await ctx.channel.send(f"{ctx.author.mention}, rolled a `{rig}`")
         except:
             await ctx.channel.send("Please input a valid number")
 
