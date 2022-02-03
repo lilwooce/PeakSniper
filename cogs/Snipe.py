@@ -51,7 +51,7 @@ class Snipe(commands.Cog):
         try:
             rig = 2
             randValue = random.randint(1, arg)
-            await ctx.channel.send(f"{ctx.author.mention}, rolled a `{rig}`")
+            await ctx.channel.send(f"{ctx.author.mention}, rolled a `{randValue}`")
         except:
             await ctx.channel.send("Please input a valid number")
 
