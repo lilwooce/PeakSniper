@@ -6,6 +6,8 @@ import json
 from pytz import timezone
 import random
 
+curr = 0
+
 class Snipe(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -51,11 +53,12 @@ class Snipe(commands.Cog):
         try:
             rig = True
             seq = [2,3,2,2]
-            curr = 0
             randValue = random.randint(1, arg)
-
-            await ctx.channel.send(f"{ctx.author.mention}, rolled a `{seq[curr]}`")
-            curr += 1
+            if rig:
+                await ctx.channel.send(f"{ctx.author.mention}, rolled a `{seq[curr]}`")
+                curr += 1
+            else:
+                await ctx.channel.send(f"{ctx.author.mention}, rolled a `{randValue}`")
         except:
             await ctx.channel.send("Please input a valid number")
 
