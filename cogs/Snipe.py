@@ -6,8 +6,6 @@ import json
 from pytz import timezone
 import random
 
-curr = 0
-
 class Snipe(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -56,7 +54,7 @@ class Snipe(commands.Cog):
             num = 2
             randValue = random.randint(1, arg)
             
-            await ctx.channel.send(f"{ctx.author.mention}, rolled a `{num}`")
+            await ctx.channel.send(f"{ctx.author.mention}, rolled a `{randValue}`")
         except:
             await ctx.channel.send("Please input a valid number")
 
