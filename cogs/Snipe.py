@@ -50,12 +50,13 @@ class Snipe(commands.Cog):
 
     @commands.command()
     async def roll(self, ctx, arg: int):
+        rig = True
+        seq = [2,3,2,2]
         try:
-            rig = True
-            seq = [2,3,2,2]
             randValue = random.randint(1, arg)
             if rig:
-                await ctx.channel.send(f"{ctx.author.mention}, rolled a `{seq[curr]}`")
+                num = seq[curr]
+                await ctx.channel.send(f"{ctx.author.mention}, rolled a `{num}`")
                 curr += 1
             else:
                 await ctx.channel.send(f"{ctx.author.mention}, rolled a `{randValue}`")
