@@ -53,11 +53,10 @@ class Snipe(commands.Cog):
         rig = True
         seq = [2,3,2,2]
         try:
+            num = 2
             randValue = random.randint(1, arg)
-            num = seq[curr]
+            
             await ctx.channel.send(f"{ctx.author.mention}, rolled a `{num}`")
-            curr += 1
-            '''await ctx.channel.send(f"{ctx.author.mention}, rolled a `{randValue}`")'''
         except:
             await ctx.channel.send("Please input a valid number")
 
