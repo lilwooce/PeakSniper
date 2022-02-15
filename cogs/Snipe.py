@@ -54,7 +54,7 @@ class Snipe(commands.Cog):
         seq = [2,3,2,2]
         try:
             randValue = random.randint(1, arg)
-            if rig:
+            if rig == True:
                 num = seq[curr]
                 await ctx.channel.send(f"{ctx.author.mention}, rolled a `{num}`")
                 curr += 1
