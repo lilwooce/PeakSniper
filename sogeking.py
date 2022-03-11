@@ -6,13 +6,6 @@ import requests
 from discord.ext import commands
 from dotenv import load_dotenv
 
-def get_prefix(client, message):
-    obj = {"f1": "server", "q1": message.guild.id}
-    result = requests.get(getPURL, params=obj, headers={"User-Agent": "XY"})
-    prefix = result.text.strip('\"')
-    return prefix
-
-
 load_dotenv()   
 updatePURL = os.getenv('UP_URL')
 removePURL = os.getenv('RP_URL')
@@ -20,7 +13,14 @@ getPURL = os.getenv('GP_URL')
 intents = discord.Intents.default()
 intents.members = True
 token = os.getenv('DISCORD_TOKEN')
-bot = commands.Bot(command_prefix=".", intents=intents, description="The Best Snipe Bot")
+
+def get_prefix(client, message):
+    obj = {"f1": "server", "q1": message.guild.id}
+    result = requests.get(getPURL, params=obj, headers={"User-Agent": "XY"})
+    prefix = result.text.strip('\"')
+    return prefix
+
+bot = commands.Bot(command_prefix=get_prefix, intents=intents, description="The Best Snipe Bot")
 
 initial_extensions = {
     "cogs.Config",
