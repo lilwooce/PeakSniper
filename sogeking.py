@@ -16,6 +16,7 @@ token = os.getenv('DISCORD_TOKEN')
 
 def get_prefix(client, message):
     print("starting getprefix")
+    print(message.guild.id)
     obj = {"f1": "server", "q1": message.guild.id}
     print("obj gotten")
     result = requests.get(getPURL, params=obj, headers={"User-Agent": "XY"})
