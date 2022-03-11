@@ -21,6 +21,7 @@ def get_prefix(client, message):
     result = requests.get(getPURL, params=obj, headers={"User-Agent": "XY"})
     prefix = result.text.strip('\"')
     print("got prefix")
+    print(prefix)
     return prefix
 
 bot = commands.Bot(command_prefix=get_prefix, intents=intents, description="The Best Snipe Bot")
