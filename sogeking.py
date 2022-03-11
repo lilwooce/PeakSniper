@@ -20,7 +20,7 @@ getPURL = os.getenv('GP_URL')
 intents = discord.Intents.default()
 intents.members = True
 token = os.getenv('DISCORD_TOKEN')
-bot = commands.Bot(command_prefix=get_prefix, intents=intents, description="The Best Snipe Bot")
+bot = commands.Bot(command_prefix=".", intents=intents, description="The Best Snipe Bot")
 
 initial_extensions = {
     "cogs.Config",
