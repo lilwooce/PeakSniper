@@ -58,8 +58,12 @@ class Snipe(commands.Cog):
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
         eastern = timezone('US/Eastern')
+        embed=discord.Embed()
         if (sniped):
-            embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
+            if (sniped=="None"):
+                embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
+            else:
+                embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
             embed.timestamp = datetime.datetime.now(eastern)
             if (len(sniped.content) > 1024):
                 for i in range(0, (len(sniped.content)), 1024):
