@@ -60,7 +60,7 @@ class Snipe(commands.Cog):
         eastern = timezone('US/Eastern')
         embed=discord.Embed()
         if (sniped=="None"):
-            embed=discord.Embed(title=f"No Message", description="\u200")
+            embed=discord.Embed(title=f"No Message", description="\\u200")
         else:
             embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
             embed.timestamp = datetime.datetime.now(eastern)
