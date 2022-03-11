@@ -62,6 +62,7 @@ class Snipe(commands.Cog):
     async def snipe(self, ctx):
         print(sniped)
         if (sniped and sniped!="None"):
+            print("there was a message sent")
             embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
             embed.timestamp = timestamp
             if (len(sniped.content) > 1024):
@@ -73,12 +74,14 @@ class Snipe(commands.Cog):
             else:
                 embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True)
         else:
+            print("there was no message sent")
             embed=discord.Embed(title=sniped, description="<:sussykasra:873330894260297759>")
             embed.timestamp = timestamp
             embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
         if (len(imgUrl) > 0):
             embed.set_image(url=imgUrl)
             embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
+            
         await ctx.channel.send(embed=embed)
 
     @commands.command(aliases=["es"])
