@@ -60,11 +60,9 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
-        print(sniped)
-        if (sniped and sniped!="None"):
-            print("there was a message sent")
-            embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
-            embed.timestamp = timestamp
+        embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
+        embed.timestamp = timestamp
+        if(sniped.content):
             if (len(sniped.content) > 1024):
                 for i in range(0, (len(sniped.content)), 1024):
                     if (i + 1024 < len(sniped.content)):
@@ -74,9 +72,6 @@ class Snipe(commands.Cog):
             else:
                 embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True)
         else:
-            print("there was no message sent")
-            embed=discord.Embed(title=sniped, description="<:sussykasra:873330894260297759>")
-            embed.timestamp = timestamp
             embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
         if (len(imgUrl) > 0):
             embed.set_image(url=imgUrl)
