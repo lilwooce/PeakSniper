@@ -15,7 +15,7 @@ class Snipe(commands.Cog):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     @commands.Cog.listener()
-    async def on_message_delete(self, message):
+    async def on_message_delete(self, message="None"):
         global sniped
         global imgUrl
         if message.author.bot == True:
