@@ -17,8 +17,10 @@ load_dotenv()
 updatePURL = os.getenv('UP_URL')
 removePURL = os.getenv('RP_URL')
 getPURL = os.getenv('GP_URL')
+intents = discord.Intents.default()
+intents.members = True
 token = os.getenv('DISCORD_TOKEN')
-bot = commands.Bot(command_prefix=get_prefix, description="The Best Snipe Bot")
+bot = commands.Bot(command_prefix=get_prefix, intents=intents, description="The Best Snipe Bot")
 
 initial_extensions = {
     "cogs.Config",
