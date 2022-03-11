@@ -16,12 +16,15 @@ class Snipe(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message_delete(self, message="None"):
+        eastern = timezone('US/Eastern')
         global sniped
         global imgUrl
+        global timestamp
         if message.author.bot == True:
             return
         sniped = message
         imgUrl = ""
+        timestamp = datetime.datetime.now(eastern)
 
         if (message.attachments):
             imgUrl = message.attachments[0].url
@@ -57,13 +60,10 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
-        eastern = timezone('US/Eastern')
-        embed=discord.Embed()
-        if (sniped=="None"):
-            embed=discord.Embed(title=f"No Message", description="\\u200")
-        else:
+        print(sniped)
+        if (sniped and sniped!="None"):
             embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
-            embed.timestamp = datetime.datetime.now(eastern)
+            embed.timestamp = timestamp
             if (len(sniped.content) > 1024):
                 for i in range(0, (len(sniped.content)), 1024):
                     if (i + 1024 < len(sniped.content)):
@@ -72,6 +72,10 @@ class Snipe(commands.Cog):
                         embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)        
             else:
                 embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True)
+        else:
+            embed=discord.Embed(title=sniped, description="<:sussykasra:873330894260297759>")
+            embed.timestamp = timestamp
+            embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
         if (len(imgUrl) > 0):
             embed.set_image(url=imgUrl)
             embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
