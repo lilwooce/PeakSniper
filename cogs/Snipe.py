@@ -59,11 +59,10 @@ class Snipe(commands.Cog):
     async def snipe(self, ctx):
         eastern = timezone('US/Eastern')
         embed=discord.Embed()
-        if (sniped):
-            if (sniped=="None"):
-                embed=discord.Embed(title=f"No Message", description="")
-            else:
-                embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
+        if (sniped=="None"):
+            embed=discord.Embed(title=f"No Message", description="")
+        else:
+            embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
             embed.timestamp = datetime.datetime.now(eastern)
             if (len(sniped.content) > 1024):
                 for i in range(0, (len(sniped.content)), 1024):
@@ -73,10 +72,6 @@ class Snipe(commands.Cog):
                         embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)        
             else:
                 embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True)
-        else:
-            embed=discord.Embed(title="Noone", description="")
-            embed.timestamp = datetime.datetime.now(eastern)
-            embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
         if (len(imgUrl) > 0):
             embed.set_image(url=imgUrl)
             embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
