@@ -77,7 +77,7 @@ class Snipe(commands.Cog):
             embed.set_image(url=imgUrl)
             embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
         
-        if(sniped.author.id == 347162620996091904):
+        if(sniped.author.id == 187323145273868288):
             await ctx.channel.send("heh sorry guys. i made a deal.")
         else:
             await ctx.channel.send(embed=embed)
