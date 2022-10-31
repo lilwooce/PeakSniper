@@ -1,3 +1,4 @@
+from re import M
 from discord.ext import commands
 import discord
 import datetime
@@ -41,8 +42,8 @@ class Snipe(commands.Cog):
             return
         messageB = messageBefore
         messageA = messageAfter
-        editImg = "";
-        editUrl = "";
+        editImg = ""
+        editUrl = ""
 
         if (messageB.attachments):
             editImg = messageB.attachments[0].url
@@ -57,6 +58,18 @@ class Snipe(commands.Cog):
             await ctx.channel.send(f"{ctx.author.mention}, rolled a `{randValue}`")
         except:
             await ctx.channel.send("Please input a valid number")
+    
+    async def getReply(self, m):
+        msg = "Not replying to anything"
+        if m.reference is not None:
+            if m.reference.cached_message is None:
+                channel = discord.utils.get(m.guild.channels, )
+                channel = m.reference.guild
+                msg = await channel.fetch_message(m.reference.message_id)
+            else:
+                msg = m.reference.cached_message
+        return msg
+        
 
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
@@ -66,7 +79,9 @@ class Snipe(commands.Cog):
             if (len(sniped.content) > 1024):
                 for i in range(0, (len(sniped.content)), 1024):
                     if (i + 1024 < len(sniped.content)):
-                        embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:i+1024], inline=True)        
+                        embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:i+1024], inline=True)     
+                        repMes = await self.getReply(sniped)
+                        embed.add_field(name="Reply", value=repMes.content, inline=True)  
                     else:
                         embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)        
             else:
