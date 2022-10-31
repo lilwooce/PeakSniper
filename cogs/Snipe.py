@@ -84,15 +84,10 @@ class Snipe(commands.Cog):
                 for i in range(0, (len(sniped.content)), 1024):
                     if (i + 1024 < len(sniped.content)):
                         embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:i+1024], inline=True)     
-                        
                     else:
-                        embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)        
-                        repMes = await self.getReply(sniped)
-                        embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
+                        embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)   
             else:
-                embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True)
-                repMes = await self.getReply(sniped)
-                embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
+                embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True) 
         else:
             embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
         if (len(imgUrl) > 0):
