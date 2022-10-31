@@ -63,8 +63,8 @@ class Snipe(commands.Cog):
         msg = "Not replying to anything"
         if m.reference is not None:
             if m.reference.cached_message is None:
-                channel = discord.utils.get(m.guild.channels, )
-                channel = m.reference.guild
+                channelID = m.reference.channel_id
+                channel = discord.get_channel(channelID)
                 msg = await channel.fetch_message(m.reference.message_id)
             else:
                 msg = m.reference.cached_message
