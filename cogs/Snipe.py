@@ -64,7 +64,7 @@ class Snipe(commands.Cog):
         if m.reference is not None:
             if m.reference.cached_message is None:
                 channelID = m.reference.channel_id
-                channel = commands.Bot.get_channel(channelID)
+                channel = self.bot.get_channel(channelID)
                 msg = await channel.fetch_message(m.reference.message_id)
             else:
                 msg = m.reference.cached_message
