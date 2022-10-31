@@ -77,31 +77,35 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
-        embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
-        embed.timestamp = timestamp
-        if(sniped.content):
-            if (len(sniped.content) > 1024):
-                for i in range(0, (len(sniped.content)), 1024):
-                    if (i + 1024 < len(sniped.content)):
-                        embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:i+1024], inline=True)     
-                    else:
-                        embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)   
+        hehe = True
+        if (hehe==False):
+            embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
+            embed.timestamp = timestamp
+            if(sniped.content):
+                if (len(sniped.content) > 1024):
+                    for i in range(0, (len(sniped.content)), 1024):
+                        if (i + 1024 < len(sniped.content)):
+                            embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:i+1024], inline=True)     
+                        else:
+                            embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)   
+                else:
+                    embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True) 
             else:
-                embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True) 
+                embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
+            if (len(imgUrl) > 0):
+                embed.set_image(url=imgUrl)
+                embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
+            if(await self.checkReply(sniped)):
+                repMes = await self.getReply(sniped)
+                embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
+            
+            
+            if(sniped.author.id == 0000000000000000):
+                await ctx.channel.send("heh sorry guys. i made a deal.")
+            else:
+                await ctx.channel.send(embed=embed)
         else:
-            embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
-        if (len(imgUrl) > 0):
-            embed.set_image(url=imgUrl)
-            embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
-        if(await self.checkReply(sniped)):
-            repMes = await self.getReply(sniped)
-            embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
-        
-        
-        if(sniped.author.id == 0000000000000000):
-            await ctx.channel.send("heh sorry guys. i made a deal.")
-        else:
-            await ctx.channel.send(embed=embed)
+            await ctx.channel.send("<:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759>")
 
     @commands.command(aliases=["es"])
     async def editsnipe(self, ctx):
