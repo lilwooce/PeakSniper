@@ -93,7 +93,7 @@ class Snipe(commands.Cog):
         if (len(imgUrl) > 0):
             embed.set_image(url=imgUrl)
             embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
-        if(self.checkReply(sniped)):
+        if(await self.checkReply(sniped)):
             repMes = await self.getReply(sniped)
             embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
         
