@@ -105,34 +105,38 @@ class Snipe(commands.Cog):
             else:
                 await ctx.channel.send(embed=embed)
         else:
-            await ctx.channel.send("<:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759>")
+            await ctx.channel.send("HAPPY HALLOWEEN <:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759>")
 
     @commands.command(aliases=["es"])
     async def editsnipe(self, ctx):
-        eastern = timezone('US/Eastern')
-        if (messageB.author.bot): return
-        if (messageA.author.bot): return
-        embed=discord.Embed(title=f"{messageB.author.name} edited a message from #{messageB.channel.name} <:sussykasra:873330894260297759>", description="")
-        embed.timestamp = datetime.datetime.now(eastern)
-        embedA=discord.Embed(title=f"{messageA.author.name} edited a message from #{messageA.channel.name} <:sussykasra:873330894260297759>", description="")
-        embedA.timestamp = datetime.datetime.now(eastern)
-        if (messageB.content):
-            embed.add_field(name= messageB.content ,value="Before", inline=True)
+        hehe = True
+        if (hehe==False):
+            eastern = timezone('US/Eastern')
+            if (messageB.author.bot): return
+            if (messageA.author.bot): return
+            embed=discord.Embed(title=f"{messageB.author.name} edited a message from #{messageB.channel.name} <:sussykasra:873330894260297759>", description="")
+            embed.timestamp = datetime.datetime.now(eastern)
+            embedA=discord.Embed(title=f"{messageA.author.name} edited a message from #{messageA.channel.name} <:sussykasra:873330894260297759>", description="")
+            embedA.timestamp = datetime.datetime.now(eastern)
+            if (messageB.content):
+                embed.add_field(name= messageB.content ,value="Before", inline=True)
+            else:
+                embed.add_field(name="No content" ,value="Before", inline=True)
+            if (messageA.content):
+                embed.add_field(name= messageA.content ,value="After", inline=True)
+            else:
+                embed.add_field(name="No content" ,value="After", inline=True)
+            if (messageB.attachments):
+                embed.set_image(url=messageB.attachments[0].url)
+                embed.add_field(name="File Name", value=messageB.attachments[0].url, inline=True)
+            if (messageA.attachments):
+                embedA.set_image(url=messageA.attachments[0].url)
+                embed.add_field(name="File Name", value=messageA.attachments[0].url, inline=True)
+                await ctx.channel.send(ctx.channel, embed=embedA)
+                
+            await ctx.channel.send(embed=embed)
         else:
-            embed.add_field(name="No content" ,value="Before", inline=True)
-        if (messageA.content):
-            embed.add_field(name= messageA.content ,value="After", inline=True)
-        else:
-            embed.add_field(name="No content" ,value="After", inline=True)
-        if (messageB.attachments):
-            embed.set_image(url=messageB.attachments[0].url)
-            embed.add_field(name="File Name", value=messageB.attachments[0].url, inline=True)
-        if (messageA.attachments):
-            embedA.set_image(url=messageA.attachments[0].url)
-            embed.add_field(name="File Name", value=messageA.attachments[0].url, inline=True)
-            await ctx.channel.send(ctx.channel, embed=embedA)
-            
-        await ctx.channel.send(embed=embed)
+            await ctx.channel.send("HAPPY HALLOWEEN <:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759>")
 
     @commands.command()
     async def coin(self, ctx):
