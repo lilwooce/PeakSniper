@@ -69,7 +69,11 @@ class Snipe(commands.Cog):
             else:
                 msg = m.reference.cached_message
         return msg
-        
+
+    async def checkReply(self, m):
+        if m.reference is not None:
+            return True
+        return False
 
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
@@ -80,8 +84,7 @@ class Snipe(commands.Cog):
                 for i in range(0, (len(sniped.content)), 1024):
                     if (i + 1024 < len(sniped.content)):
                         embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:i+1024], inline=True)     
-                        repMes = await self.getReply(sniped)
-                        embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
+                        
                     else:
                         embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)        
                         repMes = await self.getReply(sniped)
@@ -95,6 +98,10 @@ class Snipe(commands.Cog):
         if (len(imgUrl) > 0):
             embed.set_image(url=imgUrl)
             embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
+        if(self.checkReply(sniped)):
+            repMes = await self.getReply(sniped)
+            embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
+        
         
         if(sniped.author.id == 0000000000000000):
             await ctx.channel.send("heh sorry guys. i made a deal.")
