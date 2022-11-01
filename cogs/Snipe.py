@@ -77,7 +77,7 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["s", "S"])
     async def snipe(self, ctx):
-        hehe = True
+        hehe = False
         if (hehe==False):
             embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
             embed.timestamp = timestamp
@@ -109,7 +109,7 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["es"])
     async def editsnipe(self, ctx):
-        hehe = True
+        hehe = False
         if (hehe==False):
             eastern = timezone('US/Eastern')
             if (messageB.author.bot): return
