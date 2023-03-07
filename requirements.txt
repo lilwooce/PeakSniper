@@ -7,3 +7,6 @@ PyNaCl
 pip
 youtube-dl
 discord.py[voice]
+openai
+Pillow
+stability-sdk

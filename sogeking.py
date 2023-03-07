@@ -2,8 +2,10 @@ import discord
 import os
 import sys
 import traceback
+import asyncio
 import requests
 from discord.ext import commands
+from discord import Intents
 from dotenv import load_dotenv
 
 load_dotenv()   
@@ -12,28 +14,26 @@ removePURL = os.getenv('RP_URL')
 getPURL = os.getenv('GP_URL')
 intents = discord.Intents.default()
 intents.members = True
+intents.message_content = True
 token = os.getenv('DISCORD_TOKEN')
 
-def get_prefix(client, message):
+def get_prefix(bot, message):
     obj = {"f1": "server", "q1": message.guild.id}
     result = requests.get(getPURL, params=obj, headers={"User-Agent": "XY"})
     prefix = result.text.strip('\"')
     return prefix
 
-bot = commands.Bot(command_prefix=".", intents=intents, description="The Best Snipe Bot")
-
-initial_extensions = {
-    "cogs.Config",
-    "cogs.Snipe",
-    "cogs.Music"
-}
-
+bot = commands.Bot(command_prefix=".", intents=intents, case_insensitive=True, description="The Best Snipe Bot")
 
 @bot.event
 async def on_ready():
     print(f'{bot.user} has connected')
     activity = discord.Game(name="Fiend Catching Simulator")
     await bot.change_presence(status=discord.Status.online, activity=activity)
+    
+@bot.command()
+async def hi(self, ctx):
+    print("hello")
 
 @bot.event
 async def on_raw_reaction_add(payload):
@@ -42,7 +42,7 @@ async def on_raw_reaction_add(payload):
     message = await karuta.fetch_message(payload.message_id)
     reaction = payload.emoji
 
-    if (str(message.author.id) == '646937666251915264' and str(reaction) == "⭐"):
+    if (str(message.author.id) == '646937666251915264' and str(reaction) == "⭐" and message.channel.id == 736411674277576835):
         jumpUrl = message.jump_url
         embed = discord.Embed(
             title=message.author.name,
@@ -51,6 +51,11 @@ async def on_raw_reaction_add(payload):
         drop = message.attachments[0].url
         embed.set_image(url=drop)
         await pogDrops.send(embed=embed)
+
+async def addUsers(guild):
+    async for member in guild.fetch_members(limit=None):
+        print(member.name)
+
 
 @bot.event
 async def on_guild_join(guild):
@@ -64,13 +69,16 @@ async def on_guild_remove(guild):
     result = requests.post(removePURL, data=obj, headers={"User-Agent": "XY"})
     print(result.status_code)
 
-
-for extension in initial_extensions:
-    try:
-        bot.load_extension(extension)
-    except Exception as e:
-        print(f'Failed to load extension {extension}.', file=sys.stderr)
-        traceback.print_exc()
+async def load_extensions():
+    for filename in os.listdir("C:\\Users\\Juhwooce\\Documents\\GitHub\\PeakSniper\\cogs"):
+        if filename.endswith(".py"):
+            try:
+                await bot.load_extension(f"cogs.{filename[:-3]}")
+            except Exception as e:
+                print(f'Failed to load extension {e}.', file=sys.stderr)
+                traceback.print_exc()
+            
+            
 
 @bot.event
 async def on_message_delete(message):
@@ -92,6 +100,7 @@ async def on_message_delete(message):
         embed.add_field(name="File Name", value=message.attachments[0].url, inline=True)
     channel=bot.get_channel(875117826581626891)
     await channel.send(embed=embed)
+    await bot.process_commands(message)
 
 @bot.event
 async def on_message_edit(message_before, message_after):
@@ -118,4 +127,18 @@ async def on_message_edit(message_before, message_after):
 
     await channel.send(channel, embed=embed)
 
-bot.run(token)
+class MyHelpCommand(commands.MinimalHelpCommand):
+    async def send_pages(self):
+        destination = self.get_destination()
+        e = discord.Embed(color=discord.Color.blurple(), description='')
+        for page in self.paginator.pages:
+            e.description += page
+        await destination.send(embed=e)
+
+bot.help_command = MyHelpCommand()
+    
+async def main():
+    await load_extensions()
+    await bot.start(token)
+
+asyncio.run(main())
