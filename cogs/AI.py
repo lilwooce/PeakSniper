@@ -98,7 +98,7 @@ class AI(commands.Cog, name="OpenAI"):
     async def answer(self, ctx, *, p):
         try:
             response = openai.Completion.create(
-                model="text-davinci-003",
+                model="gpt-4",
                 prompt=p,
                 temperature=0,
                 max_tokens=4000,
