@@ -111,21 +111,14 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["ftn"])
     async def firstToNum(self, ctx, firstTo: int, numberOfChoices: int):
-        print("first to 3ing !!!")
         numbers = {}
         first = 0
         for x in range(1, numberOfChoices+1):
             numbers[x] = 0
-            print(f"added {x} to numbers")
-
-        print(numbers)
 
         while firstTo not in numbers.values():
-            print(f"nothing has hit {firstTo} rolls yet! rolling!")
             rolled = await self.roll(ctx, numberOfChoices)
-            print("rolled")
             numbers[rolled] += 1
-            print(f"added 1 to {rolled} it now has a value of {numbers[rolled]}")
             if (numbers[rolled] >= firstTo):
                 first = rolled
 
