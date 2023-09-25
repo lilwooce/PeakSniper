@@ -20,25 +20,25 @@ class Admin(commands.Cog):
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
-    '''@commands.hybrid_command(name="addmoney", aliases=["am"], hidden=True, with_app_command=True)'''
+    @commands.hybrid_command(name="addmoney", aliases=["am"], hidden=True, with_app_command=True)
     @commands.is_owner()
     async def addmoney(self, ctx: commands.Context, user: discord.User, amount: int):
         bal = requests.get(getUser, params={"f1": "discoins", "f2": user}, headers={"User-Agent": "XY"})
         bal = bal.text.replace('"', '')
         requests.post(updateUser, data={"f1": "discoins", "f2": int(bal)+amount, "f3": user}, headers={"User-Agent": "XY"})
         if (amount < 0) :
-            await ctx.send(f"Removed {amount * -1} discoin(s) from {user}")
+            await ctx.respond(f"Removed {amount * -1} discoin(s) from {user}")
         else:
-            await ctx.send(f"Added {amount} discoin(s) to {user}")
+            await ctx.respond(f"Added {amount} discoin(s) to {user}")
     
-    '''@commands.command(hidden=True)
+    @commands.command(hidden=True)
     @commands.guild_only()
     async def sync(self, ctx: commands.Context) -> None:
         synced = await ctx.bot.tree.sync()
         await ctx.send(
             f"Synced {len(synced)} commands to the current guild."
         )
-        return'''
+        return
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
