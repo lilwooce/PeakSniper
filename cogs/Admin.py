@@ -27,9 +27,9 @@ class Admin(commands.Cog):
         bal = bal.text.replace('"', '')
         requests.post(updateUser, data={"f1": "discoins", "f2": int(bal)+amount, "f3": user}, headers={"User-Agent": "XY"})
         if (amount < 0) :
-            await ctx.respond(f"Removed {amount * -1} discoin(s) from {user}")
+            await ctx.reply(f"Removed {amount * -1} discoin(s) from {user}")
         else:
-            await ctx.respond(f"Added {amount} discoin(s) to {user}")
+            await ctx.reply(f"Added {amount} discoin(s) to {user}")
     
     @commands.command(hidden=True)
     @commands.guild_only()

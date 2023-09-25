@@ -30,7 +30,7 @@ class Moderation(commands.Cog):
         requests.post(updateUser, data={"f1": "blacklisted", "f2": 1, "f3": user}, headers={"User-Agent": "XY"})
         requests.post(updateUser, data={"f1": "reason", "f2": reason, "f3": user}, headers={"User-Agent": "XY"})
 
-        await ctx.send(f"User {user.name} has been banned for reason: [{reason}].")
+        await ctx.reply(f"User {user.name} has been banned for reason: [{reason}].")
 
 async def setup(bot):
     await bot.add_cog(Moderation(bot))
