@@ -59,8 +59,10 @@ class User(commands.Cog):
                 if (amount <= int(bal)):
                     gBal = requests.get(getUser, params={"f1": "discoins", "f2": user.id}, headers={"User-Agent": "XY"})
                     gBal = gBal.text.replace('"', '')
+                    totalGiven = requests.get(getUser, params={"f1": "totalGiven", "f2": user.id}, headers=header)
                     requests.post(updateUser, data={"f1": "discoins", "f2": int(bal)-amount, "f3": userID}, headers={"User-Agent": "XY"})
                     requests.post(updateUser, data={"f1": "discoins", "f2": int(gBal)+amount, "f3": user.id}, headers={"User-Agent": "XY"})
+                    requests.post(updateUser, data={"f1": "discoins", "f2": int(totalGiven)+amount, "f3": userID}, headers={"User-Agent": "XY"})
                     await ctx.send(f"**{ctx.author.name}#{ctx.author.discriminator}** just gave **{amount}** discoin(s) to **{user.name}#{user.discriminator}**")
                 else:
                     await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")

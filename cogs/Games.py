@@ -276,7 +276,7 @@ class Games(commands.Cog, name="Games"):
                         await ctx.send(f"You lost. lol. -{amount} discoins")
                     betsMade = requests.get(getUser, params={"f1": "betsMade", "f2": userID}, headers={"User-Agent": "XY"})
                     bM = betsMade.text.replace('"', '')
-                    bM = bM + 1
+                    bM = int(bM) + 1
                     requests.post(updateUser, data={"f1": "betsMade", "f2": bM, "f3": userID}, headers={"User-Agent": "XY"})
                 else:
                     await ctx.send("Please type heads or tails")
@@ -315,7 +315,7 @@ class Games(commands.Cog, name="Games"):
                         await ctx.send(f"You lost. You chose **{bet}** but the bot chose **{result}**. Better luck next time.")
                     betsMade = requests.get(getUser, params={"f1": "betsMade", "f2": userID}, headers={"User-Agent": "XY"})
                     bM = betsMade.text.replace('"', '')
-                    bM = bM + 1
+                    bM = int(bM) + 1
                     requests.post(updateUser, data={"f1": "betsMade", "f2": bM, "f3": userID}, headers={"User-Agent": "XY"})
                 else:
                     await ctx.send("Are you an idiot? You can't bet less than 1 discoin.")

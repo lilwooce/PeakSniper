@@ -37,16 +37,19 @@ async def on_ready():
 
 @bot.check
 async def checkBanned(ctx):
+    print("checking if user is banned")
     userID = ctx.author.id
     member = await ctx.guild.fetch_member(userID)
     result = requests.get(getUser, params={"f1": "blacklisted", "f2": userID}, headers=header)
     reason = requests.get(getUser, params={"f1": "reason", "f2": userID}, headers=header)
     reason = reason.text.replace('"', '')
     check = result.text.replace('"', '')
-    if (check == 1):
+    if (check == str(1)):
         await ctx.send(f"{member.mention} you have been banned from using commands until future notice. The reason for your ban is as follows: [{reason}]")
+        print("banned")
         return False
     else:
+        print("not banned")
         return True
 
 @bot.event
@@ -84,7 +87,7 @@ async def on_guild_remove(guild):
     print(result.status_code)
 
 async def load_extensions():
-    for filename in os.listdir("C:\\Users\\Juhwooce\\Documents\\GitHub\\PeakSniper\\cogs"):
+    for filename in os.listdir("./cogs"):
         if filename.endswith(".py"):
             try:
                 await bot.load_extension(f"cogs.{filename[:-3]}")
