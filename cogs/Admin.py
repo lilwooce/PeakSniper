@@ -23,9 +23,12 @@ class Admin(commands.Cog):
     @commands.hybrid_command(name="addmoney", aliases=["am"], hidden=True, with_app_command=True)
     @commands.is_owner()
     async def addmoney(self, ctx: commands.Context, user: discord.User, amount: int):
+        print("adding money")
         bal = requests.get(getUser, params={"f1": "discoins", "f2": user}, headers={"User-Agent": "XY"})
         bal = bal.text.replace('"', '')
-        requests.post(updateUser, data={"f1": "discoins", "f2": int(bal)+amount, "f3": user}, headers={"User-Agent": "XY"})
+        print(int(bal))
+        result = requests.post(updateUser, data={"f1": "discoins", "f2": int(bal)+amount, "f3": user}, headers={"User-Agent": "XY"})
+        print(result)
         if (amount < 0) :
             await ctx.reply(f"Removed {amount * -1} discoin(s) from {user}")
         else:

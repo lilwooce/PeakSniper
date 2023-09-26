@@ -46,10 +46,8 @@ async def checkBanned(ctx):
     check = result.text.replace('"', '')
     if (check == str(1)):
         await ctx.send(f"{member.mention} you have been banned from using commands until future notice. The reason for your ban is as follows: [{reason}]")
-        print("banned")
         return False
     else:
-        print("not banned")
         return True
 
 @bot.event
