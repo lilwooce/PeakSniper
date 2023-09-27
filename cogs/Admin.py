@@ -23,16 +23,14 @@ class Admin(commands.Cog):
     @commands.hybrid_command(name="addmoney", aliases=["am"], hidden=True, with_app_command=True)
     @commands.is_owner()
     async def addmoney(self, ctx: commands.Context, user: discord.User, amount: int):
-        print("adding money")
+        msg = await ctx.send("Adding money!")
         bal = requests.get(getUser, params={"f1": "discoins", "f2": user.id}, headers={"User-Agent": "XY"})
         bal = bal.text.replace('"', '')
-        print(int(bal))
         result = requests.post(updateUser, data={"f1": "discoins", "f2": int(bal)+amount, "f3": user.id}, headers={"User-Agent": "XY"})
-        print(result)
         if (amount < 0) :
-            await ctx.send(f"Removed {amount * -1} discoin(s) from {user}")
+            await msg.edit(f"Removed {amount * -1} discoin(s) from {user}")
         else:
-            await ctx.send(f"Added {amount} discoin(s) to {user}")
+            await msg.edit(f"Added {amount} discoin(s) to {user}")
     
     @commands.command(hidden=True)
     @commands.guild_only()
