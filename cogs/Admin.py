@@ -34,7 +34,7 @@ class Admin(commands.Cog):
 
     @commands.hybrid_command(name="message", aliases=["msg"], hidden=True, with_app_command=True)
     @commands.is_owner()
-    async def message(self, ctx: commands.Context, channel: discord.Channel, message: str):
+    async def message(self, ctx: commands.Context, channel: discord.TextChannel, message: str):
         await channel.send(message)
         await ctx.send(f"message: [{message}] sent to {channel.name}")
     
