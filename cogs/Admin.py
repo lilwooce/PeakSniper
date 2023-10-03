@@ -31,6 +31,12 @@ class Admin(commands.Cog):
             await msg.edit(f"Removed {amount * -1} discoin(s) from {user}")
         else:
             await msg.edit(f"Added {amount} discoin(s) to {user}")
+
+    @commands.hybrid_command(name="message", aliases=["msg"], hidden=True, with_app_command=True)
+    @commands.is_owner()
+    async def message(self, ctx: commands.Context, channel: discord.Channel, message: str):
+        await channel.send(message)
+        await ctx.send(f"message: [{message}] sent to {channel.name}")
     
     @commands.command(hidden=True)
     @commands.guild_only()
