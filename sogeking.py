@@ -98,7 +98,7 @@ async def load_extensions():
 async def on_message(message):
     if message.author == bot.user:
         return
-    if isinstance(message.channel.discord.DMChannel):
+    if isinstance(message.channel, discord.channel.DMChannel):
         embed=discord.Embed(title=f"{message.author.name} dmed the bot", description="")
         if message.content:
             embed.add_field(name= "Caught!" ,value=message.content, inline=True)
