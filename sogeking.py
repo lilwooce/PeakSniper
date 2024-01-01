@@ -104,7 +104,6 @@ async def on_message(message):
             embed.add_field(name= "Caught!" ,value=message.content, inline=True)
             channel=bot.get_channel(1191170489280901120)
             await channel.send(embed=embed)
-        await message.channel.send("No DMing Sogeking Jalen.")
     await bot.process_commands(message)
 
 
