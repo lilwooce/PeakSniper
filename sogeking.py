@@ -93,7 +93,20 @@ async def load_extensions():
                 print(f'Failed to load extension {e}.', file=sys.stderr)
                 traceback.print_exc()
             
-            
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    if isinstance(message.channel.discord.DMChannel):
+        embed=discord.Embed(title=f"{message.author.name} dmed the bot", description="")
+        if message.content:
+            embed.add_field(name= "Caught!" ,value=message.content, inline=True)
+            channel=bot.get_channel(1191170489280901120)
+            await channel.send(embed=embed)
+        await message.channel.send("No DMing Sogeking Jalen.")
+    await bot.process_commands(message)
+
 
 @bot.event
 async def on_message_delete(message):
