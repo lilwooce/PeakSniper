@@ -67,7 +67,6 @@ class AI(commands.Cog, name="OpenAI"):
                 temperature=2,
                 max_tokens=4000,
                 top_p=1.0,
-                response_format={ "type": "json_object" },
                 frequency_penalty=0.0,
                 presence_penalty=0.0,
                 messages=[
