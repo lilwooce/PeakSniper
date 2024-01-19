@@ -79,7 +79,7 @@ class AI(commands.Cog, name="OpenAI"):
             traceback.print_exc()
 
         print(f"choices are {response.choices}")    
-        print(f"response is {response.choices[1].message.content}")
+        print(f"response is {response.choices[0].message.content}")
         await ctx.channel.send(response.choices[0].message.content)
 
 async def setup(bot):
