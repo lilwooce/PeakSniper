@@ -104,9 +104,6 @@ async def on_message(message):
             embed.add_field(name= "Caught!" ,value=message.content, inline=True)
             channel=bot.get_channel(1191170489280901120)
             await channel.send(embed=embed)
-        if (message.attachments):
-            embed.set_image(url=message.attachments[0].url)
-            embed.add_field(name="File Name", value=message.attachments[0].url, inline=True)
     await bot.process_commands(message)
 
 
