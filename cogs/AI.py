@@ -63,7 +63,7 @@ class AI(commands.Cog, name="OpenAI"):
     async def answer(self, ctx, *, p):
         try:
             response = openai.chat.completions.create(
-                model="gpt-3.5-turbo-instruct",
+                model="gpt-3.5-turbo-1106",
                 temperature=2,
                 max_tokens=4000,
                 top_p=1.0,
