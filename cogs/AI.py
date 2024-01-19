@@ -65,7 +65,7 @@ class AI(commands.Cog, name="OpenAI"):
         try:
             response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
-                temperature=2,
+                temperature=0.5,
                 max_tokens=4000,
                 top_p=1.0,
                 frequency_penalty=0.0,
