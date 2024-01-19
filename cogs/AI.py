@@ -77,9 +77,10 @@ class AI(commands.Cog, name="OpenAI"):
             )
         except Exception as e:
             traceback.print_exc()
-            
-        print(f"response is {response.choices[0].message}")
-        await ctx.channel.send(response.choices[0].message)
+
+        print(f"choices are {response.choices}")    
+        print(f"response is {response.choices[1].message.content}")
+        await ctx.channel.send(response.choices[0].message.content)
 
 async def setup(bot):
     await bot.add_cog(AI(bot))
