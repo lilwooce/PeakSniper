@@ -5,19 +5,29 @@ import discord
 from dotenv import load_dotenv
 import os
 import openai
-from openai import OpenAI
 import traceback
 import io
 import warnings
 from PIL import Image
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
+from packaging import version
 
-client = OpenAI()
+required_version = version.parse("1.1.1")
+current_version = version.parse(openai.__version__)
+
+if current_version < required_version:
+    raise ValueError(f"Error: OpenAI version {openai.__version__}"
+                     " is less than the required version 1.1.1")
+else:
+    print("OpenAI version is compatible.")
+    
+from openai import OpenAI
+
 os.environ['STABILITY_HOST'] = 'grpc.stability.ai:443'
-
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openAIKey = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=openAIKey)
 os.environ['STABILITY_KEY'] = os.getenv('STABILITY_KEY')
 updatePURL = os.getenv('UP_URL')
 removePURL = os.getenv('RP_URL')
