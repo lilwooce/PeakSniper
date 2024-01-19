@@ -5,17 +5,29 @@ import discord
 from dotenv import load_dotenv
 import os
 import openai
+from openai import OpenAI
 import traceback
 import io
 import warnings
 from PIL import Image
 from stability_sdk import client
 import stability_sdk.interfaces.gooseai.generation.generation_pb2 as generation
+from packaging import version
+
+required_version = version.parse("1.1.1")
+current_version = version.parse(openai.__version__)
+
+if current_version < required_version:
+    raise ValueError(f"Error: OpenAI version {openai.__version__}"
+                     " is less than the required version 1.1.1")
+else:
+    print("OpenAI version is compatible.")
+
 
 os.environ['STABILITY_HOST'] = 'grpc.stability.ai:443'
-
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openAIKey = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=openAIKey)
 os.environ['STABILITY_KEY'] = os.getenv('STABILITY_KEY')
 updatePURL = os.getenv('UP_URL')
 removePURL = os.getenv('RP_URL')
@@ -97,19 +109,23 @@ class AI(commands.Cog, name="OpenAI"):
     @commands.command(aliases=["a"])
     async def answer(self, ctx, *, p):
         try:
-            response = openai.Completion.create(
-                model="text-davinci-003",
-                prompt=p,
-                temperature=0,
+            response = openai.chat.completions.create(
+                model="gpt-3.5-turbo-instruct",
+                temperature=2,
                 max_tokens=4000,
                 top_p=1.0,
+                response_format={ "type": "json_object" },
                 frequency_penalty=0.0,
-                presence_penalty=0.0
+                presence_penalty=0.0,
+                messages=[
+    				{"role": "system", "content": "You are a helpful assistant designed to give the best response to any given question."},
+    				{"role": "user", "content": p}
+                ]
             )
         except Exception as e:
             traceback.print_exc()
             
-        await ctx.channel.send(response["choices"][0]['text'])
+        await ctx.channel.send(response.choices[0].message.content)
 
 async def setup(bot):
     await bot.add_cog(AI(bot))
