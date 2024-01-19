@@ -10,3 +10,4 @@ discord.py[voice]
 openai
 Pillow
 stability-sdk
+packaging
