@@ -63,8 +63,8 @@ class AI(commands.Cog, name="OpenAI"):
     async def answer(self, ctx, *, p):
         print('answer command starting')
         try:
-            response = openai.completions.create(
-                model="gpt-3.5-turbo-1106",
+            response = client.chat.completions.create(
+                model="gpt-3.5-turbo",
                 temperature=2,
                 max_tokens=4000,
                 top_p=1.0,
@@ -78,8 +78,8 @@ class AI(commands.Cog, name="OpenAI"):
         except Exception as e:
             traceback.print_exc()
             
-        print(f"response is {response.choices[0].message.content}")
-        await ctx.channel.send(response.choices[0].message.content)
+        print(f"response is {response.choices[0].message}")
+        await ctx.channel.send(response.choices[0].message)
 
 async def setup(bot):
     await bot.add_cog(AI(bot))
