@@ -117,7 +117,7 @@ class Snipe(commands.Cog):
             numbers[x] = 0
 
         while firstTo not in numbers.values():
-            rolled = await self.roll(ctx, numberOfChoices)
+            rolled = random.randint(1, numberOfChoices)
             numbers[rolled] += 1
             if (numbers[rolled] >= firstTo):
                 first = rolled
