@@ -71,15 +71,13 @@ class AI(commands.Cog, name="OpenAI"):
                 frequency_penalty=0.0,
                 presence_penalty=0.0,
                 messages=[
-    				{"role": "system", "content": "You are a helpful assistant designed to give the best response to any given question."},
+    				{"role": "system", "content": "You are a helpful chatbot assistant   designed to give the best response to any given question. You excel at explaining complex concepts in simple language so that they can be understood by the general public. Use natural language and phrasing that a real person would use in everyday conversations. No more than 10 percent of your responses should be in passive voice."},
     				{"role": "user", "content": p}
                 ]
             )
         except Exception as e:
             traceback.print_exc()
-
-        print(f"choices are {response.choices}")    
-        print(f"response is {response.choices[0].message.content}")
+            
         await ctx.channel.send(response.choices[0].message.content)
 
 async def setup(bot):
