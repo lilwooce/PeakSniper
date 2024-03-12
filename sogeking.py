@@ -35,7 +35,7 @@ async def on_ready():
     activity = discord.Game(name="Fiend Catching Simulator")
     await bot.change_presence(status=discord.Status.online, activity=activity)
 
-'''@bot.check
+@bot.check
 async def checkBanned(ctx):
     print("checking if user is banned")
     userID = ctx.author.id
@@ -48,7 +48,7 @@ async def checkBanned(ctx):
         await ctx.send(f"{member.mention} you have been banned from using commands until future notice. The reason for your ban is as follows: [{reason}]")
         return False
     else:
-        return True'''
+        return True
 
 @bot.event
 async def on_raw_reaction_add(payload):
