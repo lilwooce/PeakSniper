@@ -111,6 +111,7 @@ class Snipe(commands.Cog):
 
     @commands.command(aliases=["ftn"])
     async def firstToNum(self, ctx, firstTo: int, numberOfChoices: int):
+        msg = ""
         numbers = {}
         first = 0
         for x in range(1, numberOfChoices+1):
@@ -119,10 +120,12 @@ class Snipe(commands.Cog):
         while firstTo not in numbers.values():
             rolled = random.randint(1, numberOfChoices)
             numbers[rolled] += 1
+            msg += f"{ctx.author.name}, rolled a `{rolled}`\n"
             if (numbers[rolled] >= firstTo):
                 first = rolled
+                msg += f"{first} was the first to reach {firstTo} rolls"
 
-        await ctx.channel.send(f"{first} was the first to reach {firstTo} rolls")
+        await ctx.channel.send(msg)
         
 
 
