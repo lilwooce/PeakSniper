@@ -35,20 +35,20 @@ async def on_ready():
     activity = discord.Game(name="Fiend Catching Simulator")
     await bot.change_presence(status=discord.Status.online, activity=activity)
 
-@bot.check
-async def checkBanned(ctx):
-    print("checking if user is banned")
-    userID = ctx.author.id
-    member = await ctx.guild.fetch_member(userID)
-    result = requests.get(getUser, params={"f1": "blacklisted", "f2": userID}, headers=header)
-    reason = requests.get(getUser, params={"f1": "reason", "f2": userID}, headers=header)
-    reason = reason.text.replace('"', '')
-    check = result.text.replace('"', '')
-    if (check == str(1)):
-        await ctx.send(f"{member.mention} you have been banned from using commands until future notice. The reason for your ban is as follows: [{reason}]")
-        return False
-    else:
-        return True
+# @bot.check
+# async def checkBanned(ctx):
+#     print("checking if user is banned")
+#     userID = ctx.author.id
+#     member = await ctx.guild.fetch_member(userID)
+#     result = requests.get(getUser, params={"f1": "blacklisted", "f2": userID}, headers=header)
+#     reason = requests.get(getUser, params={"f1": "reason", "f2": userID}, headers=header)
+#     reason = reason.text.replace('"', '')
+#     check = result.text.replace('"', '')
+#     if (check == str(1)):
+#         await ctx.send(f"{member.mention} you have been banned from using commands until future notice. The reason for your ban is as follows: [{reason}]")
+#         return False
+#     else:
+#         return True
 
 @bot.event
 async def on_raw_reaction_add(payload):
