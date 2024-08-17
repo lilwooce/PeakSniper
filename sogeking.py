@@ -61,9 +61,9 @@ class Client(commands.Bot):
             self.session.commit()
 
     async def account_check(self):
-        self.check_server(self.guild)
+        await self.check_server(self.guild)
         async for member in self.guild.fetch_members(limit=None):
-            self.check_user(member)
+            await self.check_user(member)
 
     async def on_ready(self):
         print(f"Logged in as {self.user.name}")
@@ -72,7 +72,7 @@ class Client(commands.Bot):
         print(f"Python Version {str(platform.python_version())}")
 
         #check to make sure everyone in every server and every server is in the database
-        self.account_check()
+        await self.account_check()
 
         logging.warning("Now logging..")
 
