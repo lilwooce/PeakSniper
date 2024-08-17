@@ -63,7 +63,7 @@ class Client(commands.Bot):
     async def account_check(self):
         async for guild in self.guilds():
             await self.check_server(guild)
-            async for member in self.guild.fetch_members(limit=None):
+            async for member in guild.fetch_members(limit=None):
                 await self.check_user(member)
 
     async def on_ready(self):
