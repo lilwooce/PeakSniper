@@ -138,3 +138,6 @@ class Gamba(commands.Cog, name="Gamba"):
     @commands.hybrid_command()
     async def payout(self, ctx, poll):
         return
+
+async def setup(bot):
+    await bot.add_cog(Gamba(bot)) 
