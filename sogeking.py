@@ -61,7 +61,7 @@ class Client(commands.Bot):
             self.session.commit()
 
     async def account_check(self):
-        async for guild in self.guilds():
+        async for guild in self.fetch_guilds(limit=None):
             await self.check_server(guild)
             async for member in guild.fetch_members(limit=None):
                 await self.check_user(member)
