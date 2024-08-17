@@ -6,7 +6,7 @@ from Base import Base
 load_dotenv()
 
 # Import all classes
-from classes import Omok
+from classes import Servers, User
 
 # Create database structure
 host = os.getenv("host")
