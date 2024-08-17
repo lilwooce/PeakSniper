@@ -14,10 +14,6 @@ from discord.ui import Button, View
 from sqlalchemy.orm import sessionmaker
 
 from cogs.classes import Servers, User, database
-#from executeQueue import ExecuteQueue
-
-# import required files
-from cogs.classes import database
 
 load_dotenv()
 header={"User-Agent": "XY"}
@@ -31,7 +27,10 @@ token = os.getenv('DISCORD_TOKEN')
 
 class Client(commands.Bot):
     def __init__(self):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
         super().__init__(command_prefix='.', intents=discord.Intents().default(), description="The Best Snipe Bot")
+        self.session = session
         self.game_count = 0
         self.intents.members = True
         self.intents.message_content = True
@@ -47,6 +46,25 @@ class Client(commands.Bot):
         except Exception as e:
             print(f'Failed to sync commands: {e}')
 
+    async def check_user(self, user):
+        if not self.session.query(id=user.id).first():
+            print(f"user not in database {user.name}")
+            u = User.User(user=user)
+            self.session.add(u)
+            self.session.commit()
+
+    async def check_server(self, guild):
+        if not self.session.query(id=guild.id).first():
+            print(f"guild not in database {guild.name}")
+            u = Servers.Servers(server=guild)
+            self.session.add(u)
+            self.session.commit()
+
+    async def account_check(self):
+        self.check_server(self.guild)
+        async for member in self.guild.fetch_members(limit=None):
+            self.check_user(member)
+
     async def on_ready(self):
         print(f"Logged in as {self.user.name}")
         print(f"Bot ID {str(self.user.id)}")
@@ -54,13 +72,13 @@ class Client(commands.Bot):
         print(f"Python Version {str(platform.python_version())}")
 
         #check to make sure everyone in every server and every server is in the database
+        self.account_check()
 
         logging.warning("Now logging..")
 
         # get the initial world count on startup
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
-        self.server_count = session.query(Servers.Servers).count()
+        
+        self.server_count = self.session.query(Servers.Servers).count()
 
         self.update_bot_status.start()
 
@@ -104,11 +122,6 @@ async def on_raw_reaction_add(payload):
         drop = message.attachments[0].url
         embed.set_image(url=drop)
         await pogDrops.send(embed=embed)
-
-async def addUsers(guild):
-    async for member in guild.fetch_members(limit=None):
-        print(member.name)
-
 
 @client.event
 async def on_guild_join(guild):

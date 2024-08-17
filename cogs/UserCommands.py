@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 import requests
 import os 
 from .Config import hasAccount
+from sqlalchemy.orm import sessionmaker
+
+from cogs.classes import Servers, User, database
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -14,7 +17,7 @@ updateUser = os.getenv('UPDATE_USER')
 addUser = os.getenv('ADD_USER')
 header={"User-Agent": "XY"}
 
-class User(commands.Cog):
+class UserCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -73,25 +76,33 @@ class User(commands.Cog):
         
     @commands.command(description="This function allows the user to see a lot of different stats about what he has done on the server, most of these aren't useful but will definitely increase bragging rights. Stats returned include; total amount of discoins earned, lost and given. The total number of bets made is the degenerates stat of the year.")
     @commands.check(hasAccount)
-    async def stats(self, ctx, user: discord.User=None):
+    async def stats(self, ctx, user: discord.User):
         if user is None:
+            print()
             user = ctx.message.author
         
         embed = discord.Embed(title="User Stats", description=f"Showing {user.name}'s stats")
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        session.get
+        total_earned = session.query(User.User).filter_by(id=user.id).get("total_earned")
+        total_lost = session.query(User.User).filter_by(id=user.id).get("total_lost")
+        total_gifted = session.query(User.User).filter_by(id=user.id).get("total_gifted")
+        total_bets = session.query(User.User).filter_by(id=user.id).get("total_bets")
 
-        totalEarned = requests.get(getUser, params={"f1": "totalEarned", "f2": user.id}, headers=header)
+        """ totalEarned = requests.get(getUser, params={"f1": "totalEarned", "f2": user.id}, headers=header)
         totalEarned = totalEarned.text.replace('"', '')
         totalLost = requests.get(getUser, params={"f1": "totalLost", "f2": user.id}, headers=header)
         totalLost = totalLost.text.replace('"', '')
         totalGiven = requests.get(getUser, params={"f1": "totalGiven", "f2": user.id}, headers=header)
         totalGiven = totalGiven.text.replace('"', '')
         betsMade = requests.get(getUser, params={"f1": "betsMade", "f2": user.id}, headers=header)
-        betsMade = betsMade.text.replace('"', '')
+        betsMade = betsMade.text.replace('"', '')"""
 
-        embed.add_field(name="Total Earned", value=f"**{totalEarned}** discoins earned", inline=False)
-        embed.add_field(name="Total Lost", value=f"**{totalLost}** discoins lost", inline=False)
-        embed.add_field(name="Total Given", value=f"**{totalGiven}** discoins given to other players", inline=False)
-        embed.add_field(name="Bets Made", value=f"**{betsMade}** gambles attempted", inline=False)
+        embed.add_field(name="Total Earned", value=f"**{total_earned}** discoins earned", inline=False)
+        embed.add_field(name="Total Lost", value=f"**{total_lost}** discoins lost", inline=False)
+        embed.add_field(name="Total Given", value=f"**{total_gifted}** discoins given to other players", inline=False)
+        embed.add_field(name="Bets Made", value=f"**{total_bets}** gambles attempted", inline=False)
 
         await ctx.channel.send(embed=embed)
 
