@@ -61,9 +61,10 @@ class Client(commands.Bot):
             self.session.commit()
 
     async def account_check(self):
-        await self.check_server(self.user.guild)
-        async for member in self.guild.fetch_members(limit=None):
-            await self.check_user(member)
+        async for guild in self.guilds():
+            await self.check_server(guild)
+            async for member in self.guild.fetch_members(limit=None):
+                await self.check_user(member)
 
     async def on_ready(self):
         print(f"Logged in as {self.user.name}")
