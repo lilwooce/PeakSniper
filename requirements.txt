@@ -11,3 +11,5 @@ openai
 Pillow
 stability-sdk
 packaging
+SQLAlchemy==2.0.29
+mysql-connector-python

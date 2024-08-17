@@ -7,6 +7,17 @@ import requests
 from discord.ext import commands
 from discord import Intents
 from dotenv import load_dotenv
+import logging
+import platform
+from discord.ext import commands, tasks
+from discord.ui import Button, View
+from sqlalchemy.orm import sessionmaker
+
+from cogs.classes import Servers, User, database
+#from executeQueue import ExecuteQueue
+
+# import required files
+from cogs.classes import database
 
 load_dotenv()
 header={"User-Agent": "XY"}
@@ -16,24 +27,51 @@ addUser = os.getenv('ADD_USER')
 updatePURL = os.getenv('UP_URL')
 removePURL = os.getenv('RP_URL')
 getPURL = os.getenv('GP_URL')
-intents = discord.Intents.default()
-intents.members = True
-intents.message_content = True
 token = os.getenv('DISCORD_TOKEN')
 
-def get_prefix(bot, message):
-    obj = {"f1": "server", "q1": message.guild.id}
-    result = requests.get(getPURL, params=obj, headers={"User-Agent": "XY"})
-    prefix = result.text.strip('\"')
-    return prefix
+class Client(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix='.', intents=discord.Intents().default(), description="The Best Snipe Bot")
+        self.game_count = 0
+        self.intents.members = True
+        self.intents.message_content = True
 
-bot = commands.Bot(command_prefix=".", intents=intents, case_insensitive=True, description="The Best Snipe Bot")
+    async def setup_hook(self):
+        for fileName in os.listdir('commands'):
+            if fileName.endswith('.py'):
+                extension = f'commands.{fileName[:-3]}'
+                await self.load_extension(extension)
+        try:
+            synced = await self.tree.sync()
+            print(f'Successfully synced {len(synced)} command(s)')
+        except Exception as e:
+            print(f'Failed to sync commands: {e}')
 
-@bot.event
-async def on_ready():
-    print(f'{bot.user} has connected')
-    activity = discord.Game(name="Fiend Catching Simulator")
-    await bot.change_presence(status=discord.Status.online, activity=activity)
+    async def on_ready(self):
+        print(f"Logged in as {self.user.name}")
+        print(f"Bot ID {str(self.user.id)}")
+        print(f"Discord Version {discord.__version__}")
+        print(f"Python Version {str(platform.python_version())}")
+
+        #check to make sure everyone in every server and every server is in the database
+
+        logging.warning("Now logging..")
+
+        # get the initial world count on startup
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        self.server_count = session.query(Servers.Servers).count()
+
+        self.update_bot_status.start()
+
+        #xecuteQueue(client=self).start()
+
+    @tasks.loop(seconds=60)
+    async def update_bot_status(self):
+        await self.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.playing , name=f"Fiend Catching Simulator in {self.server_count} servers"))
+
+client = Client()
+client.run(os.getenv("DISCORD_TOKEN"))
 
 # @bot.check
 # async def checkBanned(ctx):
@@ -50,10 +88,10 @@ async def on_ready():
 #     else:
 #         return True
 
-@bot.event
+@client.event
 async def on_raw_reaction_add(payload):
-    karuta = await bot.fetch_channel('736411674277576835')
-    pogDrops = await bot.fetch_channel('799452182051160064')
+    karuta = await client.fetch_channel('736411674277576835')
+    pogDrops = await client.fetch_channel('799452182051160064')
     message = await karuta.fetch_message(payload.message_id)
     reaction = payload.emoji
 
@@ -72,43 +110,33 @@ async def addUsers(guild):
         print(member.name)
 
 
-@bot.event
+@client.event
 async def on_guild_join(guild):
-    obj = {"f1": guild.id, "q1": '!'}
-    result = requests.post(updatePURL, data=obj, headers={"User-Agent": "XY"})
-    print(result.status_code)
+    #add server to database
+    return
 
-@bot.event
+@client.event
 async def on_guild_remove(guild):
-    obj = {"q1": guild.id}
-    result = requests.post(removePURL, data=obj, headers={"User-Agent": "XY"})
-    print(result.status_code)
-
-async def load_extensions():
-    for filename in os.listdir("./cogs"):
-        if filename.endswith(".py"):
-            try:
-                await bot.load_extension(f"cogs.{filename[:-3]}")
-            except Exception as e:
-                print(f'Failed to load extension {e}.', file=sys.stderr)
-                traceback.print_exc()
+    #remove "currentlyUsingBot"
+    return
             
 
-@bot.event
+@client.event
 async def on_message(message):
-    if message.author == bot.user:
+    if message.author == client.user:
         return
     if isinstance(message.channel, discord.channel.DMChannel):
         embed=discord.Embed(title=f"{message.author.name} dmed the bot", description="")
         if message.content:
             embed.add_field(name= "Caught!" ,value=message.content, inline=True)
-            channel=bot.get_channel(1191170489280901120)
+            channel=client.get_channel(1191170489280901120)
             await channel.send(embed=embed)
-    await bot.process_commands(message)
+    await client.process_commands(message)
 
 
-@bot.event
+@client.event
 async def on_message_delete(message):
+    #check server and update database to reflect current most recently deleted message
     if (message.author.bot): return
     embed=discord.Embed(title=f"{message.author.name}#{message.author.discriminator} deleted a message from #{message.channel.name}", description="")
     if (message.content):
@@ -125,13 +153,14 @@ async def on_message_delete(message):
     if (message.attachments):
         embed.set_image(url=message.attachments[0].url)
         embed.add_field(name="File Name", value=message.attachments[0].url, inline=True)
-    channel=bot.get_channel(875117826581626891)
+    channel = client.get_channel(875117826581626891)
     await channel.send(embed=embed)
-    await bot.process_commands(message)
+    await client.process_commands(message)
 
-@bot.event
+@client.event
 async def on_message_edit(message_before, message_after):
-    channel=bot.get_channel(875122190931075122)
+    #same as above on message delete
+    channel=client.get_channel(875122190931075122)
     if (message_before.author.bot): return
     if (message_after.author.bot): return
     embed=discord.Embed(title=f"{message_before.author.name} edited a message from #{message_before.channel.name} in {message_before.guild.name}", description="")
@@ -162,10 +191,4 @@ class MyHelpCommand(commands.MinimalHelpCommand):
             e.description += page
         await destination.send(embed=e)
 
-bot.help_command = MyHelpCommand()
-    
-async def main():
-    await load_extensions()
-    await bot.start(token)
-
-asyncio.run(main())
+client.help_command = MyHelpCommand()
