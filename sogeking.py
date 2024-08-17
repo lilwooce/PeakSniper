@@ -47,14 +47,14 @@ class Client(commands.Bot):
             print(f'Failed to sync commands: {e}')
 
     async def check_user(self, user):
-        if not self.session.query(user_id=user.id).first():
+        if not self.session.query(User.User).filter_by(user_id=user.id).first():
             print(f"user not in database {user.name}")
             u = User.User(user=user)
             self.session.add(u)
             self.session.commit()
 
     async def check_server(self, guild):
-        if not self.session.query(server_id=guild.id).first():
+        if not self.session.query(Servers.Servers).filter_by(server_id=guild.id).first():
             print(f"guild not in database {guild.name}")
             u = Servers.Servers(server=guild)
             self.session.add(u)
