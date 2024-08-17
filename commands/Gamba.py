@@ -117,7 +117,7 @@ class Gamba(commands.Cog, name="Gamba"):
         else:   
             await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
     
-    @commands.hybrid_command(name="SetPollGamba")
+    @commands.hybrid_command()
     async def setpollgamba(self, ctx, amount):
         if not amount:
             await ctx.send("Please set an amount for your next poll gamble")
