@@ -37,7 +37,7 @@ class AI(commands.Cog, name="OpenAI"):
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
-    @commands.command(aliases=["gi"])
+    """ @commands.command(aliases=["gi"])
     async def GenerateImage(self, ctx, num, *, p):
         num = int(num) or 1
         if(num > 10):
@@ -57,7 +57,7 @@ class AI(commands.Cog, name="OpenAI"):
 
         for x in range(num):
             image_url = response['data'][x]['url']
-            await ctx.channel.send(image_url)
+            await ctx.channel.send(image_url) """
     
     @commands.command(aliases=["a"])
     async def answer(self, ctx, *, p):
