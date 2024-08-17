@@ -7,9 +7,7 @@ from dotenv import load_dotenv
 from asyncio import gather
 import asyncio
 from .Config import hasAccount
-from .classes import Game
-from .classes import Gift
-from .classes import User
+from classes import Game, Gift, User
 
 load_dotenv()
 updateUser = os.getenv('UPDATE_USER')
