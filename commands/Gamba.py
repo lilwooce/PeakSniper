@@ -10,7 +10,7 @@ from .Config import hasAccount
 from classes import Game, User
 import io
 import asyncio
-from discord import app_commands, File, hybrid_command
+from discord import app_commands, File
 from sqlalchemy import update
 from sqlalchemy.orm import sessionmaker
 from classes.database import engine
@@ -117,7 +117,7 @@ class Gamba(commands.Cog, name="Gamba"):
         else:   
             await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
     
-    @hybrid_command()
+    @commands.hybrid_command()
     async def setPollGamba(self, ctx, amount):
         if not amount:
             await ctx.send("Please set an amount for your next poll gamble")
@@ -135,6 +135,6 @@ class Gamba(commands.Cog, name="Gamba"):
         
         #set the amount in the database
 
-    @hybrid_command()
+    @commands.hybrid_command()
     async def payout(self, ctx, poll):
         return
