@@ -13,7 +13,7 @@ from discord.ext import commands, tasks
 from discord.ui import Button, View
 from sqlalchemy.orm import sessionmaker
 
-from cogs.classes import Servers, User, database
+from classes import Servers, User, database
 
 load_dotenv()
 header={"User-Agent": "XY"}

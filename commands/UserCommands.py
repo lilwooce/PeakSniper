@@ -9,7 +9,7 @@ import os
 from .Config import hasAccount
 from sqlalchemy.orm import sessionmaker
 
-from cogs.classes import Servers, User, database
+from classes import Servers, User, database
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -84,7 +84,6 @@ class UserCommands(commands.Cog):
         embed = discord.Embed(title="User Stats", description=f"Showing {user.name}'s stats")
         Session = sessionmaker(bind=database.engine)
         session = Session()
-        session.get
         total_earned = session.query(User.User).filter_by(id=user.id).get("total_earned")
         total_lost = session.query(User.User).filter_by(id=user.id).get("total_lost")
         total_gifted = session.query(User.User).filter_by(id=user.id).get("total_gifted")
