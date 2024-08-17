@@ -29,11 +29,12 @@ class Client(commands.Bot):
     def __init__(self):
         Session = sessionmaker(bind=database.engine)
         session = Session()
-        super().__init__(command_prefix='.', intents=discord.Intents().default(), description="The Best Snipe Bot")
+        intents = discord.Intents.default()
+        intents.members = True
+        intents.message_content = True
+        super().__init__(command_prefix='.', intents=intents, description="The Best Snipe Bot")
         self.session = session
         self.game_count = 0
-        self.intents.members = True
-        self.intents.message_content = True
 
     async def setup_hook(self):
         for fileName in os.listdir('commands'):
