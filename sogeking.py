@@ -48,6 +48,8 @@ class Client(commands.Bot):
             print(f'Failed to sync commands: {e}')
 
     async def check_user(self, user):
+        if user.bot:
+            return
         if not self.session.query(User.User).filter_by(user_id=user.id).first():
             print(f"user not in database {user.name}")
             u = User.User(user=user)
