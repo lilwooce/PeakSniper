@@ -38,8 +38,7 @@ class UserCommands(commands.Cog):
     @commands.command(description="Returns the amount of snipes the user has done, this function is often used to determine the top snipers for the Kyle award.")
     @commands.check(hasAccount)
     async def snipes (self, ctx, user: discord.User=None):
-        if user is None:
-            user = ctx.message.author
+        user = user or ctx.author
 
         checkSnipes = requests.get(getUser, params={"f1": "snipes", "f2": user.id}, headers=header)
         checkSnipes = checkSnipes.text.replace('"', '')
@@ -81,10 +80,11 @@ class UserCommands(commands.Cog):
         embed = discord.Embed(title="User Stats", description=f"Showing {user.name}'s stats")
         Session = sessionmaker(bind=database.engine)
         session = Session()
-        total_earned = session.query(User.User).filter_by(user_id=user.id).first().total_earned
-        total_lost = session.query(User.User).filter_by(user_id=user.id).first().total_lost
-        total_gifted = session.query(User.User).filter_by(user_id=user.id).first().total_gifted
-        total_bets = session.query(User.User).filter_by(user_id=user.id).first().total_bets
+        u = session.query(User.User).filter_by(user_id=user.id).first()
+        total_earned = u.total_earned
+        total_lost = u.total_lost
+        total_gifted = u.total_gifted
+        total_bets = u.total_bets
 
         """ totalEarned = requests.get(getUser, params={"f1": "totalEarned", "f2": user.id}, headers=header)
         totalEarned = totalEarned.text.replace('"', '')
