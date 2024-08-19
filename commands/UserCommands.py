@@ -85,25 +85,19 @@ class UserCommands(commands.Cog):
         total_lost = u.total_lost
         total_gifted = u.total_gifted
         total_bets = u.total_bets
-
-        """ totalEarned = requests.get(getUser, params={"f1": "totalEarned", "f2": user.id}, headers=header)
-        totalEarned = totalEarned.text.replace('"', '')
-        totalLost = requests.get(getUser, params={"f1": "totalLost", "f2": user.id}, headers=header)
-        totalLost = totalLost.text.replace('"', '')
-        totalGiven = requests.get(getUser, params={"f1": "totalGiven", "f2": user.id}, headers=header)
-        totalGiven = totalGiven.text.replace('"', '')
-        betsMade = requests.get(getUser, params={"f1": "betsMade", "f2": user.id}, headers=header)
-        betsMade = betsMade.text.replace('"', '')"""
+        total_snipes = u.total_snipes
 
         embed.add_field(name="Total Earned", value=f"**{total_earned}** discoins earned", inline=False)
         embed.add_field(name="Total Lost", value=f"**{total_lost}** discoins lost", inline=False)
         embed.add_field(name="Total Given", value=f"**{total_gifted}** discoins given to other players", inline=False)
         embed.add_field(name="Bets Made", value=f"**{total_bets}** gambles attempted", inline=False)
+        embed.add_field(name="Messages Sniped", value=f"**{total_snipes}** messages sniped", inline=False)
 
         await ctx.channel.send(embed=embed)
 
     @commands.hybrid_command(name="setsnipe", hidden=True, with_app_command=True)
     async def set_snipe(self, ctx, msg: str):
+        user = ctx.author
         message = ""
         for m in msg:
             message += m
@@ -115,6 +109,23 @@ class UserCommands(commands.Cog):
         await ctx.send(f"You changed your snipe message to [{u.snipe_message}]")
         session.commit()
 
+    @commands.hybrid_command(description="")
+    @commands.check(hasAccount)
+    async def profile(self, ctx, user: discord.User=None):
+        user = user or ctx.author
+        
+        embed = discord.Embed(title="User Profile", description=f"Showing {user.name}'s Profile", color=discord.Color.green)
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        u = session.query(User.User).filter_by(user_id=user.id).first()
+        snipe_message = u.snipe_message
+        balance = u.balance
+        
+        embed.set_author(name=user.name, icon_url=user.display_avatar)
+        embed.add_field(name="Snipe Message", value=f"**{snipe_message}**", inline=False)
+        embed.add_field(name="Balance", value=f"**{balance}** discoins ", inline=False)
+
+        await ctx.channel.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
