@@ -5,7 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-default_snipe_message = ""
+default_snipe_message = "Caught! <:sussykasra:873330894260297759>"
 
 class User(Base):
     __tablename__ = "Users"
