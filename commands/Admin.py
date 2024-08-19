@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
 import os 
+from sqlalchemy.orm import sessionmaker
+
+from classes import Servers, User, database
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -23,29 +26,20 @@ class Admin(commands.Cog):
     @commands.hybrid_command(name="addmoney", aliases=["am"], hidden=True, with_app_command=True)
     @commands.is_owner()
     async def addmoney(self, ctx: commands.Context, user: discord.User, amount: int):
-        msg = await ctx.send("Adding money!")
-        bal = requests.get(getUser, params={"f1": "discoins", "f2": user.id}, headers={"User-Agent": "XY"})
-        bal = bal.text.replace('"', '')
-        result = requests.post(updateUser, data={"f1": "discoins", "f2": int(bal)+amount, "f3": user.id}, headers={"User-Agent": "XY"})
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        u = session.query(User.User).filter_by(user_id=user.id).first()
+        u.balance += amount
         if (amount < 0) :
-            await msg.edit(f"Removed {amount * -1} discoin(s) from {user}")
+            await ctx.send(f"Removed {amount * -1} discoin(s) from {user}")
         else:
-            await msg.edit(f"Added {amount} discoin(s) to {user}")
+            await ctx.send(f"Added {amount} discoin(s) to {user}")
 
     @commands.hybrid_command(name="message", aliases=["msg"], hidden=True, with_app_command=True)
     @commands.is_owner()
     async def message(self, ctx: commands.Context, channel: discord.TextChannel, message: str):
         await channel.send(message)
         await ctx.send(f"message: [{message}] sent to {channel.name}")
-    
-    @commands.command(hidden=True)
-    @commands.guild_only()
-    async def sync(self, ctx: commands.Context) -> None:
-        synced = await ctx.bot.tree.sync()
-        await ctx.send(
-            f"Synced {len(synced)} commands to the current guild."
-        )
-        return
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))

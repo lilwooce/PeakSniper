@@ -29,7 +29,7 @@ async def hasAccount(ctx):
     if u:
         return True
     else:
-        await addAccount(ctx.author.id)
+        await addAccount(user, session)
         return True
 
 class Config(commands.Cog, name="Configuration"):
@@ -43,10 +43,12 @@ class Config(commands.Cog, name="Configuration"):
     @commands.command(description="Allows the user to change the prefix of the bot")
     async def prefix(self, ctx, new_prefix=None):
         if(new_prefix):
-            obj = {"f1": ctx.message.guild.id, "f2": new_prefix}
-            result = requests.post(updatePURL, data=obj, headers={"User-Agent": "XY"})
-            print(result.status_code)
-            await ctx.send(f"Changed the prefix to: {new_prefix}")  
+            Session = sessionmaker(bind=database.engine)
+            session = Session()
+            s = session.query(Servers.Servers).filter_by(server_id=ctx.guild.id).first()
+            s.prefix = new_prefix
+            session.commit()
+            await ctx.send(f"Successfully changed prefix to {new_prefix}")
         else:
             await ctx.send("Please input a new prefix.")
 

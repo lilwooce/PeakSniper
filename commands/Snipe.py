@@ -10,6 +10,9 @@ import os
 from dotenv import load_dotenv
 import requests
 from .Config import hasAccount
+from sqlalchemy.orm import sessionmaker
+
+from classes import Servers, User, database
 
 load_dotenv()
 tails = os.getenv('heads')
@@ -19,12 +22,12 @@ addUser = os.getenv('ADD_USER')
 getUser = os.getenv('GET_USER')
 
 def validCheck(sniper):
-        snipee = sniped.author
+    snipee = sniped.author
 
-        if (sniper.id == snipee.id):
-            return False
-        
-        return True
+    if (sniper.id == snipee.id):
+        return False
+    
+    return True
     
 def validSnipe(user, num):
     balance = requests.get(getUser, params={"f1": "discoins", "f2": user}, headers={"User-Agent": "XY"})

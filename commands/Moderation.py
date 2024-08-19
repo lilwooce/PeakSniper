@@ -6,6 +6,9 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
 import os 
+from sqlalchemy.orm import sessionmaker
+
+from classes import Servers, User, database
 
 load_dotenv()
 getUser = os.getenv('GET_USER')

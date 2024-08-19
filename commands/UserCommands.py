@@ -45,7 +45,8 @@ class UserCommands(commands.Cog):
                     u.balance -= amount
                     u.total_gifted += amount
                     g.balance += amount
-
+                    
+                    session.commit()
                     await ctx.send(f"**{ctx.author.name}#{ctx.author.discriminator}** just gave **{amount}** discoin(s) to **{user.name}#{user.discriminator}**")
                 else:
                     await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
