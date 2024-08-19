@@ -84,10 +84,10 @@ class UserCommands(commands.Cog):
         embed = discord.Embed(title="User Stats", description=f"Showing {user.name}'s stats")
         Session = sessionmaker(bind=database.engine)
         session = Session()
-        total_earned = session.query(User.User).filter_by(id=user.id).first().total_earned
-        total_lost = session.query(User.User).filter_by(id=user.id).first().total_lost
-        total_gifted = session.query(User.User).filter_by(id=user.id).first().total_gifted
-        total_bets = session.query(User.User).filter_by(id=user.id).first().total_bets
+        total_earned = session.query(User.User).filter_by(user_id=user.id).first().total_earned
+        total_lost = session.query(User.User).filter_by(user_id=user.id).first().total_lost
+        total_gifted = session.query(User.User).filter_by(user_id=user.id).first().total_gifted
+        total_bets = session.query(User.User).filter_by(user_id=user.id).first().total_bets
 
         """ totalEarned = requests.get(getUser, params={"f1": "totalEarned", "f2": user.id}, headers=header)
         totalEarned = totalEarned.text.replace('"', '')
