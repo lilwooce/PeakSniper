@@ -3,6 +3,9 @@ import os
 import requests
 import discord 
 from dotenv import load_dotenv
+from sqlalchemy.orm import sessionmaker
+
+from classes import Servers, User, database
 
 load_dotenv()
 updatePURL = os.getenv('UP_URL')
@@ -13,16 +16,17 @@ addUser = os.getenv('ADD_USER')
 getUser = os.getenv('GET_USER')
 header={"User-Agent": "XY"}
 
-async def addAccount(user):
-    obj = {"f1": user}
-    r = requests.post(addUser, data=obj, headers=header)
+async def addAccount(user, session):
+    u = User.User(user=user)
+    session.add(u)
+    session.commit()
     
 async def hasAccount(ctx):
-    userID = ctx.author.id
-    obj = {"f1": "user", "f2": userID}
-    result = requests.get(getUser, params=obj, headers=header)
-    id = result.text.replace('"', '')
-    if (id == str(userID)):
+    user = ctx.author
+    Session = sessionmaker(bind=database.engine)
+    session = Session()
+    u = session.query(User.User).filter_by(user_id=user.id).first()
+    if u:
         return True
     else:
         await addAccount(ctx.author.id)
