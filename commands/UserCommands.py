@@ -28,8 +28,7 @@ class UserCommands(commands.Cog):
     @commands.command(aliases=['bal'], description="This function returns the current amount of discoins you currently have.")
     @commands.check(hasAccount)
     async def balance(self, ctx, user: discord.User=None):
-        if user is None:
-            user = ctx.message.author
+        user = user or ctx.author
 
         checkBalance = requests.get(getUser, params={"f1": "discoins", "f2": user.id}, headers=header)
         checkBalance = checkBalance.text.replace('"', '')
@@ -76,10 +75,8 @@ class UserCommands(commands.Cog):
         
     @commands.command(description="This function allows the user to see a lot of different stats about what he has done on the server, most of these aren't useful but will definitely increase bragging rights. Stats returned include; total amount of discoins earned, lost and given. The total number of bets made is the degenerates stat of the year.")
     @commands.check(hasAccount)
-    async def stats(self, ctx, user: discord.User):
-        if user is None:
-            print()
-            user = ctx.message.author
+    async def stats(self, ctx, user: discord.User=None):
+        user = user or ctx.author
         
         embed = discord.Embed(title="User Stats", description=f"Showing {user.name}'s stats")
         Session = sessionmaker(bind=database.engine)
