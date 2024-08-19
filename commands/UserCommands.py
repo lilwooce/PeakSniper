@@ -114,7 +114,7 @@ class UserCommands(commands.Cog):
     async def profile(self, ctx, user: discord.User=None):
         user = user or ctx.author
         
-        embed = discord.Embed(title="User Profile", description=f"Showing {user.name}'s Profile", color=discord.Colour.green)
+        embed = discord.Embed(title="User Profile", description=f"Showing {user.name}'s Profile", color=discord.Color.green())
         Session = sessionmaker(bind=database.engine)
         session = Session()
         u = session.query(User.User).filter_by(user_id=user.id).first()
