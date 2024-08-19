@@ -103,7 +103,7 @@ class UserCommands(commands.Cog):
         await ctx.channel.send(embed=embed)
 
     @commands.hybrid_command(name="setsnipe", hidden=True, with_app_command=True)
-    async def set_snipe(self, ctx, *msg):
+    async def set_snipe(self, ctx, msg: str):
         message = ""
         for m in msg:
             message += m
