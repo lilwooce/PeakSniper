@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from asyncio import gather
 import asyncio
 from .Config import hasAccount
-from ..classes import Server, User, database
+from classes import Servers, User, database
 
 load_dotenv()
 updateUser = os.getenv('UPDATE_USER')

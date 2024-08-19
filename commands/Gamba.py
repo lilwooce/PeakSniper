@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from asyncio import gather
 import asyncio
 from .Config import hasAccount
-from classes import Game, User
+from classes import User
 import io
 import asyncio
 from discord import app_commands, File
