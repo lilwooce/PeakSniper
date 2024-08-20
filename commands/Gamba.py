@@ -24,6 +24,7 @@ getUser = os.getenv('GET_USER')
 class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
         self.minCoinBid = 5
+        self.cfMulti = 2
         self.client = client
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
@@ -45,13 +46,13 @@ class Gamba(commands.Cog, name="Gamba"):
 
         result = random.randint(0,1)
         if (result == 0 and bet.lower() in heads):
-            total = amount * (1+self.cfMulti)
+            total = amount * self.cfMulti
             won = total - amount
             u.total_earned += won
             u.balance += won
             await ctx.send(f"Congrats!!! You won {int(won)} discoins")
         elif (result == 1 and bet.lower() in tails):
-            total = amount * (1+self.cfMulti)
+            total = amount * self.cfMulti
             won = total - amount
             u.total_earned += won
             u.balance += won
