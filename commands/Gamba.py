@@ -182,6 +182,8 @@ class Gamba(commands.Cog, name="Gamba"):
                     user = user_map[winner]
                     won_amount = total_bet * (user.poll_gamba / total_winners)
                     user.balance += won_amount
+                    user.total_earned += won_amount
+                    user.total_bets += 1
                     user.poll_gamba = 0
                     embed.add_field(name=user.name, value=f"Won: {won_amount}", inline=False)
             
@@ -189,6 +191,8 @@ class Gamba(commands.Cog, name="Gamba"):
                 if loser in user_map:
                     user = user_map[loser]
                     user.balance -= user.poll_gamba
+                    user.total_lost += user.poll_gamba
+                    user.total_bets += 1
                     user.poll_gamba = 0
                     embed.add_field(name=user.name, value=f"Lost: {user.poll_gamba}", inline=False)
 

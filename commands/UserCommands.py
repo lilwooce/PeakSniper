@@ -110,6 +110,7 @@ class UserCommands(commands.Cog):
         embed.set_author(name=user.name, icon_url=user.display_avatar)
         embed.add_field(name="Snipe Message", value=f"**{snipe_message}**", inline=False)
         embed.add_field(name="Balance", value=f"**{balance}** discoins ", inline=False)
+        embed.add_field(name="Poll Gamba", value=f"**{u.poll_gamba}** discoins ", inline=False)
 
         await ctx.send(embed=embed)
 
