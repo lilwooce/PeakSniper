@@ -129,7 +129,7 @@ class Gamba(commands.Cog, name="Gamba"):
         session.close()
 
     @commands.hybrid_command()
-    async def payout(self, ctx, poll: discord.Message):
+    async def payout(self, ctx, poll: discord.Message, correct_answer: str):
         # Check if the poll is finalized
         p = poll.poll
         if not p.is_finalized():
@@ -144,12 +144,11 @@ class Gamba(commands.Cog, name="Gamba"):
         # Initialize totals
         total_bet = 0
         total_winners = 0
-        correct_answer = p.get_answer()
         
         # Fetch all users in one go to reduce database queries
         user_ids = set()
         for answer in p.answers:
-            if answer == correct_answer:
+            if answer.text.lower() == correct_answer.lower():
                 user_ids.update(voter.id async for voter in answer.voters())
             else:
                 user_ids.update(voter.id async for voter in answer.voters())
@@ -161,7 +160,7 @@ class Gamba(commands.Cog, name="Gamba"):
         losers = []
 
         for answer in p.answers:
-            if answer == correct_answer:
+            if answer.text.lower() == correct_answer.lower():
                 winners.extend([voter for voter in answer.voters()])
             else:
                 losers.extend([voter for voter in answer.voters()])
