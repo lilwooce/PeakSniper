@@ -35,9 +35,18 @@ class Servers(Base):
         self.name = server.name
         self.server_id = server.id
         self.prefix = default_prefix
-        self.recently_deleted = ""
-        self.recently_edited = ""
         self.currently_in_server = True
+        self.recently_deleted_message = ""
+        self.recently_deleted_images = ""
+        self.recently_deleted_timestamp = ""
+        self.recently_deleted_user = 0
+        self.recently_deleted_reply = ""
+        self.recently_edited_user = 0
+        self.recently_edited_timestamp = ""
+        self.recently_edited_images = ""
+        self.recently_edited_before_message = ""
+        self.recently_edited_after_message = ""
+        self.recently_edited_reply = ""
     
     def change_deleted():
         return
