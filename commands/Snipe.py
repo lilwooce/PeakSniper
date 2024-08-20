@@ -196,7 +196,7 @@ class Snipe(commands.Cog):
                 embed.add_field(name="Reply", value=reply, inline=True)  
             
             
-            if(sniped.author.id == 0000000000000000):
+            if(sniper.id == 0000000000000000):
                 await ctx.channel.send("heh sorry guys. i made a deal.")
             else:
                 await ctx.channel.send(embed=embed)
