@@ -14,13 +14,14 @@ class Servers(Base):
     server_id = ("server_id", BigInteger)
     name = Column("name", String(80))
     prefix = Column("prefix", String(80))
+
     recently_deleted_message = Column("recently_deleted_message", String(2000))
     recently_deleted_images = Column("recently_deleted_images", String(2000))
     recently_deleted_timestamp = Column("recently_deleted_timestamp", TIMESTAMP)
     recently_deleted_user = Column("recently_deleted_user", BigInteger)
     recently_deleted_reply = Column("recently_deleted_reply", String(2000))
-
     recently_edited_user = Column("recently_edited_user", BigInteger)
+
     recently_edited_timestamp = Column("recently_edited_timestamp", TIMESTAMP)
     recently_edited_images = Column("recently_edited_images", String(2000))
     recently_edited_before_message = Column("recently_edited_before_message", String(2000))
@@ -31,9 +32,9 @@ class Servers(Base):
 
 
 
-    def __init__(self, server):
+    def __init__(self, server, id):
         self.name = server.name
-        self.server_id = server.id
+        self.server_id = id
         self.prefix = default_prefix
         self.currently_in_server = True
         self.recently_deleted_message = ""
