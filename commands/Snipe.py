@@ -17,7 +17,7 @@ from classes import Servers, User, database
 load_dotenv()
 tails = os.getenv('heads')
 heads = os.getenv('tails')
-f = '%H:%M:%S'
+f = '%Y-%m-%d %H:%M:%S'
 
 def validCheck(sniper):
     server = sniper.guild
