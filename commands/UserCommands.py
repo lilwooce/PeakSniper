@@ -25,7 +25,7 @@ class UserCommands(commands.Cog):
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
     
-    @commands.hybrid_command(aliases=['loan', 'lend'], description="Simple function that allows users to give discoins to other users. The gifted discoins are removed from the givers account.")
+    @commands.hybrid_command(aliases=['loan', 'lend'], description="Simple function that allows users to give discoins to other users.")
     @commands.check(hasAccount)
     async def give(self, ctx, user: discord.User, amount: int):
         author = ctx.author
