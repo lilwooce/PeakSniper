@@ -226,7 +226,7 @@ class Snipe(commands.Cog):
 
         hehe = False
         if (hehe==False):
-            embed=discord.Embed(title=f"{snipee.name} edited a message <:sussykasra:873330894260297759>", description="")
+            embed=discord.Embed(title=f"{sniper.name} edited a message <:sussykasra:873330894260297759>", description="")
             embed.timestamp = timestamp
             embedA=discord.Embed(title=f"{messageA.author.name} edited a message from <:sussykasra:873330894260297759>", description="")
             embedA.timestamp = timestamp

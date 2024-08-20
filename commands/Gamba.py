@@ -191,7 +191,6 @@ class Gamba(commands.Cog, name="Gamba"):
             embed.description = "No winners to process payouts."
         
         await ctx.send(embed=embed)
-        session.commit()
         session.close()
         
         
