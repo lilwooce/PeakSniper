@@ -203,7 +203,7 @@ class Snipe(commands.Cog):
             else:
                 await ctx.channel.send(embed=embed)
                 if validCheck(sniper):
-                    validSnipe(sniper.id, self.snipeVal)  
+                    validSnipe(sniper, self.snipeVal)  
         else:
             await ctx.channel.send("HAPPY HALLOWEEN <:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759><:sussykasra:873330894260297759>")
 
