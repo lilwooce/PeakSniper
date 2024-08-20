@@ -36,7 +36,7 @@ class User(Base):
         self.total_gifted = 0
         self.total_snipes = 0
         self.snipe_message = default_snipe_message
-        poll_gamba = 0
+        self.poll_gamba = 0
     
     def adjust_snipes(self, user, amount):
         return
