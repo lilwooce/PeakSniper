@@ -72,7 +72,7 @@ class Snipe(commands.Cog):
         else:
             s.recently_deleted_images = ""
         
-        if (await self.getReply(message)):
+        if (await self.checkReply(message)):
             s.recently_deleted_reply = message.jump_url
         else:
             s.recently_deleted_reply = ""
@@ -102,7 +102,7 @@ class Snipe(commands.Cog):
         else:
             s.recently_edited_images = ""
         
-        if (await self.getReply(messageBefore)):
+        if (await self.checkReply(messageBefore)):
             s.recently_edited_reply = messageBefore.jump_url
         else:
             s.recently_edited_reply = ""
