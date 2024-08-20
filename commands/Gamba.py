@@ -62,6 +62,7 @@ class Gamba(commands.Cog, name="Gamba"):
 
         u.total_bets += 1
         session.commit()
+        session.close()
                     
             
 
@@ -92,6 +93,7 @@ class Gamba(commands.Cog, name="Gamba"):
             await ctx.send(f"You lost. You chose **{bet}** but the bot chose **{result}**. Better luck next time.")
             
         session.commit()
+        session.close()
 
     @commands.hybrid_command()
     async def setpollgamba(self, ctx, amount):
@@ -110,6 +112,7 @@ class Gamba(commands.Cog, name="Gamba"):
         #set the amount in the database
         u.poll_gamba = amount
         session.commit()
+        session.close()
 
     @commands.hybrid_command()
     async def payout(self, ctx, poll):

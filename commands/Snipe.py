@@ -41,6 +41,7 @@ def validSnipe(user, num):
     u.total_earned += num
     u.total_snipes += 1
     session.commit()
+    session.close()
 
 class Snipe(commands.Cog):
     def __init__(self, bot):
@@ -77,6 +78,7 @@ class Snipe(commands.Cog):
             s.recently_deleted_reply = ""
                 
         session.commit()
+        session.close()
         await self.bot.process_commands(message)
     
     @commands.Cog.listener()
@@ -106,6 +108,7 @@ class Snipe(commands.Cog):
             s.recently_edited_reply = ""
 
         session.commit()
+        session.close()
             
     @commands.command(description="Like a infinite dice, this function allows you to enter a number and receive back a randomly selected number from 1 to this high limit, this function is used in many ways, such as determining who will pay for lunch, how many ducks are needed to fight alligators and rolling for double damage.")
     async def roll(self, ctx, arg: int):

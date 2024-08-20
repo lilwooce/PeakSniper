@@ -47,6 +47,8 @@ class UserCommands(commands.Cog):
                     g.balance += amount
                     
                     session.commit()
+                    session.close()
+                    
                     await ctx.send(f"**{ctx.author.name}#{ctx.author.discriminator}** just gave **{amount}** discoin(s) to **{user.name}#{user.discriminator}**")
                 else:
                     await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
@@ -91,6 +93,7 @@ class UserCommands(commands.Cog):
         u.snipe_message = message
         await ctx.send(f"You changed your snipe message to [{u.snipe_message}]")
         session.commit()
+        session.close()
 
     @commands.hybrid_command(description="")
     @commands.check(hasAccount)
