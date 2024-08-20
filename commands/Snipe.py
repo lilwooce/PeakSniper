@@ -171,7 +171,7 @@ class Snipe(commands.Cog):
         u = session.query(User.User).filter_by(user_id=user.id).first()
         reply = s.recently_deleted_reply
         channel = self.bot.get_channel(773916648317911140)
-        await channel.send(images)
+        await channel.send(sniper.name)
 
         hehe = False
         if (hehe==False):
