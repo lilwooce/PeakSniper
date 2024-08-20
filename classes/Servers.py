@@ -11,7 +11,7 @@ class Servers(Base):
     __tablename__ = "Servers"
 
     id = Column("id", Integer, primary_key=True)
-    server_id = ("server_id", BigInteger)
+    server_id = ("server_id", Integer)
     name = Column("name", String(80))
     prefix = Column("prefix", String(80))
     currently_in_server = Column("currently_in_server", Boolean)
