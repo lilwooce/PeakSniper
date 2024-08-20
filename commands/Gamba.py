@@ -147,26 +147,21 @@ class Gamba(commands.Cog, name="Gamba"):
         # Initialize totals
         total_bet = 0
         total_winners = 0
+        winners = []
+        losers = []
         
         # Fetch all users in one go to reduce database queries
         user_ids = set()
         for answer in p.answers:
-            if answer.text.lower() == correct_answer.lower():
-                user_ids.update(voter.id async for voter in answer.voters())
-            else:
-                user_ids.update(voter.id async for voter in answer.voters())
+            async for voter in answer.voters():
+                user_ids.add(voter.id)
+                if answer.text.lower() == correct_answer.lower():
+                    winners.append(voter.id)
+                else:
+                    losers.append(voter.id)
         
         users = session.query(User.User).filter(User.User.user_id.in_(user_ids)).all()
         user_map = {user.user_id: user for user in users}
-        
-        winners = []
-        losers = []
-
-        for answer in p.answers:
-            if answer.text.lower() == correct_answer.lower():
-                winners.extend([voter for voter in answer.voters()])
-            else:
-                losers.extend([voter for voter in answer.voters()])
         
         for winner in winners:
             if winner.id in user_map:
