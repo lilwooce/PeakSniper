@@ -23,6 +23,7 @@ getUser = os.getenv('GET_USER')
 
 class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
+        self.minCoinBid = 5
         self.client = client
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
