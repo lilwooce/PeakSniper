@@ -128,6 +128,7 @@ class Gamba(commands.Cog, name="Gamba"):
         #set the amount in the database
         u.poll_gamba = amount
         u.balance -= amount
+        await ctx.send(f"You have set the amount for your next poll gamble to **{amount}")
         session.commit()
         session.close()
 
@@ -204,7 +205,6 @@ class Gamba(commands.Cog, name="Gamba"):
             embed.description = "No winners to process payouts."
         
         await ctx.send(embed=embed)
-        session.close()
         
         
 
