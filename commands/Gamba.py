@@ -26,7 +26,7 @@ class Gamba(commands.Cog, name="Gamba"):
         self.minCoinBid = 5
         self.cfMulti = 2
         self.client = client
-        self.channel = self.bot.get_channel(773916648317911140)
+        self.channel = self.client.get_channel(773916648317911140)
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
     async def coinflip(self, ctx, bet, amount: int):
