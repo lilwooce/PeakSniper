@@ -65,6 +65,9 @@ class Client(commands.Bot):
 
     async def account_check(self):
         async for guild in self.fetch_guilds(limit=None):
+            u = Servers.Servers(server=guild)
+            self.session.add(u)
+            self.session.commit()
             await self.check_server(guild)
             async for member in guild.fetch_members(limit=None):
                 await self.check_user(member)
@@ -74,6 +77,7 @@ class Client(commands.Bot):
         print(f"Bot ID {str(self.user.id)}")
         print(f"Discord Version {discord.__version__}")
         print(f"Python Version {str(platform.python_version())}")
+        
 
         #check to make sure everyone in every server and every server is in the database
         await self.account_check()
