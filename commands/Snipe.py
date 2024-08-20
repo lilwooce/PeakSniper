@@ -2,7 +2,6 @@ from re import M
 import discord
 from discord.ext import commands
 import datetime
-from datetime import date
 import math
 import json
 from pytz import timezone
@@ -18,7 +17,7 @@ from classes import Servers, User, database
 load_dotenv()
 tails = os.getenv('heads')
 heads = os.getenv('tails')
-f = '%Y-%m-%d %H:%M:%S'
+f = '%H:%M:%S'
 
 def validCheck(sniper):
     server = sniper.guild
@@ -164,7 +163,7 @@ class Snipe(commands.Cog):
         session = Session()
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
         sniped = s.recently_deleted_message
-        timestamp = s.recently_deleted_timestamp.strftime(f)
+        timestamp = datetime.datetime.strptime(s.recently_deleted_timestamp, f)
         images = s.recently_deleted_images.split("/")
         sniper = await self.bot.fetch_user(s.recently_deleted_user)
         u = session.query(User.User).filter_by(user_id=sniper.id).first()
@@ -215,7 +214,7 @@ class Snipe(commands.Cog):
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
         messageB = s.recently_edited_before_message
         messageA = s.recently_edited_after_message
-        timestamp = s.recently_edited_timestamp.strftime(f)
+        timestamp = datetime.datetime.strptime(s.recently_edited_timestamp, f)
         images = s.recently_edited_images.split("/")
         snipee = await self.bot.fetch_user(s.recently_edited_user)
         reply = s.recently_edited_reply
