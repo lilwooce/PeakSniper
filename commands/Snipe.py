@@ -190,7 +190,7 @@ class Snipe(commands.Cog):
             else:
                 embed.add_field(name= u.snipe_message ,value="No Message Sent", inline=True)
 
-            if (len(images) > 0):
+            if (images[0] != ""):
                 for img in images:
                     embed.set_image(url=img)
                     embed.add_field(name="File Name", value=img, inline=True)
@@ -239,7 +239,7 @@ class Snipe(commands.Cog):
             else:
                 embed.add_field(name="No content" ,value="After", inline=True)
             
-            if (len(images) > 0):
+            if (images[0] != ""):
                 for img in images:
                     embedA.set_image(url=img)
                     embedA.add_field(name="File Name", value=img, inline=True)
