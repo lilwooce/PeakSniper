@@ -32,9 +32,9 @@ class Servers(Base):
 
 
 
-    def __init__(self, server, id):
+    def __init__(self, server):
         self.name = server.name
-        self.server_id = id
+        self.server_id = int(server.id)
         self.prefix = default_prefix
         self.currently_in_server = True
         self.recently_deleted_message = ""
