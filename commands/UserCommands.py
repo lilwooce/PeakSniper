@@ -25,7 +25,7 @@ class UserCommands(commands.Cog):
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
     
-    @commands.hybrid_command(aliases=['loan', 'lend'], description="Simple function that allows users to give discoins to other users, this is often used to pay for lunch if lunch was paid in discoins that would be another topic. The gifted discoins are removed from the givers account.")
+    @commands.hybrid_command(aliases=['loan', 'lend'], description="Simple function that allows users to give discoins to other users. The gifted discoins are removed from the givers account.")
     @commands.check(hasAccount)
     async def give(self, ctx, user: discord.User, amount: int):
         author = ctx.author
@@ -48,7 +48,7 @@ class UserCommands(commands.Cog):
                     
                     session.commit()
                     session.close()
-                    
+
                     await ctx.send(f"**{ctx.author.name}#{ctx.author.discriminator}** just gave **{amount}** discoin(s) to **{user.name}#{user.discriminator}**")
                 else:
                     await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
