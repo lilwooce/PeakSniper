@@ -45,12 +45,7 @@ class Gamba(commands.Cog, name="Gamba"):
         if (amount < self.minCoinBid):
             await ctx.send("Bet more money you poor fuck. The minimum bet is 5 discoins.")
             return
-        if((bet.lower() not in heads) or (bet.lower() not in tails)):
-            await c.send(bet.lower() in heads)
-            await c.send(bet.lower() in tails)
-            await c.send(heads)
-            await c.send(tails)
-            await c.send(bet.lower())
+        if((bet.lower() not in heads) and (bet.lower() not in tails)):
             await ctx.send("Please type heads or tails")
             return
 
