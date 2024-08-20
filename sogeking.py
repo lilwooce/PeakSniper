@@ -79,9 +79,7 @@ class Client(commands.Bot):
         print(f"Bot ID {str(self.user.id)}")
         print(f"Discord Version {discord.__version__}")
         print(f"Python Version {str(platform.python_version())}")
-        await self.setup_hook()
         
-
         #check to make sure everyone in every server and every server is in the database
         await self.account_check()
 
