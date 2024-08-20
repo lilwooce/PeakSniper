@@ -136,6 +136,11 @@ class Gamba(commands.Cog, name="Gamba"):
     async def payout(self, ctx, poll: discord.Message, correct_answer: str):
         # Check if the poll is finalized
         p = poll.poll
+        p.end()
+        poll_creator = poll.author.id
+        if ctx.author.id !=poll_creator:
+            await ctx.send("You do not have the right")
+            return
         if not p.is_finalized():
             await ctx.send("The poll given has not finished yet. Please finalize the results of the poll first.")
             return
@@ -180,6 +185,8 @@ class Gamba(commands.Cog, name="Gamba"):
         if total_winners > 0 or total_losers > 0:
             for winner in winners:
                 if winner in user_map:
+                    if winner == poll_creator:
+                        continue
                     user = user_map[winner]
                     won_amount = total_bet * (user.poll_gamba / total_winners)
                     user.balance += won_amount
