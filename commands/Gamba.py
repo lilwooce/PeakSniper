@@ -112,6 +112,9 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         u = session.query(User.User).filter_by(user_id=author.id).first()
 
+        if u.poll_gamba > 0:
+            u.balance += u.poll_gamba
+            u.poll_gamba = 0
         if not amount:
             await ctx.send("Please set an amount for your next poll gamble")
             return
