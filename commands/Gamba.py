@@ -136,7 +136,6 @@ class Gamba(commands.Cog, name="Gamba"):
     async def payout(self, ctx, poll: discord.Message, correct_answer: str):
         # Check if the poll is finalized
         p = poll.poll
-        await p.end()
         poll_creator = poll.author.id
         if ctx.author.id !=poll_creator:
             await ctx.send("You do not have the right")
