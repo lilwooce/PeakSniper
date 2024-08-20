@@ -175,7 +175,6 @@ class Snipe(commands.Cog):
 
         hehe = False
         if (hehe==False):
-            sniper = ctx.author
             embed=discord.Embed(title=f"{sniper.name}", description="")
             embed.timestamp = timestamp
             if(sniped):
