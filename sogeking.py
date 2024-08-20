@@ -37,6 +37,15 @@ class Client(commands.Bot):
         self.game_count = 0
 
     async def setup_hook(self):
+        for fileName in os.listdir('commands'):
+            if fileName.endswith('.py'):
+                extension = f'commands.{fileName[:-3]}'
+                try:
+                    await self.load_extension(extension)
+                except commands.ExtensionAlreadyLoaded:
+                    await print("command is loaded")
+                except commands.ExtensionNotFound:
+                    await print("Cog not found")
         try:
             synced = await self.tree.sync()
             print(f'Successfully synced {len(synced)} command(s)')
