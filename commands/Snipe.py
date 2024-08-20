@@ -17,7 +17,9 @@ from classes import Servers, User, database
 load_dotenv()
 tails = os.getenv('heads')
 heads = os.getenv('tails')
-f = '%Y-%m-%d %H:%M:%S'
+updateUser = os.getenv('UPDATE_USER')
+addUser = os.getenv('ADD_USER')
+getUser = os.getenv('GET_USER')
 
 def validCheck(sniper):
     server = sniper.guild
@@ -163,7 +165,7 @@ class Snipe(commands.Cog):
         session = Session()
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
         sniped = s.recently_deleted_message
-        timestamp = datetime.datetime.strptime(str(s.recently_deleted_timestamp), f)
+        timestamp = s.recently_deleted_timestamp
         images = s.recently_deleted_images.split("/")
         sniper = await self.bot.fetch_user(s.recently_deleted_user)
         u = session.query(User.User).filter_by(user_id=sniper.id).first()
@@ -214,7 +216,7 @@ class Snipe(commands.Cog):
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
         messageB = s.recently_edited_before_message
         messageA = s.recently_edited_after_message
-        timestamp = datetime.datetime.strptime(str(s.recently_edited_timestamp), f)
+        timestamp = s.recently_edited_timestamp
         images = s.recently_edited_images.split("/")
         snipee = await self.bot.fetch_user(s.recently_edited_user)
         reply = s.recently_edited_reply
