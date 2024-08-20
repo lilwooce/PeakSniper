@@ -11,7 +11,7 @@ class Servers(Base):
     __tablename__ = "Servers"
 
     id = Column("id", Integer, primary_key=True)
-    server_id = ("server_id", String(80))
+    server_id = ("server_id", BigInteger)
     name = Column("name", String(80))
     prefix = Column("prefix", String(80))
     currently_in_server = Column("currently_in_server", Boolean)
@@ -32,8 +32,7 @@ class Servers(Base):
 
 
     def __init__(self, server):
-        self.server_id = str(server.id)
-        p
+        self.server_id = int(server.id)
         self.name = server.name
         self.prefix = default_prefix
         self.currently_in_server = True
