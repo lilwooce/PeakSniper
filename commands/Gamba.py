@@ -140,9 +140,6 @@ class Gamba(commands.Cog, name="Gamba"):
         if ctx.author.id !=poll_creator:
             await ctx.send("You do not have the right")
             return
-        if not p.is_finalized():
-            await ctx.send("The poll given has not finished yet. Please finalize the results of the poll first.")
-            return
         
         # Prepare to query the database
         Session = sessionmaker(bind=database.engine)
