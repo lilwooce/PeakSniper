@@ -30,6 +30,7 @@ class Admin(commands.Cog):
         session = Session()
         u = session.query(User.User).filter_by(user_id=user.id).first()
         u.balance += amount
+        session.commit()
         if (amount < 0) :
             await ctx.send(f"Removed {amount * -1} discoin(s) from {user}")
         else:

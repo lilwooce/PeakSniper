@@ -1,6 +1,6 @@
 import json
 import random
-from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger
+from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -14,8 +14,19 @@ class Servers(Base):
     server_id = ("server_id", BigInteger)
     name = Column("name", String(80))
     prefix = Column("prefix", String(80))
-    recently_deleted = Column("recently_deleted", String(2000))
-    recently_edited = Column("recently_edited", String(2000))
+    recently_deleted_message = Column("recently_deleted_message", String(2000))
+    recently_deleted_images = Column("recently_deleted_images", String(2000))
+    recently_deleted_timestamp = Column("recently_deleted_timestamp", TIMESTAMP)
+    recently_deleted_user = Column("recently_deleted_user", BigInteger)
+    recently_deleted_reply = Column("recently_deleted_reply", String(2000))
+
+    recently_edited_user = Column("recently_edited_user", BigInteger)
+    recently_edited_timestamp = Column("recently_edited_timestamp", TIMESTAMP)
+    recently_edited_images = Column("recently_edited_images", String(2000))
+    recently_edited_before_message = Column("recently_edited_before_message", String(2000))
+    recently_edited_after_message = Column("recently_edited_after_message", String(2000))
+    recently_edited_reply = Column("recently_edited_reply", String(2000))
+
     currently_in_server = Column("currently_in_server", Boolean)
 
 

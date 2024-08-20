@@ -22,31 +22,25 @@ addUser = os.getenv('ADD_USER')
 getUser = os.getenv('GET_USER')
 
 def validCheck(sniper):
-    snipee = sniped.author
+    server = sniper.guild
+    Session = sessionmaker(bind=database.engine)
+    session = Session()
+    s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
 
-    if (sniper.id == snipee.id):
+    if (sniper.id == s.recently_deleted_user):
         return False
     
     return True
     
 def validSnipe(user, num):
-    balance = requests.get(getUser, params={"f1": "discoins", "f2": user}, headers={"User-Agent": "XY"})
-    b = balance.text.replace('"', '')
-    add = num
-    b = int(b) + add
-
-    earned = requests.get(getUser, params={"f1": "totalEarned", "f2": user}, headers={"User-Agent": "XY"})
-    e = earned.text.replace('"', '')
-    add = num
-    e = int(e) + add
-
-    snipes = requests.get(getUser, params={"f1": "snipes", "f2": user}, headers={"User-Agent": "XY"})
-    s = snipes.text.replace('"', '')
-    s = int(s) + 1
-
-    requests.post(updateUser, data={"f1": "totalEarned", "f2": e, "f3": user}, headers={"User-Agent": "XY"})
-    requests.post(updateUser, data={"f1": "discoins", "f2": b, "f3": user}, headers={"User-Agent": "XY"})
-    requests.post(updateUser, data={"f1": "snipes", "f2": s, "f3": user}, headers={"User-Agent": "XY"})
+    Session = sessionmaker(bind=database.engine)
+    session = Session()
+    u = session.query(User.User).filter_by(user_id=user.id).first()
+    
+    u.balance += num
+    u.total_earned += num
+    u.total_snipes += 1
+    session.commit()
 
 class Snipe(commands.Cog):
     def __init__(self, bot):
@@ -58,48 +52,60 @@ class Snipe(commands.Cog):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     @commands.Cog.listener()
-    async def on_message_delete(self, message="None"):
-        eastern = timezone('US/Eastern')
-        global sniped
-        global imgUrl
-        global timestamp
+    async def on_message_delete(self, message: discord.Message="None"):
+        server = message.guild
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
 
         if message.author.bot == True:
             return
-        sniped = message
-        imgUrl = ""
-        timestamp = datetime.datetime.now(eastern)
+        
+        s.recently_deleted_message = message.content
+        s.recently_deleted_user = message.author.id
+        s.recently_deleted_timestamp = message.created_at
 
         if (message.attachments):
-            imgUrl = message.attachments[0].url
+            for att in message.attachments:
+                s.recently_deleted_images += f"{att.url}/"
+        else:
+            s.recently_deleted_images = ""
         
-        '''if(message.author.id == 744615852111954051):
-            embed=discord.Embed(title=f"{message.author.name}#{message.author.discriminator}", description="")
-            embed.timestamp = timestamp
-            embed.add_field(name="Caught! <:sussykasra:873330894260297759>" ,value="My name is George Owusu and I am gay.", inline=True)
-            await message.channel.send(embed=embed)'''
-        
+        if (await self.getReply(message)):
+            s.recently_deleted_reply = message.jump_url
+        else:
+            s.recently_deleted_reply = ""
+                
+        session.commit()
         await self.bot.process_commands(message)
     
     @commands.Cog.listener()
-    async def on_message_edit(self, messageBefore, messageAfter):
-        global messageB
-        global messageA
-        global editImg
-        global editUrl
+    async def on_message_edit(self, messageBefore: discord.Message, messageAfter: discord.Message):
+        server = messageAfter.guild
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
+
         if messageBefore.author.bot == True:
             return
         if messageAfter.author.bot == True:
             return
-        messageB = messageBefore
-        messageA = messageAfter
-        editImg = ""
-        editUrl = ""
+        
+        s.recently_edited_before_message = messageBefore.content
+        s.recently_edited_after_message = messageAfter.content
 
-        if (messageB.attachments):
-            editImg = messageB.attachments[0].url
-        if (messageA.attachments):
-            editUrl = messageA.attachments[0].url
+        if (messageBefore.attachments):
+            for att in messageBefore.attachments:
+                s.recently_edited_images += f"{att.url}/"
+        else:
+            s.recently_edited_images = ""
+        
+        if (await self.getReply(messageBefore)):
+            s.recently_edited_reply = messageBefore.jump_url
+        else:
+            s.recently_edited_reply = ""
+
+        session.commit()
             
     @commands.command(description="Like a infinite dice, this function allows you to enter a number and receive back a randomly selected number from 1 to this high limit, this function is used in many ways, such as determining who will pay for lunch, how many ducks are needed to fight alligators and rolling for double damage.")
     async def roll(self, ctx, arg: int):
@@ -152,28 +158,42 @@ class Snipe(commands.Cog):
     @commands.command(aliases=["s"], description="This function allows you to retrieve the most recent deleted or lost message on the server.")
     @commands.check(hasAccount)
     async def snipe(self, ctx):
+        user = ctx.author
+        server = ctx.guild
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
+        sniped = s.recently_deleted_message
+        timestamp = s.recently_deleted_timestamp
+        images = s.recently_deleted_images.split("/")
+        sniper = await self.bot.get_user(s.recently_deleted_user)
+        u = session.query(User.User).filter_by(user_id=sniper).first()
+        reply = s.recently_deleted_reply
+
         hehe = False
         if (hehe==False):
             sniper = ctx.author
-            embed=discord.Embed(title=f"{sniped.author.name}#{sniped.author.discriminator}", description="")
+            embed=discord.Embed(title=f"{sniper.name}", description="")
             embed.timestamp = timestamp
-            if(sniped.content):
-                if (len(sniped.content) > 1024):
-                    for i in range(0, (len(sniped.content)), 1024):
-                        if (i + 1024 < len(sniped.content)):
-                            embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:i+1024], inline=True)     
+            if(sniped):
+                if (len(sniped) > 1024):
+                    for i in range(0, (len(sniped)), 1024):
+                        if (i + 1024 < len(sniped)):
+                            embed.add_field(name=u.snipe_message ,value=sniped[i:i+1024], inline=True)     
                         else:
-                            embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content[i:len(sniped.content)], inline=True)   
+                            embed.add_field(name=u.snipe_message ,value=sniped[i:len(sniped)], inline=True)   
                 else:
-                    embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value=sniped.content, inline=True) 
+                    embed.add_field(name= u.snipe_message ,value=sniped, inline=True) 
             else:
-                embed.add_field(name= "Caught! <:sussykasra:873330894260297759>" ,value="No Message Sent", inline=True)
-            if (len(imgUrl) > 0):
-                embed.set_image(url=imgUrl)
-                embed.add_field(name="File Name", value=sniped.attachments[0].url, inline=True)
-            if(await self.checkReply(sniped)):
-                repMes = await self.getReply(sniped)
-                embed.add_field(name="Reply", value=repMes.jump_url, inline=True)  
+                embed.add_field(name= u.snipe_message ,value="No Message Sent", inline=True)
+
+            if (len(images) > 0):
+                for img in images:
+                    embed.set_image(url=img)
+                    embed.add_field(name="File Name", value=img, inline=True)
+            if(reply):
+                embed.add_field(name="Reply", value=reply, inline=True)  
             
             
             if(sniped.author.id == 0000000000000000):
@@ -188,30 +208,44 @@ class Snipe(commands.Cog):
     @commands.command(aliases=["es"], description="This function allows you to retrieve the most recent edited message on the server.")
     @commands.check(hasAccount)
     async def editsnipe(self, ctx):
+        user = ctx.author
+        server = ctx.guild
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
+        messageB = s.recently_edited_before_message
+        messageA = s.recently_edited_after_message
+        timestamp = s.recently_edited_timestamp
+        images = s.recently_edited_images.split("/")
+        snipee = await self.bot.get_user(s.recently_edited_user)
+        reply = s.recently_edited_reply
+
         hehe = False
         if (hehe==False):
-            eastern = timezone('US/Eastern')
-            if (messageB.author.bot): return
-            if (messageA.author.bot): return
-            embed=discord.Embed(title=f"{messageB.author.name} edited a message from #{messageB.channel.name} <:sussykasra:873330894260297759>", description="")
-            embed.timestamp = datetime.datetime.now(eastern)
-            embedA=discord.Embed(title=f"{messageA.author.name} edited a message from #{messageA.channel.name} <:sussykasra:873330894260297759>", description="")
-            embedA.timestamp = datetime.datetime.now(eastern)
-            if (messageB.content):
-                embed.add_field(name= messageB.content ,value="Before", inline=True)
+            embed=discord.Embed(title=f"{snipee.name} edited a message <:sussykasra:873330894260297759>", description="")
+            embed.timestamp = timestamp
+            embedA=discord.Embed(title=f"{messageA.author.name} edited a message from <:sussykasra:873330894260297759>", description="")
+            embedA.timestamp = timestamp
+            if (messageB):
+                embed.add_field(name= messageB ,value="Before", inline=True)
             else:
                 embed.add_field(name="No content" ,value="Before", inline=True)
-            if (messageA.content):
-                embed.add_field(name= messageA.content ,value="After", inline=True)
+
+            if (messageA):
+                embed.add_field(name= messageA ,value="After", inline=True)
             else:
                 embed.add_field(name="No content" ,value="After", inline=True)
-            if (messageB.attachments):
-                embed.set_image(url=messageB.attachments[0].url)
-                embed.add_field(name="File Name", value=messageB.attachments[0].url, inline=True)
-            if (messageA.attachments):
-                embedA.set_image(url=messageA.attachments[0].url)
-                embed.add_field(name="File Name", value=messageA.attachments[0].url, inline=True)
-                await ctx.channel.send(ctx.channel, embed=embedA)
+            
+            if (len(images) > 0):
+                for img in images:
+                    embedA.set_image(url=img)
+                    embedA.add_field(name="File Name", value=img, inline=True)
+                    embed.set_image(url=img)
+                    embed.add_field(name="File Name", value=img, inline=True)
+            if(reply):
+                embed.add_field(name="Reply", value=reply, inline=True)  
+                embedA.add_field(name="Reply", value=reply, inline=True)  
                 
             await ctx.channel.send(embed=embed)
         else:
@@ -222,7 +256,7 @@ class Snipe(commands.Cog):
     async def coin(self, ctx):
         choice = random.randint(1,2)
         embed=discord.Embed()
-        embed.color =  discord.Color.random()
+        embed.color = discord.Color.random()
         if choice == 1:
             embed.title = "You flipped a coin and got: **heads**!"
             embed.set_image(url=heads)

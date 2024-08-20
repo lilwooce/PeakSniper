@@ -22,6 +22,7 @@ class User(Base):
     total_gifted = Column("total_gifted", Integer)
     total_snipes = Column("total_snipes", Integer)
     snipe_message = Column("snipe_message", String(200))
+    poll_gamba = Column("poll_gamba", Integer)
 
     def __init__(self, user):
         self.name = user.name
