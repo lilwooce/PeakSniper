@@ -128,7 +128,7 @@ class Gamba(commands.Cog, name="Gamba"):
         #set the amount in the database
         u.poll_gamba = amount
         u.balance -= amount
-        await ctx.send(f"You have set the amount for your next poll gamble to **{amount}")
+        await ctx.send(f"You have set the amount for your next poll gamble to **{amount}**")
         session.commit()
         session.close()
 
@@ -191,11 +191,10 @@ class Gamba(commands.Cog, name="Gamba"):
             for loser in losers:
                 if loser in user_map:
                     user = user_map[loser]
-                    user.balance -= user.poll_gamba
+                    embed.add_field(name=user.name, value=f"Lost: {user.poll_gamba}", inline=False)
                     user.total_lost += user.poll_gamba
                     user.total_bets += 1
                     user.poll_gamba = 0
-                    embed.add_field(name=user.name, value=f"Lost: {user.poll_gamba}", inline=False)
 
 
             # Commit transactions
