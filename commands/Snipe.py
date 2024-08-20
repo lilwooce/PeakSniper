@@ -167,7 +167,7 @@ class Snipe(commands.Cog):
         sniped = s.recently_deleted_message
         timestamp = s.recently_deleted_timestamp
         images = s.recently_deleted_images.split("/")
-        sniper = await self.bot.get_user(s.recently_deleted_user)
+        sniper = await self.bot.fetch_user(s.recently_deleted_user)
         u = session.query(User.User).filter_by(user_id=sniper).first()
         reply = s.recently_deleted_reply
 
@@ -218,7 +218,7 @@ class Snipe(commands.Cog):
         messageA = s.recently_edited_after_message
         timestamp = s.recently_edited_timestamp
         images = s.recently_edited_images.split("/")
-        snipee = await self.bot.get_user(s.recently_edited_user)
+        snipee = await self.bot.fetch_user(s.recently_edited_user)
         reply = s.recently_edited_reply
 
         hehe = False
