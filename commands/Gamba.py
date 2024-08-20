@@ -26,7 +26,7 @@ class Gamba(commands.Cog, name="Gamba"):
         self.minCoinBid = 5
         self.cfMulti = 2
         self.client = client
-        self.channel = self.client.get_channel(773916648317911140)
+        
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
     async def coinflip(self, ctx, bet, amount: int):
@@ -37,6 +37,7 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         u = session.query(User.User).filter_by(user_id=author.id).first()
         bal = u.balance
+        c = self.client.get_channel(773916648317911140)
 
         if(amount > int(bal)):
             await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
@@ -45,7 +46,7 @@ class Gamba(commands.Cog, name="Gamba"):
             await ctx.send("Bet more money you poor fuck. The minimum bet is 5 discoins.")
             return
         if((bet.lower() not in heads) or (bet.lower() not in tails)):
-            self.channel.send(bet.lower())
+            c.send(bet.lower())
             await ctx.send("Please type heads or tails")
             return
 
