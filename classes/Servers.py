@@ -31,8 +31,8 @@ class Servers(Base):
 
 
 
-    def __init__(self, server):
-        self.server_id = int(server.id)
+    def __init__(self, server, id):
+        self.server_id = id
         self.name = server.name
         self.prefix = default_prefix
         self.currently_in_server = True
