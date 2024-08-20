@@ -106,6 +106,7 @@ class Gamba(commands.Cog, name="Gamba"):
 
     @commands.hybrid_command()
     async def setpollgamba(self, ctx, amount: int):
+        amount = int(amount)
         author = ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
