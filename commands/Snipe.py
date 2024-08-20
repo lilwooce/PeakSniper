@@ -138,9 +138,6 @@ class Snipe(commands.Cog):
                 msg += f"{first} was the first to reach {firstTo} rolls"
 
         await ctx.channel.send(msg)
-        
-
-
     
     async def getReply(self, m):
         msg = "Not replying to anything"
@@ -173,6 +170,8 @@ class Snipe(commands.Cog):
         sniper = await self.bot.fetch_user(s.recently_deleted_user)
         u = session.query(User.User).filter_by(user_id=sniper.id).first()
         reply = s.recently_deleted_reply
+        channel = self.bot.get_channel(773916648317911140)
+        await channel.send(images)
 
         hehe = False
         if (hehe==False):
@@ -195,7 +194,7 @@ class Snipe(commands.Cog):
                 for img in images:
                     embed.set_image(url=img)
                     embed.add_field(name="File Name", value=img, inline=True)
-            if(reply):
+            if(reply != ""):
                 embed.add_field(name="Reply", value=reply, inline=True)  
             
             
@@ -246,7 +245,7 @@ class Snipe(commands.Cog):
                     embedA.add_field(name="File Name", value=img, inline=True)
                     embed.set_image(url=img)
                     embed.add_field(name="File Name", value=img, inline=True)
-            if(reply):
+            if(reply != ""):
                 embed.add_field(name="Reply", value=reply, inline=True)  
                 embedA.add_field(name="Reply", value=reply, inline=True)  
                 
