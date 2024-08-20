@@ -164,20 +164,20 @@ class Gamba(commands.Cog, name="Gamba"):
         user_map = {user.user_id: user for user in users}
         
         for winner in winners:
-            if winner.id in user_map:
-                user = user_map[winner.id]
+            if winner in user_map:
+                user = user_map[winner]
                 total_bet += user.poll_gamba
                 total_winners += user.poll_gamba
         
         for loser in losers:
-            if loser.id in user_map:
-                user = user_map[loser.id]
+            if loser in user_map:
+                user = user_map[loser]
                 total_bet += user.poll_gamba
         
         if total_winners > 0:
             for winner in winners:
-                if winner.id in user_map:
-                    user = user_map[winner.id]
+                if winner in user_map:
+                    user = user_map[winner]
                     won_amount = total_bet * (user.poll_gamba / total_winners)
                     user.balance += won_amount
                     embed.add_field(name=user.name, value=f"Won: {won_amount}", inline=False)
