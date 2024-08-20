@@ -147,6 +147,7 @@ class Gamba(commands.Cog, name="Gamba"):
         # Initialize totals
         total_bet = 0
         total_winners = 0
+        total_losers = 0
         winners = []
         losers = []
         
@@ -173,15 +174,25 @@ class Gamba(commands.Cog, name="Gamba"):
             if loser in user_map:
                 user = user_map[loser]
                 total_bet += user.poll_gamba
-        
-        if total_winners > 0:
+                total_losers += user.poll_gamba
+
+        if total_winners > 0 or total_losers > 0:
             for winner in winners:
                 if winner in user_map:
                     user = user_map[winner]
                     won_amount = total_bet * (user.poll_gamba / total_winners)
                     user.balance += won_amount
+                    user.poll_gamba = 0
                     embed.add_field(name=user.name, value=f"Won: {won_amount}", inline=False)
-        
+            
+            for loser in losers:
+                if loser in user_map:
+                    user = user_map[loser]
+                    user.balance -= user.poll_gamba
+                    user.poll_gamba = 0
+                    embed.add_field(name=user.name, value=f"Lost: {user.poll_gamba}", inline=False)
+
+
             # Commit transactions
             session.commit()
             embed.description = "Payouts processed successfully!"
