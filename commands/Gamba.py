@@ -46,7 +46,7 @@ class Gamba(commands.Cog, name="Gamba"):
             await ctx.send("Bet more money you poor fuck. The minimum bet is 5 discoins.")
             return
         if((bet.lower() not in heads) or (bet.lower() not in tails)):
-            c.send(bet.lower())
+            await c.send(bet.lower())
             await ctx.send("Please type heads or tails")
             return
 
