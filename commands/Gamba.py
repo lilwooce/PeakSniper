@@ -26,6 +26,7 @@ class Gamba(commands.Cog, name="Gamba"):
         self.minCoinBid = 5
         self.cfMulti = 2
         self.client = client
+        self.channel = self.bot.get_channel(773916648317911140)
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
     async def coinflip(self, ctx, bet, amount: int):
@@ -39,10 +40,14 @@ class Gamba(commands.Cog, name="Gamba"):
 
         if(amount > int(bal)):
             await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
+            return
         if (amount < self.minCoinBid):
             await ctx.send("Bet more money you poor fuck. The minimum bet is 5 discoins.")
+            return
         if((bet.lower() not in heads) or (bet.lower() not in tails)):
+            self.channel.send(bet.lower())
             await ctx.send("Please type heads or tails")
+            return
 
         result = random.randint(0,1)
         if (result == 0 and bet.lower() in heads):
@@ -78,8 +83,10 @@ class Gamba(commands.Cog, name="Gamba"):
 
         if (amount > bal):
             await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
+            return
         if(bet < 1 and bet > 100):
             await ctx.send("Please choose a number between 1 and 100 for your bet. Including 1 and 100.")
+            return
 
         result = random.randint(1,100)
         if (result == bet):
@@ -106,10 +113,13 @@ class Gamba(commands.Cog, name="Gamba"):
 
         if not amount:
             await ctx.send("Please set an amount for your next poll gamble")
+            return
         if amount > u.balance:
             await ctx.send("You are too poor")
+            return
         if amount <= 0:
             await ctx.send("Please bet more than 0")
+            return
         
         #set the amount in the database
         u.poll_gamba = amount
