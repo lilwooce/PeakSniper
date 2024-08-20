@@ -123,12 +123,78 @@ class Gamba(commands.Cog, name="Gamba"):
         
         #set the amount in the database
         u.poll_gamba = amount
+        u.balance -= amount
         session.commit()
         session.close()
 
     @commands.hybrid_command()
-    async def payout(self, ctx, poll):
-        return
+    async def payout(self, ctx, poll: discord.Message):
+        # Check if the poll is finalized
+        p = poll.poll
+        if not p.is_finalized():
+            await ctx.send("The poll given has not finished yet. Please finalize the results of the poll first.")
+            return
+        
+        # Prepare to query the database
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        embed = discord.Embed(title="Payout Results")
+        
+        # Initialize totals
+        total_bet = 0
+        total_winners = 0
+        correct_answer = p.get_answer()
+        
+        # Fetch all users in one go to reduce database queries
+        user_ids = set()
+        for answer in p.answers:
+            if answer == correct_answer:
+                user_ids.update(voter.id async for voter in answer.voters())
+            else:
+                user_ids.update(voter.id async for voter in answer.voters())
+        
+        users = session.query(User.User).filter(User.User.user_id.in_(user_ids)).all()
+        user_map = {user.user_id: user for user in users}
+        
+        winners = []
+        losers = []
+
+        for answer in p.answers:
+            if answer == correct_answer:
+                winners.extend([voter for voter in answer.voters()])
+            else:
+                losers.extend([voter for voter in answer.voters()])
+        
+        for winner in winners:
+            if winner.id in user_map:
+                user = user_map[winner.id]
+                total_bet += user.poll_gamba
+                total_winners += user.poll_gamba
+        
+        for loser in losers:
+            if loser.id in user_map:
+                user = user_map[loser.id]
+                total_bet += user.poll_gamba
+        
+        if total_winners > 0:
+            for winner in winners:
+                if winner.id in user_map:
+                    user = user_map[winner.id]
+                    won_amount = total_bet * (user.poll_gamba / total_winners)
+                    user.balance += won_amount
+                    embed.add_field(name=user.name, value=f"Won: {won_amount}", inline=False)
+        
+            # Commit transactions
+            session.commit()
+            embed.description = "Payouts processed successfully!"
+        else:
+            embed.description = "No winners to process payouts."
+        
+        await ctx.send(embed=embed)
+        session.commit()
+        session.close()
+        
+        
 
 async def setup(bot):
     await bot.add_cog(Gamba(bot)) 
