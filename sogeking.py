@@ -59,9 +59,7 @@ class Client(commands.Bot):
     async def check_server(self, guild):
         if not self.session.query(Servers.Servers).filter_by(server_id=guild.id).first():
             print(f"guild not in database {guild.name}")
-            u = Servers.Servers(server=guild, id=guild.id)
-            channel=client.get_channel(773916648317911140)
-            await channel.send(guild.id)
+            u = Servers.Servers(server=guild)
             self.session.add(u)
             self.session.commit()
 
