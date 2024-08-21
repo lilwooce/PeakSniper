@@ -218,7 +218,7 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
         am = self.work_salary + random.randint(1, self.work_salary)
-        u.bal += am
+        u.balance += am
         session.commit()
         session.close()
         await ctx.send(f"You have made {am} from working!")
