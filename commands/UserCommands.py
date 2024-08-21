@@ -113,6 +113,18 @@ class UserCommands(commands.Cog):
         embed.add_field(name="Poll Gamba", value=f"**{u.poll_gamba}** discoins ", inline=False)
 
         await ctx.send(embed=embed)
+    
+    @commands.hybrid_command(description="")
+    @commands.check(hasAccount)
+    async def bal(self, ctx, user: discord.User=None):
+        user = user or ctx.author
+        
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        u = session.query(User.User).filter_by(user_id=user.id).first()
+        balance = u.balance
+
+        await ctx.send(f"**{user.name}** has ```{balance}``` discoins")
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
