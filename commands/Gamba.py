@@ -25,6 +25,7 @@ class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
         self.minCoinBid = 5
         self.cfMulti = 2
+        self.work_salary = 10
         self.client = client
         
 
@@ -137,7 +138,7 @@ class Gamba(commands.Cog, name="Gamba"):
         # Check if the poll is finalized
         p = poll.poll
         poll_creator = poll.author.id
-        if ctx.author.id !=poll_creator:
+        if ctx.author.id != poll_creator:
             await ctx.send("You do not have the right")
             return
         
@@ -206,8 +207,21 @@ class Gamba(commands.Cog, name="Gamba"):
         else:
             embed.description = "No winners to process payouts."
         
+
         await ctx.send(embed=embed)
         
+
+    @commands.hybrid_command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def work(self, ctx):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+        am = self.work_salary + random.randint(1, self.work_salary)
+        u.bal += am
+        session.commit()
+        session.close()
+        await ctx.send(f"You have made {am} from working!")
         
 
 async def setup(bot):
