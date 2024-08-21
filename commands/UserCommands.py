@@ -124,7 +124,7 @@ class UserCommands(commands.Cog):
         u = session.query(User.User).filter_by(user_id=user.id).first()
         balance = u.balance
 
-        await ctx.send(f"**{user.name}** has ```{balance}``` discoins")
+        await ctx.send(f"**{user.name}** has `{balance}` discoins")
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
