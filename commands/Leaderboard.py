@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+from discord import app_commands
 from dotenv import load_dotenv
 from sqlalchemy import desc
 from sqlalchemy.orm import sessionmaker
