@@ -20,6 +20,7 @@ heads = os.getenv('tails')
 
 def validCheck(sniper):
     server = sniper.guild
+    logging.warning(server.id)
     Session = sessionmaker(bind=database.engine)
     session = Session()
     
