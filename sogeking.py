@@ -195,7 +195,18 @@ async def on_message_edit(message_before, message_after):
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.send('This command is on a %.2fs cooldown' % error.retry_after)
-    raise error  # re-raise the error so all the errors will still show up in console
+    elif isinstance(error, commands.MissingPermissions):
+        await ctx.send("You don't have the necessary permissions to use this command.")
+    elif isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(f"Missing arguments: {error.param}")
+    else:
+        # Log the error to console for other types of errors
+        print(f"An error occurred: {error}")
+        traceback.print_exception(type(error), error, error.__traceback__)
+
+        # Send a generic error message to the user
+        await ctx.send("An unexpected error occurred. Please try again.")
+
 
 
 class MyHelpCommand(commands.MinimalHelpCommand):
