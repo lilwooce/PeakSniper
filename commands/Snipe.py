@@ -18,7 +18,7 @@ load_dotenv()
 tails = os.getenv('heads')
 heads = os.getenv('tails')
 
-def validCheck(sniper):
+def validCheck(sniper, num):
     server = sniper.guild
     logging.warning(server.id)
     Session = sessionmaker(bind=database.engine)
@@ -28,6 +28,10 @@ def validCheck(sniper):
         u = session.query(User.User).filter_by(user_id=sniper.id).first()
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
         if sniper.id != s.recently_deleted_user and u.last_snipe != s.recently_deleted_user:
+            u.balance += num
+            u.total_earned += num
+            u.total_snipes += 1
+            u.last_snipe = s.recently_deleted_user
             return True
         return False
     finally:
@@ -39,9 +43,7 @@ def validSnipe(user, num):
     
     try:
         u = session.query(User.User).filter_by(user_id=user.id).first()
-        u.balance += num
-        u.total_earned += num
-        u.total_snipes += 1
+        
         session.commit()
     finally:
         session.close()
@@ -188,8 +190,8 @@ class Snipe(commands.Cog):
             if reply:
                 embed.add_field(name="Reply", value=reply, inline=True)
             
-            if validCheck(user):
-                validSnipe(user, self.snipeVal)
+            if validCheck(user, self.snipeVal):
+                embed.add_field(name="Successful Snipe", description=f"You earned {self.snipeVal} discoins")
 
             await ctx.channel.send(embed=embed)
         finally:
