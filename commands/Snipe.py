@@ -27,11 +27,12 @@ def validCheck(sniper, num):
     try:
         u = session.query(User.User).filter_by(user_id=sniper.id).first()
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
-        if sniper.id != s.recently_deleted_user and u.last_snipe != s.recently_deleted_user:
+        if sniper.id != s.recently_deleted_user and s.recently_deleted_sniper == 0:
             u.balance += num
             u.total_earned += num
             u.total_snipes += 1
             u.last_snipe = s.recently_deleted_user
+            s.recently_deleted_sniper = sniper.id
             return True
         return False
     finally:
@@ -51,7 +52,7 @@ def validSnipe(user, num):
 class Snipe(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.snipeVal = 5
+        self.snipeVal = 50
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -81,6 +82,7 @@ class Snipe(commands.Cog):
                 s.recently_deleted_images = ""
 
             s.recently_deleted_reply = message.jump_url if await self.checkReply(message) else ""
+            s.recently_deleted_sniper = 0
             
             session.commit()
         finally:
@@ -111,7 +113,7 @@ class Snipe(commands.Cog):
                 s.recently_edited_images = ""
 
             s.recently_edited_reply = messageBefore.jump_url if await self.checkReply(messageBefore) else ""
-
+            s.recently_edited_sniper = 0
             session.commit()
         finally:
             session.close()
@@ -191,7 +193,7 @@ class Snipe(commands.Cog):
                 embed.add_field(name="Reply", value=reply, inline=True)
             
             if validCheck(user, self.snipeVal):
-                embed.add_field(name="Successful Snipe", value=f"You earned {self.snipeVal} discoins", inline=True)
+                embed.add_field(name="Successful Snipe", value=f"You were the first to snipe this message and earned {self.snipeVal} discoins", inline=True)
 
             await ctx.channel.send(embed=embed)
         finally:
