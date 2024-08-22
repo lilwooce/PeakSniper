@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from classes import Servers, User, database
 from .Config import hasAccount
 from datetime import datetime, timedelta
+import logging
 
 class UserCommands(commands.Cog):
     def __init__(self, bot):
@@ -149,6 +150,7 @@ class UserCommands(commands.Cog):
 
         try:
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            logging.warning(u.daily_cooldown)
             dailyCD = u.daily_cooldown
             now = datetime.now()
             
