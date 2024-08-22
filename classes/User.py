@@ -1,6 +1,6 @@
 import json
 import random
-from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger
+from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -24,6 +24,8 @@ class User(Base):
     snipe_message = Column("snipe_message", String(200))
     poll_gamba = Column("poll_gamba", Integer)
     last_snipe = Column("last_snipe", Integer)
+    daily_cooldown = Column("daily_cooldown", DATETIME)
+    weekly_cooldown = Column("weekly_cooldown", DATETIME)
 
     def __init__(self, user):
         self.name = user.name
@@ -39,6 +41,9 @@ class User(Base):
         self.snipe_message = default_snipe_message
         self.poll_gamba = 0
         self.last_snipe = 0
+        self.daily_cooldown = ""
+        self.weekly_cooldown = ""
+
     
     def adjust_snipes(self, user, amount):
         return
