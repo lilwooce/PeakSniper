@@ -24,7 +24,9 @@ def validCheck(sniper):
     
     try:
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
-        if not s or sniper.id == s.recently_deleted_user:
+        if not s:
+            return False
+        if sniper.id == s.recently_deleted_user:
             return False
         return True
     finally:
