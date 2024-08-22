@@ -33,6 +33,7 @@ def validCheck(sniper, num):
             u.total_snipes += 1
             u.last_snipe = s.recently_deleted_user
             s.recently_deleted_sniper = sniper.id
+            session.commit()
             return True
         return False
     finally:
