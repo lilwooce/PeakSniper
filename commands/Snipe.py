@@ -12,6 +12,7 @@ import requests
 from sqlalchemy.orm import sessionmaker
 from .Config import hasAccount
 from classes import Servers, User, database
+import logging
 
 load_dotenv()
 tails = os.getenv('heads')
@@ -24,6 +25,7 @@ def validCheck(sniper):
     
     try:
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
+        logging.warning(f"sniper id is {sniper.id}\n recently deleted is {s.recently_deleted}")
         if not s:
             return False
         if sniper.id == s.recently_deleted_user:
