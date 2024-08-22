@@ -26,10 +26,6 @@ def validCheck(sniper):
     
     try:
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
-        logging.warning(f"sniper id is {sniper.id}\n recently deleted is {s.recently_deleted_user}")
-        logging.warning(f"{sniper.id} == {s.recently_deleted_user} is {sniper.id == s.recently_deleted_user}")
-        if not s:
-            return False
         if sniper.id == s.recently_deleted_user:
             return False
         return True
