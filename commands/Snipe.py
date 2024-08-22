@@ -38,11 +38,10 @@ def validSnipe(user, num):
     
     try:
         u = session.query(User.User).filter_by(user_id=user.id).first()
-        if u:
-            u.balance += num
-            u.total_earned += num
-            u.total_snipes += 1
-            session.commit()
+        u.balance += num
+        u.total_earned += num
+        u.total_snipes += 1
+        session.commit()
     finally:
         session.close()
 
@@ -189,6 +188,7 @@ class Snipe(commands.Cog):
                 embed.add_field(name="Reply", value=reply, inline=True)
             
             if validCheck(sniper):
+                logging.warning("validCheck is true")
                 validSnipe(sniper, self.snipeVal)
 
             await ctx.channel.send(embed=embed)
