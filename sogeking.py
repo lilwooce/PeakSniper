@@ -191,11 +191,11 @@ async def on_message_edit(message_before, message_after):
 
     await channel.send(embed=embed)
 
-    @client.event
-    async def on_command_error(ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send('This command is on a %.2fs cooldown' % error.retry_after)
-        raise error  # re-raise the error so all the errors will still show up in console
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send('This command is on a %.2fs cooldown' % error.retry_after)
+    raise error  # re-raise the error so all the errors will still show up in console
 
 
 class MyHelpCommand(commands.MinimalHelpCommand):
