@@ -191,7 +191,7 @@ class Snipe(commands.Cog):
                 embed.add_field(name="Reply", value=reply, inline=True)
             
             if validCheck(user, self.snipeVal):
-                embed.add_field(name="Successful Snipe", description=f"You earned {self.snipeVal} discoins")
+                embed.add_field(name="Successful Snipe", value=f"You earned {self.snipeVal} discoins", inline=True)
 
             await ctx.channel.send(embed=embed)
         finally:
