@@ -11,6 +11,8 @@ import logging
 class UserCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.dailyFunds = 250
+        self.weeklyFunds = 2500
 
     @commands.Cog.listener()
     async def on_ready(self):
