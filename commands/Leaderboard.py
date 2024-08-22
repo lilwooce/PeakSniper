@@ -11,7 +11,7 @@ from classes import User, Servers, database
 import io
 import asyncio
 from discord import app_commands, File
-from sqlalchemy import update
+from sqlalchemy import update, desc
 from sqlalchemy.orm import sessionmaker
 from classes.database import engine
 import random
@@ -29,7 +29,7 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
         guild = interaction.guild
         users = [member.id for member in guild.members if not member.bot]
         embed = discord.Embed(title=f"Richest Users in {guild.name}")
-        database_users = session.query(User.User).order_by(User.User.balance).all()
+        database_users = session.query(User.User).order_by(desc(User.User.balance)).all()
         for u in database_users:
             print(f"{u.name}: {u.balance}")
             if u.user_id in users:
