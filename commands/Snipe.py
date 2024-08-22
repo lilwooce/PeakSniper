@@ -25,12 +25,10 @@ def validCheck(sniper):
     session = Session()
     
     try:
+        u = session.query(User.User).filter_by(user_id=sniper.id).first()
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
-        logging.warning(f"sniper is {sniper.id} \nrecently deleted is {s.recently_deleted_user}")
-        if int(sniper.id) != int(s.recently_deleted_user):
-            logging.warning("returning true")
+        if sniper.id != s.recently_deleted_user and u.last_snipe != s.recently_deleted_user:
             return True
-        logging.warning("returning false")
         return False
     finally:
         session.close()
@@ -190,9 +188,7 @@ class Snipe(commands.Cog):
             if reply:
                 embed.add_field(name="Reply", value=reply, inline=True)
             
-            logging.warning("Checking if valid snipe")
             if validCheck(user):
-                logging.warning("validCheck is true")
                 validSnipe(user, self.snipeVal)
 
             await ctx.channel.send(embed=embed)

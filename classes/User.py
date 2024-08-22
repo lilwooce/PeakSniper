@@ -23,6 +23,7 @@ class User(Base):
     total_snipes = Column("total_snipes", Integer)
     snipe_message = Column("snipe_message", String(200))
     poll_gamba = Column("poll_gamba", Integer)
+    last_snipe = Column("last_snipe", Integer)
 
     def __init__(self, user):
         self.name = user.name
@@ -37,6 +38,7 @@ class User(Base):
         self.total_snipes = 0
         self.snipe_message = default_snipe_message
         self.poll_gamba = 0
+        self.last_snipe = 0
     
     def adjust_snipes(self, user, amount):
         return
