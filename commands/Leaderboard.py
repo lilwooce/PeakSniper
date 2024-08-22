@@ -33,7 +33,7 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
         for u in database_users:
             if u.id in users:
                 embed.add_field(name=u.name, value=f"{u.balance}", inline=False)
-        await interaction.response.send_message(embed=embed)
+        await interaction.response.send_message(f"users: {users}\n database_users: {database_users}",embed=embed)
 
         
 
