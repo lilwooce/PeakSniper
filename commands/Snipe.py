@@ -26,11 +26,11 @@ def validCheck(sniper):
     
     try:
         s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
-        if sniper.id == s.recently_deleted_user:
-            logging.warning("returning false")
-            return False
-        logging.warning("returning true")
-        return True
+        if int(sniper.id) != int(s.recently_deleted_user):
+            logging.warning("returning true")
+            return True
+        logging.warning("returning false")
+        return False
     finally:
         session.close()
 
