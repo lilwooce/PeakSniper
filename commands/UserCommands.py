@@ -146,7 +146,6 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
-<<<<<<< Updated upstream
     @commands.hybrid_command()
     async def daily(self, ctx):
         Session = sessionmaker(bind=database.engine)
@@ -210,10 +209,5 @@ class UserCommands(commands.Cog):
             session.close()
 
 
-=======
-    @app_commands.command(hidden=True)
-    async def upgrade(self, interaction: discord.Interaction):
-        return
->>>>>>> Stashed changes
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
