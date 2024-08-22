@@ -9,11 +9,6 @@ import asyncio
 from .Config import hasAccount
 from classes import Servers, User, Gift, Game, database
 
-load_dotenv()
-updateUser = os.getenv('UPDATE_USER')
-addUser = os.getenv('ADD_USER')
-getUser = os.getenv('GET_USER')
-
 class Games(commands.Cog, name="Games"):
     def __init__(self, bot):
         self.bot = bot

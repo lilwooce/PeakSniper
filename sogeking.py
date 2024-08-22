@@ -16,13 +16,6 @@ from sqlalchemy.orm import sessionmaker
 from classes import Servers, User, database
 
 load_dotenv()
-header={"User-Agent": "XY"}
-getUser = os.getenv('GET_USER')
-updateUser = os.getenv('UPDATE_USER')
-addUser = os.getenv('ADD_USER')
-updatePURL = os.getenv('UP_URL')
-removePURL = os.getenv('RP_URL')
-getPURL = os.getenv('GP_URL')
 token = os.getenv('DISCORD_TOKEN')
 
 class Client(commands.Bot):
@@ -43,9 +36,9 @@ class Client(commands.Bot):
                 try:
                     await self.load_extension(extension)
                 except commands.ExtensionAlreadyLoaded:
-                    await print("command is loaded")
+                    print("Command is already loaded")
                 except commands.ExtensionNotFound:
-                    await print("Cog not found")
+                    print("Cog not found")
         try:
             synced = await self.tree.sync()
             print(f'Successfully synced {len(synced)} command(s)')
@@ -55,17 +48,23 @@ class Client(commands.Bot):
     async def check_user(self, user):
         if user.bot:
             return
-        if not self.session.query(User.User).filter_by(user_id=user.id).first():
-            print(f"user not in database {user.name}")
-            u = User.User(user=user)
-            self.session.add(u)
+        try:
+            if not self.session.query(User.User).filter_by(user_id=user.id).first():
+                print(f"user not in database {user.name}")
+                u = User.User(user=user)
+                self.session.add(u)
+                self.session.commit()
+        finally:
             self.session.commit()
 
     async def check_server(self, guild):
-        if not self.session.query(Servers.Servers).filter_by(server_id=guild.id).first():
-            print(f"guild not in database {guild.name}")
-            u = Servers.Servers(server=guild)
-            self.session.add(u)
+        try:
+            if not self.session.query(Servers.Servers).filter_by(server_id=guild.id).first():
+                print(f"guild not in database {guild.name}")
+                u = Servers.Servers(server=guild)
+                self.session.add(u)
+                self.session.commit()
+        finally:
             self.session.commit()
 
     async def account_check(self):
@@ -80,13 +79,12 @@ class Client(commands.Bot):
         print(f"Discord Version {discord.__version__}")
         print(f"Python Version {str(platform.python_version())}")
         
-        #check to make sure everyone in every server and every server is in the database
+        # Check to make sure everyone in every server and every server is in the database
         await self.account_check()
 
         logging.warning("Now logging..")
 
-        # get the initial world count on startup
-        
+        # Get the initial world count on startup
         self.server_count = self.session.query(Servers.Servers).count()
 
         self.update_bot_status.start()
@@ -99,21 +97,6 @@ class Client(commands.Bot):
 
 client = Client()
 client.run(os.getenv("DISCORD_TOKEN"))
-
-# @bot.check
-# async def checkBanned(ctx):
-#     print("checking if user is banned")
-#     userID = ctx.author.id
-#     member = await ctx.guild.fetch_member(userID)
-#     result = requests.get(getUser, params={"f1": "blacklisted", "f2": userID}, headers=header)
-#     reason = requests.get(getUser, params={"f1": "reason", "f2": userID}, headers=header)
-#     reason = reason.text.replace('"', '')
-#     check = result.text.replace('"', '')
-#     if (check == str(1)):
-#         await ctx.send(f"{member.mention} you have been banned from using commands until future notice. The reason for your ban is as follows: [{reason}]")
-#         return False
-#     else:
-#         return True
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -134,12 +117,12 @@ async def on_raw_reaction_add(payload):
 
 @client.event
 async def on_guild_join(guild):
-    #add server to database
+    # Add server to database
     return
 
 @client.event
 async def on_guild_remove(guild):
-    #remove "currentlyUsingBot"
+    # Remove "currentlyUsingBot"
     return
             
 
@@ -158,21 +141,22 @@ async def on_message(message):
 
 @client.event
 async def on_message_delete(message):
-    #check server and update database to reflect current most recently deleted message
-    if (message.author.bot): return
+    # Check server and update database to reflect current most recently deleted message
+    if message.author.bot:
+        return
     embed=discord.Embed(title=f"{message.author.name}#{message.author.discriminator} deleted a message from #{message.channel.name}", description="")
-    if (message.content):
-        if (len(message.content) > 1024):
-            for i in range(0, (len(message.content)), 1024):
-                if (i + 1024 < len(message.content)):
-                    embed.add_field(name= "Caught!" ,value=message.content[i:i+1024], inline=True)        
+    if message.content:
+        if len(message.content) > 1024:
+            for i in range(0, len(message.content), 1024):
+                if i + 1024 < len(message.content):
+                    embed.add_field(name="Caught!", value=message.content[i:i+1024], inline=True)        
                 else:
-                    embed.add_field(name= "Caught!" ,value=message.content[i:len(message.content)], inline=True)        
+                    embed.add_field(name="Caught!", value=message.content[i:len(message.content)], inline=True)        
         else:
-            embed.add_field(name= "Caught!" ,value=message.content, inline=True)
+            embed.add_field(name="Caught!", value=message.content, inline=True)
     else:
-        embed.add_field(name= "This is the message that has been deleted" ,value="No Message Sent", inline=True)
-    if (message.attachments):
+        embed.add_field(name="This is the message that has been deleted", value="No Message Sent", inline=True)
+    if message.attachments:
         embed.set_image(url=message.attachments[0].url)
         embed.add_field(name="File Name", value=message.attachments[0].url, inline=True)
     channel = client.get_channel(875117826581626891)
@@ -181,29 +165,31 @@ async def on_message_delete(message):
 
 @client.event
 async def on_message_edit(message_before, message_after):
-    #same as above on message delete
+    # Same as above on message delete
     channel=client.get_channel(875122190931075122)
-    if (message_before.author.bot): return
-    if (message_after.author.bot): return
+    if message_before.author.bot:
+        return
+    if message_after.author.bot:
+        return
     embed=discord.Embed(title=f"{message_before.author.name} edited a message from #{message_before.channel.name} in {message_before.guild.name}", description="")
     embedA=discord.Embed(title=f"{message_after.author.name} edited a message from #{message_after.channel.name} in {message_after.guild.name}", description="")
-    if (message_before.content):
-        embed.add_field(name= message_before.content ,value="This is the message before the edit", inline=True)
+    if message_before.content:
+        embed.add_field(name=message_before.content, value="This is the message before the edit", inline=True)
     else:
-        embed.add_field(name="No content" ,value="This is the message before the edit", inline=True)
-    if (message_after.content):
-        embed.add_field(name= message_after.content ,value="This is the message after the edit", inline=True)
+        embed.add_field(name="No content", value="This is the message before the edit", inline=True)
+    if message_after.content:
+        embed.add_field(name=message_after.content, value="This is the message after the edit", inline=True)
     else:
-        embed.add_field(name="No content" ,value="This is the message after the edit", inline=True)
-    if (message_before.attachments):
+        embed.add_field(name="No content", value="This is the message after the edit", inline=True)
+    if message_before.attachments:
         embed.set_image(url=message_before.attachments[0].url)
         embed.add_field(name="File Name", value=message_before.attachments[0].url, inline=True)
-    if (message_after.attachments):
+    if message_after.attachments:
         embedA.set_image(url=message_after.attachments[0].url)
         embed.add_field(name="File Name", value=message_after.attachments[0].url, inline=True)
-        await channel.send(channel, embed=embedA)
+        await channel.send(embed=embedA)
 
-    await channel.send(channel, embed=embed)
+    await channel.send(embed=embed)
 
 class MyHelpCommand(commands.MinimalHelpCommand):
     async def send_pages(self):

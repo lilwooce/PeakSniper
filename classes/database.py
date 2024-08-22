@@ -16,5 +16,5 @@ database = os.getenv("database")
 port = os.getenv("port")
 # engine = create_engine(f"mysql+pymysql://{user}:{pwd}@{host}/{database}", isolation_level="READ COMMITTED") # Use for MariaDB
 print(f"user: {user}, pwd: {pwd}, host: {host}, port: {port}, database: {database}")
-engine = create_engine(f"mysql+mysqlconnector://{user}:{pwd}@{host}:{port}/{database}", isolation_level="READ COMMITTED") # Use for MySQL
+engine = create_engine(f"mysql+mysqlconnector://{user}:{pwd}@{host}:{port}/{database}", pool_pre_ping=True, isolation_level="READ COMMITTED") # Use for MySQL
 Base.metadata.create_all(engine)

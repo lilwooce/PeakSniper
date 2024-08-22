@@ -7,31 +7,25 @@ from sqlalchemy.orm import sessionmaker
 
 from classes import Servers, User, database
 
-load_dotenv()
-updatePURL = os.getenv('UP_URL')
-removePURL = os.getenv('RP_URL')
-getPURL = os.getenv('GP_URL')
-updateUser = os.getenv('UPDATE_USER')
-addUser = os.getenv('ADD_USER')
-getUser = os.getenv('GET_USER')
-header={"User-Agent": "XY"}
-
 async def addAccount(user, session):
     u = User.User(user=user)
     session.add(u)
     session.commit()
     
-    
 async def hasAccount(ctx):
     user = ctx.author
     Session = sessionmaker(bind=database.engine)
     session = Session()
-    u = session.query(User.User).filter_by(user_id=user.id).first()
-    if u:
-        return True
-    else:
-        await addAccount(user, session)
-        return True
+    try:
+        u = session.query(User.User).filter_by(user_id=user.id).first()
+        if u:
+            return True
+        else:
+            await addAccount(user, session)
+            return True
+    finally:
+        session.commit()
+        session.close()
 
 class Config(commands.Cog, name="Configuration"):
     def __init__(self, bot):
@@ -43,14 +37,16 @@ class Config(commands.Cog, name="Configuration"):
 
     @commands.command(description="Allows the user to change the prefix of the bot")
     async def prefix(self, ctx, new_prefix=None):
-        if(new_prefix):
+        if new_prefix:
             Session = sessionmaker(bind=database.engine)
             session = Session()
-            s = session.query(Servers.Servers).filter_by(server_id=ctx.guild.id).first()
-            s.prefix = new_prefix
-            session.commit()
-            
-            await ctx.send(f"Successfully changed prefix to {new_prefix}")
+            try:
+                s = session.query(Servers.Servers).filter_by(server_id=ctx.guild.id).first()
+                s.prefix = new_prefix
+                await ctx.send(f"Successfully changed prefix to {new_prefix}")
+            finally:
+                session.commit()
+                session.close()
         else:
             await ctx.send("Please input a new prefix.")
 
