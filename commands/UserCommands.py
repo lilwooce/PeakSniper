@@ -1,5 +1,6 @@
 from discord.ext import commands
 import discord
+from discord import app_commands
 from dotenv import load_dotenv
 import os
 from sqlalchemy.orm import sessionmaker
@@ -78,6 +79,7 @@ class UserCommands(commands.Cog):
             embed.add_field(name="Total Given", value=f"**{u.total_gifted}** discoins given to other players", inline=False)
             embed.add_field(name="Bets Made", value=f"**{u.total_bets}** gambles attempted", inline=False)
             embed.add_field(name="Messages Sniped", value=f"**{u.total_snipes}** messages sniped", inline=False)
+            embed.add_field(name="Messages Sniped", value=f"**{u.total_snipes}** unique messages sniped", inline=False)
 
             await ctx.channel.send(embed=embed)
         finally:
@@ -145,6 +147,7 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
+<<<<<<< Updated upstream
     @commands.hybrid_command()
     async def daily(self, ctx):
         Session = sessionmaker(bind=database.engine)
@@ -208,5 +211,10 @@ class UserCommands(commands.Cog):
             session.close()
 
 
+=======
+    @app_commands.command(hidden=True)
+    async def upgrade(self, interaction: discord.Interaction):
+        return
+>>>>>>> Stashed changes
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))

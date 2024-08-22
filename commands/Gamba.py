@@ -14,6 +14,7 @@ class Gamba(commands.Cog, name="Gamba"):
         self.client = client
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
+    @commands.cooldown(1, .5, commands.BucketType.user)
     async def coinflip(self, ctx, bet, amount: int):
         heads = ["heads", "head", "h"]
         tails = ["tails", "tail", "t"]
@@ -52,6 +53,7 @@ class Gamba(commands.Cog, name="Gamba"):
             session.close()
 
     @commands.command(description="Lottery style betting functionality, allowing players that have earned coins to pick a number and bet a certain amount to win even more coins.")
+    @commands.cooldown(1, .5, commands.BucketType.user)
     async def bet(self, ctx, bet: int, amount: int):
         author = ctx.author
         Session = sessionmaker(bind=database.engine)
