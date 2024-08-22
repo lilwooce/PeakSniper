@@ -31,9 +31,9 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
         embed = discord.Embed(title=f"Richest Users in {guild.name}")
         database_users = session.query(User.User).order_by(User.User.balance).all()
         for u in database_users:
-            if u.id in users:
+            if u.user_id in users:
                 embed.add_field(name=u.name, value=f"{u.balance}", inline=False)
-        await interaction.response.send_message(f"users: {users}\n database_users: {database_users}",embed=embed)
+        await interaction.response.send_message(embed=embed)
 
         
 
