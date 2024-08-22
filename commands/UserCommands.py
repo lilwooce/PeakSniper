@@ -158,7 +158,7 @@ class UserCommands(commands.Cog):
             
             if (now - dailyCD).days >= 1:
                 u.balance += self.dailyFunds
-                u.amount_earned += self.dailyFunds
+                u.total_earned += self.dailyFunds
                 u.daily_cooldown = now
                 session.commit()  # Commit the changes to the database
                 await ctx.send(f"You have earned {self.dailyFunds} discoins")
@@ -187,7 +187,7 @@ class UserCommands(commands.Cog):
             
             if (now - weeklyCD).days >= 7:
                 u.balance += self.weeklyFunds
-                u.amount_earned += self.weeklyFunds
+                u.total_earned += self.weeklyFunds
                 u.weekly_cooldown = now
                 session.commit()  # Commit the changes to the database
                 await ctx.send(f"You have earned {self.weeklyFunds} discoins")
