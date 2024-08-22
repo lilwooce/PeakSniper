@@ -157,8 +157,12 @@ class Snipe(commands.Cog):
         
         try:
             s = session.query(Servers.Servers).filter_by(server_id=server.id).first()
+            u = session.query(User.User).filter_by(user_id=user.id).first()
             if not s:
                 await ctx.channel.send("No snipes available")
+                return
+            if not u:
+                await ctx.send("User does not have any data")
                 return
 
             guild = await self.bot.fetch_guild(s.server_id)
@@ -170,9 +174,9 @@ class Snipe(commands.Cog):
             embed.timestamp = s.recently_deleted_timestamp
 
             if s.recently_deleted_message:
-                self.add_long_field(embed, user.snipe_message, s.recently_deleted_message)
+                self.add_long_field(embed, u.snipe_message, s.recently_deleted_message)
             else:
-                embed.add_field(name=user.snipe_message, value="No Message Sent", inline=True)
+                embed.add_field(name=u.snipe_message, value="No Message Sent", inline=True)
             
             for img in images:
                 if img:
