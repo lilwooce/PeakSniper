@@ -20,7 +20,7 @@ async def addAccount(user, session):
     u = User.User(user=user)
     session.add(u)
     session.commit()
-    session.close()
+    
     
 async def hasAccount(ctx):
     user = ctx.author
@@ -49,7 +49,7 @@ class Config(commands.Cog, name="Configuration"):
             s = session.query(Servers.Servers).filter_by(server_id=ctx.guild.id).first()
             s.prefix = new_prefix
             session.commit()
-            session.close()
+            
             await ctx.send(f"Successfully changed prefix to {new_prefix}")
         else:
             await ctx.send("Please input a new prefix.")

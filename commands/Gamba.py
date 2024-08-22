@@ -70,7 +70,7 @@ class Gamba(commands.Cog, name="Gamba"):
 
         u.total_bets += 1
         session.commit()
-        session.close()
+        
                     
             
 
@@ -103,7 +103,7 @@ class Gamba(commands.Cog, name="Gamba"):
             await ctx.send(f"You lost. You chose **{bet}** but the bot chose **{result}**. Better luck next time.")
             
         session.commit()
-        session.close()
+        
 
     @commands.hybrid_command()
     async def setpollgamba(self, ctx, amount: int):
@@ -131,7 +131,7 @@ class Gamba(commands.Cog, name="Gamba"):
         u.balance -= amount
         await ctx.send(f"You have set the amount for your next poll gamble to **{amount}**")
         session.commit()
-        session.close()
+        
 
     @commands.hybrid_command()
     async def payout(self, ctx, poll: discord.Message, correct_answer: str):
@@ -212,17 +212,40 @@ class Gamba(commands.Cog, name="Gamba"):
         
 
     @commands.hybrid_command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def work(self, ctx):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
         am = self.work_salary + random.randint(1, self.work_salary)
         u.balance += am
+        u.total_earned += am
         session.commit()
-        session.close()
         await ctx.send(f"You have made {am} from working!")
-        
+    
+    # @commands.hybrid_command()
+    # async def daily(self, ctx):
+    #     Session = sessionmaker(bind=database.engine)
+    #     session = Session()
+    #     u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+    #     am = self.work_salary + random.randint(1, self.work_salary)
+    #     u.balance += am
+    #     u.total_earned += am
+    #     session.commit()
+    #     
+    #     await ctx.send(f"You have made {am} from working!")
+    
+    # @commands.hybrid_command()
+    # async def weekly(self, ctx):
+    #     Session = sessionmaker(bind=database.engine)
+    #     session = Session()
+    #     u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+    #     am = self.work_salary + random.randint(1, self.work_salary)
+    #     u.balance += am
+    #     u.total_earned += am
+    #     session.commit()
+    #     
+    #     await ctx.send(f"You have made {am} from working!")
 
 async def setup(bot):
     await bot.add_cog(Gamba(bot)) 
