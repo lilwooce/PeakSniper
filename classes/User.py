@@ -27,6 +27,7 @@ class User(Base):
     daily_cooldown = Column("daily_cooldown", DATETIME)
     weekly_cooldown = Column("weekly_cooldown", DATETIME)
     jobs = Column("jobs", JSON)
+    can_apply = Column("can_apply", Boolean)
 
     def __init__(self, user):
         self.name = user.name
@@ -45,3 +46,4 @@ class User(Base):
         self.daily_cooldown = ""
         self.weekly_cooldown = ""
         self.jobs = {}
+        self.can_apply = True

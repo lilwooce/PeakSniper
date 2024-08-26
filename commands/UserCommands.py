@@ -218,8 +218,12 @@ class UserCommands(commands.Cog):
 
         try:
             # Get the server entry
-            s = session.query(Servers).filter_by(server_id=guild.id).first()
-            u = session.query(User).filter_by(user_id=ctx.author.id).first()
+            s = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if (not bool(u.can_apply)):
+                await ctx.send("You cannot apply for a job at this time")
+                return
 
             if not s or not u:
                 await ctx.send("Server or user not found.")
@@ -228,7 +232,7 @@ class UserCommands(commands.Cog):
             # s.jobs is now a JSON column, which is automatically handled as a Python list
             jobs = []
             for job_name in s.jobs:
-                j = session.query(Jobs).filter_by(name=job_name).first()
+                j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
                 if j:
                     jobs.append((job_name, j.chance))
 
