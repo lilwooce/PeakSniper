@@ -217,26 +217,43 @@ class UserCommands(commands.Cog):
         guild = ctx.guild
 
         try:
-            #get the jobs in the servers
-            s = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            # Get the server entry
+            s = session.query(Servers).filter_by(server_id=guild.id).first()
+            u = session.query(User).filter_by(user_id=ctx.author.id).first()
+
+            if not s or not u:
+                await ctx.send("Server or user not found.")
+                return
+
+            # s.jobs is now a JSON column, which is automatically handled as a Python list
             jobs = []
-            for job in s.jobs:
-                j = session.query(Jobs.Jobs).filter_by(name=job).first()
-                jobs.append((job), j.chance)
+            for job_name in s.jobs:
+                j = session.query(Jobs).filter_by(name=job_name).first()
+                if j:
+                    jobs.append((job_name, j.chance))
+
+            if not jobs:
+                await ctx.send("No jobs available.")
+                return
+
+            # Use JobSelector to choose a job
             js = JobSelector(jobs)
             selected_job = js.choose_job()
+
+            # Update or add the new job for the given server_id in user's jobs
             current_jobs = json.loads(u.jobs) if u.jobs else {}
-            # Update or add the new job for the given server_id
             current_jobs[str(guild.id)] = selected_job
+
             # Convert the dictionary back to JSON and update the jobs column
             u.jobs = json.dumps(current_jobs)
+
             # Commit the changes to the database
             session.commit()
 
             await ctx.send(f"Congratulations! You are now a(n) {selected_job[0]}! You make {selected_job[1]} every time you work.")
         finally:
             session.close()
+
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))

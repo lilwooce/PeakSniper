@@ -64,17 +64,21 @@ class Admin(commands.Cog):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
-            s = session.query(Servers.Servers).all()
-            for server in s:
-                j = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3,6)).all()
-                jobs = []
-                for job in j:
-                    jobs.append(job)
-                server.jobs = jobs
+            servers = session.query(Servers).all()
+            for server in servers:
+                # Get a random list of jobs
+                jobs_query = session.query(Jobs).order_by(func.rand()).limit(random.randint(3, 6)).all()
+                job_names = [job.name for job in jobs_query]
+                
+                # Update the server's jobs with the new list of job names
+                server.jobs = job_names
 
-                await interaction.response.send_message("Sucess")
+            # Commit the changes to the database
+            session.commit()
+            
+            await interaction.response.send_message("Success")
         except Exception as e:
-            await interaction.response.send_message(f"failed because {e}")
+            await interaction.response.send_message(f"Failed because {e}")
         finally:
             session.close()
 

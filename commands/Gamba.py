@@ -5,6 +5,7 @@ import random
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from classes import User, database
+from classes import Servers, User, database, Jobs
 
 class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):

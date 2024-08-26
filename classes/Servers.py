@@ -1,6 +1,6 @@
 import json
 import random
-from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP, DATETIME, ARRAY
+from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP, DATETIME, JSON
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -15,7 +15,7 @@ class Servers(Base):
     name = Column("name", String(80))
     prefix = Column("prefix", String(80))
     currently_in_server = Column("currently_in_server", Boolean)
-    jobs = Column("jobs", ARRAY(String(80)))
+    jobs = Column("jobs", JSON)
 
     recently_deleted_message = Column("recently_deleted_message", String(2000))
     recently_deleted_images = Column("recently_deleted_images", String(2000))
