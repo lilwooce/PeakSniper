@@ -196,7 +196,8 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            am = self.work_salary + random.randint(1, self.work_salary)
+            j = session.query(Jobs.Jobs).filter_by(name=u.jobs[ctx.guild.id]).first()
+            am = j.salary + random.randint(1, j.salary)
             u.balance += am
             u.total_earned += am
             await ctx.send(f"You have made {am} from working!")

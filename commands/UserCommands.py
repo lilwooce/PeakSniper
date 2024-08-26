@@ -1,13 +1,15 @@
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
 import os
 from sqlalchemy.orm import sessionmaker
-from classes import Servers, User, database
+from classes import Servers, User, database, Jobs, JobSelector
 from .Config import hasAccount
 from datetime import datetime, timedelta
 import logging
+import random
+import json
 
 class UserCommands(commands.Cog):
     def __init__(self, bot):
@@ -208,6 +210,33 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
+    @commands.hybrid_command()
+    async def apply(self, ctx):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        guild = ctx.guild
+
+        try:
+            #get the jobs in the servers
+            s = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            jobs = []
+            for job in s.jobs:
+                j = session.query(Jobs.Jobs).filter_by(name=job).first()
+                jobs.append((job), j.chance)
+            js = JobSelector(jobs)
+            selected_job = js.choose_job()
+            current_jobs = json.loads(u.jobs) if u.jobs else {}
+            # Update or add the new job for the given server_id
+            current_jobs[str(guild.id)] = selected_job
+            # Convert the dictionary back to JSON and update the jobs column
+            u.jobs = json.dumps(current_jobs)
+            # Commit the changes to the database
+            session.commit()
+
+            await ctx.send(f"Congratulations! You are now a(n) {selected_job[0]}! You make {selected_job[1]} every time you work.")
+        finally:
+            session.close()
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))

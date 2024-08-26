@@ -1,6 +1,6 @@
 import json
 import random
-from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP, DATETIME
+from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP, DATETIME, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -15,6 +15,7 @@ class Servers(Base):
     name = Column("name", String(80))
     prefix = Column("prefix", String(80))
     currently_in_server = Column("currently_in_server", Boolean)
+    jobs = Column("jobs", ARRAY(String(80)))
 
     recently_deleted_message = Column("recently_deleted_message", String(2000))
     recently_deleted_images = Column("recently_deleted_images", String(2000))
@@ -22,7 +23,6 @@ class Servers(Base):
     recently_deleted_user = Column("recently_deleted_user", BigInteger)
     recently_deleted_reply = Column("recently_deleted_reply", String(2000))
     recently_deleted_sniper = Column("recently_deleted_sniper", BigInteger)
-    
     
     recently_edited_user = Column("recently_edited_user", BigInteger)
     recently_edited_timestamp = Column("recently_edited_timestamp", DATETIME)
@@ -50,9 +50,4 @@ class Servers(Base):
         self.recently_edited_before_message = ""
         self.recently_edited_after_message = ""
         self.recently_edited_reply = ""
-    
-    def change_deleted():
-        return
-
-    def change_edited():
-        return
+        self.jobs = ["beggar"]

@@ -1,14 +1,17 @@
 from ast import alias
 from discord.ext import commands
 import discord
+from discord import app_commands
 import math
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import requests
 import os 
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql.expression import func
+import random
 
-from classes import Servers, User, database
+from classes import Servers, User, database, Jobs
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -42,6 +45,38 @@ class Admin(commands.Cog):
     async def message(self, ctx: commands.Context, channel: discord.TextChannel, message: str):
         await channel.send(message)
         await ctx.send(f"message: [{message}] sent to {channel.name}")
+    
+    @app_commands.command()
+    @commands.is_owner()
+    async def add_job(self, interaction: discord.Interaction, name: str, salary: int, chance: float):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            j = Jobs.Jobs(name, salary, chance)
+            session.add(j)
+            session.commit()
+            await interaction.response.send_message(f"Successfully added a job: name {name}, salary {salary}, chance {chance}")
+        finally:
+            session.close()
+
+    async def randomize_jobs(self, interaction: discord.Interaction):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            s = session.query(Servers.Servers).all()
+            for server in s:
+                j = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3,6)).all()
+                jobs = []
+                for job in j:
+                    jobs.append(job)
+                server.jobs = jobs
+
+                await interaction.response.send_message("Sucess")
+        except Exception as e:
+            await interaction.response.send_message(f"failed because {e}")
+        finally:
+            session.close()
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
