@@ -265,7 +265,7 @@ class UserCommands(commands.Cog):
         session = Session()
 
         try:
-            server = session.query(Servers).filter_by(server_id=guild.id).first()
+            server = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
             if not server:
                 await ctx.send("Server not found in the database.", ephemeral=True)
                 return
@@ -283,7 +283,7 @@ class UserCommands(commands.Cog):
 
         except Exception as e:
             await ctx.send("An error occurred while retrieving the jobs.", ephemeral=True)
-            print(f"Error: {e}")
+            logging.warning(f"Error: {e}")
 
         finally:
             session.close()
