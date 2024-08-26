@@ -265,17 +265,18 @@ class UserCommands(commands.Cog):
         session = Session()
 
         try:
-            server = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
+            server = session.query(Servers).filter_by(server_id=guild.id).first()
             if not server:
                 await ctx.send("Server not found in the database.", ephemeral=True)
                 return
 
-            jobs = json.loads(server.jobs) if server.jobs else []
+            jobs = server.jobs if isinstance(server.jobs, list) else []
 
             embed = discord.Embed(title=f"Jobs in {guild.name}", color=discord.Color.blue())
             if jobs:
-                for job_name, salary in jobs.items():
-                    embed.add_field(name=job_name, value=f"Salary: {salary} discoins", inline=False)
+                for job_name in jobs:
+                    # If you store salary information separately, retrieve and display it here
+                    embed.add_field(name=job_name, value="Salary: unknown", inline=False)
             else:
                 embed.description = "No jobs found for this server."
 
