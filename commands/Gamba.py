@@ -190,5 +190,26 @@ class Gamba(commands.Cog, name="Gamba"):
             session.commit()
             session.close()
 
+    @commands.hybrid_command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def work(self, ctx):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            user_jobs = json.loads(u.jobs)
+            job_name = user_jobs[f'{ctx.guild.id}']
+            if job_name is None:
+                await ctx.send("Job not found for this server. Please apply first before working.")
+                return
+            j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
+            am = j.salary + random.randint(1, j.salary)
+            u.balance += am
+            u.total_earned += am
+            await ctx.send(f"You have made {am} from working!")
+        finally:
+            session.commit()
+            session.close()
+
 async def setup(bot):
     await bot.add_cog(Gamba(bot))
