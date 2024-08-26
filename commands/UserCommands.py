@@ -379,19 +379,23 @@ class UserCommands(commands.Cog):
         session = Session()
 
         try:
+            # Fetch user data
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
             if not u:
                 await ctx.send("User not found in the database.", ephemeral=True)
                 return
 
+            # Load used items
             used_items = json.loads(u.used_items) if u.used_items else {}
 
             embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
             if used_items:
                 for item_name, effect in used_items.items():
-                    if effect['expires_at']:
-                        embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires at: {effect['expires_at']}", inline=False)
+                    # Check if 'expires_at' key exists in the effect dictionary
+                    expires_at = effect.get('expires_at', None)
+                    if expires_at:
+                        embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires at: {expires_at}", inline=False)
                     else:
                         embed.add_field(name=item_name, value=f"Effect: {effect['description']}", inline=False)
             else:
