@@ -263,10 +263,11 @@ class UserCommands(commands.Cog):
             # Update or add the new job for the given server_id in user's jobs
             current_jobs = json.loads(u.jobs) if u.jobs else {}
             current_jobs[str(guild.id)] = selected_job
+            del used_items['resume']
+            u.used_items = json.dumps(used_items)
 
             # Convert the dictionary back to JSON and update the jobs column
             u.jobs = json.dumps(current_jobs)
-            u.can_apply = False
 
             # Commit the changes to the database
             session.commit()
@@ -331,6 +332,8 @@ class UserCommands(commands.Cog):
                 return
 
             inventory = json.loads(user.inventory) if user.inventory else {}
+            if inventory == {}:
+                await ctx.send("Your inventory is empty")
 
             # Divide inventory items into pages with a max of 5 items per page
             items = list(inventory.items())
@@ -399,6 +402,8 @@ class UserCommands(commands.Cog):
 
             # Load used items
             used_items = json.loads(u.used_items) if u.used_items else {}
+            if used_items == {}:
+                await ctx.send("You have no currently applied effects")
 
             embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
             if used_items:
