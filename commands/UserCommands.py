@@ -265,7 +265,7 @@ class UserCommands(commands.Cog):
         session = Session()
 
         try:
-            server = session.query(Servers).filter_by(server_id=guild.id).first()
+            server = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
             if not server:
                 await ctx.send("Server not found in the database.", ephemeral=True)
                 return
