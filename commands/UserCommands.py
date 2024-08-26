@@ -277,7 +277,7 @@ class UserCommands(commands.Cog):
                 for job_name in jobs:
                     j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
                     # If you store salary information separately, retrieve and display it here
-                    embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {j.chance/100}%", inline=False)
+                    embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {j.chance}%", inline=False)
             else:
                 embed.description = "No jobs found for this server."
 
