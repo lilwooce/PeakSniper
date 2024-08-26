@@ -230,29 +230,34 @@ class UserCommands(commands.Cog):
             s = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
-            used = json.loads(u.used_items) if u.used_items else {}
+            if not u:
+                await ctx.send("User not found.")
+                return
 
-            if (u.get("resume", False)):
+            used_items = json.loads(u.used_items) if u.used_items else {}
+
+            # Check if the user has a resume
+            if not used_items.get("resume", False):
                 await ctx.send("You cannot apply for a job without a *Resume*. Try purchasing one from the Shop.")
                 return
 
-            if not s or not u:
-                await ctx.send("Server or user not found.")
+            if not s:
+                await ctx.send("Server not found.")
                 return
 
             # s.jobs is now a JSON column, which is automatically handled as a Python list
-            js = []
+            jobs = []
             for job_name in s.jobs:
                 j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
                 if j:
-                    js.append((job_name, j.chance))
+                    jobs.append((job_name, j.chance))
 
-            if not js:
+            if not jobs:
                 await ctx.send("No jobs available.")
                 return
 
             # Use JobSelector to choose a job
-            js = JobSelector.JobSelection(js)
+            js = JobSelector.JobSelection(jobs)
             selected_job = js.choose_job()
 
             # Update or add the new job for the given server_id in user's jobs
@@ -268,8 +273,14 @@ class UserCommands(commands.Cog):
 
             j = session.query(Jobs.Jobs).filter_by(name=selected_job).first()
             await ctx.send(f"Congratulations! You are now a(n) {j.name}! You make {j.salary} every time you work.")
+
+        except Exception as e:
+            await ctx.send("An error occurred while applying for a job.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
         finally:
             session.close()
+
 
     @commands.hybrid_command()
     async def jobs(self, ctx):
