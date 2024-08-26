@@ -121,10 +121,18 @@ class UserCommands(commands.Cog):
                 await ctx.send("No profile available.")
                 return
 
+            user_jobs = json.loads(u.jobs)
+            job_name = user_jobs[f'{ctx.guild.id}']
+            if job_name is None:
+                await ctx.send("Job not found for this server. Please apply first before working.")
+                return
+            j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
+
             embed.set_author(name=user.name, icon_url=user.display_avatar)
             embed.add_field(name="Snipe Message", value=f"**{u.snipe_message}**", inline=False)
             embed.add_field(name="Balance", value=f"**{u.balance}** discoins", inline=False)
             embed.add_field(name="Poll Gamba", value=f"**{u.poll_gamba}** discoins", inline=False)
+            embed.add_field(name="Current Job", value=f"**{j.name}**", inline=False)
 
             await ctx.send(embed=embed)
         finally:
