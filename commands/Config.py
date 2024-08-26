@@ -7,9 +7,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
 import datetime
 import random
+from zoneinfo import ZoneInfo
 
 from classes import Servers, User, database, Jobs
-etc = datetime.timezone.tzname("America/New_York")
+eastern = ZoneInfo("America/New_York")
 
 async def addAccount(user, session):
     u = User.User(user=user)
@@ -58,7 +59,7 @@ class Config(commands.Cog, name="Configuration"):
         else:
             await ctx.send("Please input a new prefix.")
 
-    time = datetime.time(hour=20, tzinfo=etc)
+    time = datetime.time(hour=20, tzinfo=eastern)
     @tasks.loop(time=time)
     async def randomize_jobs(self):
         Session = sessionmaker(bind=database.engine)
