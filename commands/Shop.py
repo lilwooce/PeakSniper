@@ -39,7 +39,7 @@ class Shop(commands.Cog):
             def create_embed(page):
                 embed = discord.Embed(title="Shop", description=f"Page {page + 1}/{len(pages)}")
                 for item in pages[page]:
-                    embed.add_field(name=item.name, value=f"Price: {item.price}\nUses: {item.uses}\nCommand: {item.command}", inline=False)
+                    embed.add_field(name=item.name.title(), value=f"Price: {item.price}\nUses: {item.uses}\nCommand: {item.command}", inline=False)
                 return embed
 
             # Send the first embed
@@ -79,26 +79,26 @@ class Shop(commands.Cog):
             session.close()
 
             
-    @commands.hybrid_command()
-    async def buy(self, ctx, amount: int, *, name: str):
+    @app_commands.command()
+    async def buy(self, interaction: discord.Interaction, amount: int, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         
         try:
             item = session.query(ShopItem.ShopItem).filter_by(name=name).first()
             if not item:
-                await ctx.send(f"{name} was not found in shop.")
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+                await interaction.response.send_message(f"{name} was not found in shop.")
+            u = session.query(User.User).filter_by(user_id=interaction.author.id).first()
 
             if u.balance < item.price * amount:
-                await ctx.send("You cannot afford this item")
+                await interaction.response.send_message("You cannot afford this item")
                 return
 
             u.balance -= item.price * amount
             inven = json.loads(u.inventory) if u.inventory else {}
             inven[item.name] = amount
 
-            await ctx.send(f"You have bought {amount} {name}(s) for {item.price * amount} discoins.")
+            await interaction.response.send_message(f"You have bought {amount} {name}(s) for {item.price * amount} discoins.")
         finally:
             session.close()
 
