@@ -275,8 +275,9 @@ class UserCommands(commands.Cog):
             embed = discord.Embed(title=f"Jobs in {guild.name}", color=discord.Color.blue())
             if jobs:
                 for job_name in jobs:
+                    j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
                     # If you store salary information separately, retrieve and display it here
-                    embed.add_field(name=job_name, value="Salary: unknown", inline=False)
+                    embed.add_field(name=job_name, value=f"Salary: {j.salary}", inline=False)
             else:
                 embed.description = "No jobs found for this server."
 
