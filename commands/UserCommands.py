@@ -330,7 +330,7 @@ class UserCommands(commands.Cog):
             def create_embed(page):
                 embed = discord.Embed(title=f"{ctx.author.name}'s Inventory", description=f"Page {page + 1}/{len(pages)}", color=discord.Color.green())
                 for item_name, quantity in pages[page]:
-                    embed.add_field(name=item_name, value=f"Quantity: {quantity}", inline=False)
+                    embed.add_field(name=item_name.title(), value=f"Quantity: {quantity}", inline=False)
                 return embed
 
             # Send the first embed
@@ -385,7 +385,7 @@ class UserCommands(commands.Cog):
                 await ctx.send("User not found in the database.", ephemeral=True)
                 return
 
-            used_items = u.used_items if u.used_items else {}
+            used_items = json.loads(u.used_items) if u.used_items else {}
 
             embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
             if used_items:
@@ -418,8 +418,8 @@ class UserCommands(commands.Cog):
                 await ctx.send("User not found in the database.", ephemeral=True)
                 return
 
-            inventory = u.inventory if u.inventory else {}
-            used_items = u.used_items if u.used_items else {}
+            inventory = json.loads(u.inventory) if u.inventory else {}
+            used_items = json.loads(u.used_items) if u.used_items else {}
 
             if item_name not in inventory or inventory[item_name] <= 0:
                 await ctx.send(f"You don't have {item_name} in your inventory.", ephemeral=True)
@@ -447,8 +447,8 @@ class UserCommands(commands.Cog):
             if inventory[item_name] == 0:
                 del inventory[item_name]
             
-            u.inventory = inventory
-            u.used_items = used_items
+            u.inventory = json.dumps(inventory)
+            u.used_items = json.dumps(used_items)
 
             session.commit()
 
