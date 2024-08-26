@@ -5,10 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
-default_prefix = "."
-
-class Servers(Base):
-    __tablename__ = "Servers"
+class Jobs(Base):
+    __tablename__ = "Jobs"
 
     id = Column("id", Integer, primary_key=True)
     name = Column("name", String(80))
