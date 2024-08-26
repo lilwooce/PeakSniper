@@ -60,6 +60,8 @@ class Admin(commands.Cog):
         finally:
             session.close()
 
+    @app_commands.command()
+    @commands.is_owner()
     async def randomize_jobs(self, interaction: discord.Interaction):
         Session = sessionmaker(bind=database.engine)
         session = Session()
