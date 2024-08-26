@@ -197,7 +197,11 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            j = session.query(Jobs.Jobs).filter_by(name=u.jobs[ctx.guild.id]).first()
+            job_name = u.jobs.get(ctx.guild.id)
+            if job_name is None:
+                await ctx.send("Job not found for this server. Please apply first before working.")
+                return
+            j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
             am = j.salary + random.randint(1, j.salary)
             u.balance += am
             u.total_earned += am
