@@ -230,7 +230,7 @@ class UserCommands(commands.Cog):
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
             if (not bool(u.can_apply)):
-                await ctx.send("You cannot apply for a job at this time")
+                await ctx.send("You cannot apply for a job without a *Resume*. Try purchasing one from the Shop.")
                 return
 
             if not s or not u:
@@ -258,6 +258,7 @@ class UserCommands(commands.Cog):
 
             # Convert the dictionary back to JSON and update the jobs column
             u.jobs = json.dumps(current_jobs)
+            u.can_apply = False
 
             # Commit the changes to the database
             session.commit()
@@ -301,6 +302,27 @@ class UserCommands(commands.Cog):
             logging.warning(f"Error: {e}")
 
         finally:
+            session.close()
+
+    @commands.hybrid_command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def work(self, ctx):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            user_jobs = json.loads(u.jobs)
+            job_name = user_jobs[f'{ctx.guild.id}']
+            if job_name is None:
+                await ctx.send("Job not found for this server. Please apply first before working.")
+                return
+            j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
+            am = j.salary + random.randint(1, j.salary)
+            u.balance += am
+            u.total_earned += am
+            await ctx.send(f"You have made {am} from working!")
+        finally:
+            session.commit()
             session.close()
 
 async def setup(bot):
