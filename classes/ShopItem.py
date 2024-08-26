@@ -13,11 +13,14 @@ class ShopItem(Base):
     price = Column("price", Integer)
     uses = Column("uses", Integer)
     command = Column("command", String(80))
+    item_type = Column("item_type", String(80))
+    duration = Column("duration", Integer)
 
 
-    def __init__(self, name, salary, price, uses, command):
+    def __init__(self, name, price, uses, command, item_type, duration):
         self.name = name
-        self.salary = salary
         self.price = price
         self.uses = uses
         self.command = command
+        self.item_type = item_type
+        self.duration = duration

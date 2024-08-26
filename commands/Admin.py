@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
 import random
 
-from classes import Servers, User, database, Jobs
+from classes import Servers, User, database, Jobs, ShopItem
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -57,6 +57,21 @@ class Admin(commands.Cog):
             session.add(j)
             session.commit()
             await interaction.response.send_message(f"Successfully added a job: name {name}, salary {salary}, chance {chance}")
+        finally:
+            session.close()
+        
+    @app_commands.command()
+    @commands.is_owner()
+    async def add_shop_item(self, interaction: discord.Interaction, name: str, price: int, uses: int, command: str, item_type: str, duration: int):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            i = ShopItem.ShopItem(name, price, uses, command, item_type, duration)
+            session.add(i)
+            session.commit()
+            await interaction.response.send_message(f"Successfully added a shop item: name {name}, price {price}, uses {uses}, command {command}, type {item_type}, duration {duration} minutes")
+
         finally:
             session.close()
 

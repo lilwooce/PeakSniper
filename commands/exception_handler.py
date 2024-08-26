@@ -14,6 +14,8 @@ class ExceptionHandler(commands.Cog):
             await ctx.send("You don't have the necessary permissions to use this command.")
         elif isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f"Missing arguments: {error.param}")
+        elif isinstance(error, commands.CommandNotFound):
+            return
         else:
             # Log the error to console for other types of errors
             print(f"An error occurred: {error}")

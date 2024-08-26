@@ -4,12 +4,13 @@ from discord import app_commands
 from dotenv import load_dotenv
 import os
 from sqlalchemy.orm import sessionmaker
-from classes import Servers, User, database, Jobs, JobSelector
+from classes import Servers, User, database, Jobs, JobSelector, ShopItem
 from .Config import hasAccount
 from datetime import datetime, timedelta
 import logging
 import random
 import json
+import asyncio
 
 class UserCommands(commands.Cog):
     def __init__(self, bot):
@@ -305,6 +306,161 @@ class UserCommands(commands.Cog):
 
         finally:
             session.close()
+
+    @commands.hybrid_command()
+    async def inventory(self, ctx):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            # Fetch user data
+            user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            if not user:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            inventory = json.loads(user.inventory) if user.inventory else {}
+
+            # Divide inventory items into pages with a max of 5 items per page
+            items = list(inventory.items())
+            pages = [items[i:i + 5] for i in range(0, len(items), 5)]
+            current_page = 0
+
+            # Function to create an embed for a given page
+            def create_embed(page):
+                embed = discord.Embed(title=f"{ctx.author.name}'s Inventory", description=f"Page {page + 1}/{len(pages)}", color=discord.Color.green())
+                for item_name, quantity in pages[page]:
+                    embed.add_field(name=item_name, value=f"Quantity: {quantity}", inline=False)
+                return embed
+
+            # Send the first embed
+            message = await ctx.send(embed=create_embed(current_page))
+
+            # Add reactions if there are multiple pages
+            if len(pages) > 1:
+                await message.add_reaction("⬅️")
+                await message.add_reaction("➡️")
+
+                # Check for reaction events
+                def check(reaction, user):
+                    return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
+
+                while True:
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+                        if str(reaction.emoji) == "➡️":
+                            if current_page < len(pages) - 1:
+                                current_page += 1
+                                await message.edit(embed=create_embed(current_page))
+                        elif str(reaction.emoji) == "⬅️":
+                            if current_page > 0:
+                                current_page -= 1
+                                await message.edit(embed=create_embed(current_page))
+
+                        await message.remove_reaction(reaction, user)
+
+                    except asyncio.TimeoutError:
+                        break
+
+                # Clear reactions after the timeout
+                await message.clear_reactions()
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving your inventory.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
+    @commands.hybrid_command()
+    async def current_effects(self, ctx):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            used_items = u.used_items if u.used_items else {}
+
+            embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
+            if used_items:
+                for item_name, effect in used_items.items():
+                    if effect['expires_at']:
+                        embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires at: {effect['expires_at']}", inline=False)
+                    else:
+                        embed.add_field(name=item_name, value=f"Effect: {effect['description']}", inline=False)
+            else:
+                embed.description = "No active effects found."
+
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving active effects.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
+    @commands.hybrid_command()
+    async def use(self, ctx, item_name: str):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            inventory = u.inventory if u.inventory else {}
+            used_items = u.used_items if u.used_items else {}
+
+            if item_name not in inventory or inventory[item_name] <= 0:
+                await ctx.send(f"You don't have {item_name} in your inventory.", ephemeral=True)
+                return
+
+            # Fetch the item details from the ShopItem table
+            item = session.query(ShopItem.ShopItem).filter_by(name=item_name).first()
+            if not item:
+                await ctx.send(f"{item_name} not found in the shop.", ephemeral=True)
+                return
+
+            to_send = ""
+            # Apply the effect of the item
+            if item.duration > 0:
+                effect = {"description": f"{item_name} effect active", "expires_at": str(datetime.datetime.utcnow() + datetime.timedelta(minutes=item.duration))}
+                used_items[item_name] = effect
+                await ctx.send(f"You have used {item_name}. Effect is now active for {item.duration} minutes!", ephemeral=True)
+            else:
+                effect = {"description": f"{item_name} effect active"}
+                used_items[item_name] = effect
+                await ctx.send(f"You have used {item_name}. Effect is now active!", ephemeral=True)
+
+            # Update the user's inventory and used_items
+            inventory[item_name] -= 1
+            if inventory[item_name] == 0:
+                del inventory[item_name]
+            
+            u.inventory = inventory
+            u.used_items = used_items
+
+            session.commit()
+
+            await ctx.send(f"You have used {item_name}. Effect is now active for 30 minutes!", ephemeral=True)
+
+        except Exception as e:
+            await ctx.send("An error occurred while using the item.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
