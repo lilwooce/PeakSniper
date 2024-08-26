@@ -88,7 +88,7 @@ class Shop(commands.Cog):
             item = session.query(ShopItem.ShopItem).filter_by(name=name).first()
             if not item:
                 await interaction.response.send_message(f"{name} was not found in shop.")
-            u = session.query(User.User).filter_by(user_id=interaction.author.id).first()
+            u = session.query(User.User).filter_by(user_id=interaction.user.id).first()
 
             if u.balance < item.price * amount:
                 await interaction.response.send_message("You cannot afford this item")
