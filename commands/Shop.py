@@ -97,7 +97,8 @@ class Shop(commands.Cog):
             u.balance -= item.price * amount
             inven = json.loads(u.inventory) if u.inventory else {}
             inven[item.name] = amount
-
+            u.inventory = inven
+            session.commit()
             await interaction.response.send_message(f"You have bought {amount} {name}(s) for {item.price * amount} discoins.")
         finally:
             session.close()
