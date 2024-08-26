@@ -433,14 +433,14 @@ class UserCommands(commands.Cog):
 
             to_send = ""
             # Apply the effect of the item
-            if item.duration > 0:
+            if item.item_type == "boost":
                 effect = {"description": f"{item_name} effect active", "expires_at": str(datetime.datetime.utcnow() + datetime.timedelta(minutes=item.duration))}
                 used_items[item_name] = effect
-                await ctx.send(f"You have used {item_name}. Effect is now active for {item.duration} minutes!", ephemeral=True)
-            else:
+                to_send = f"You have used {item_name}. Effect is now active for {item.duration} minutes!"
+            elif item.item_type == "consumable":
                 effect = {"description": f"{item_name} effect active"}
                 used_items[item_name] = effect
-                await ctx.send(f"You have used {item_name}. Effect is now active!", ephemeral=True)
+                to_send = f"You have used {item_name}. Effect is now active!"
 
             # Update the user's inventory and used_items
             inventory[item_name] -= 1
@@ -452,7 +452,7 @@ class UserCommands(commands.Cog):
 
             session.commit()
 
-            await ctx.send(f"You have used {item_name}. Effect is now active for 30 minutes!", ephemeral=True)
+            await ctx.send(to_send, ephemeral=True)
 
         except Exception as e:
             await ctx.send("An error occurred while using the item.", ephemeral=True)
