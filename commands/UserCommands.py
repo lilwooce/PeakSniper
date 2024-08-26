@@ -229,7 +229,9 @@ class UserCommands(commands.Cog):
             s = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
-            if (not bool(u.can_apply)):
+            used = json.loads(u.used_items) if u.used_items else {}
+
+            if (u.get("resume", False)):
                 await ctx.send("You cannot apply for a job without a *Resume*. Try purchasing one from the Shop.")
                 return
 

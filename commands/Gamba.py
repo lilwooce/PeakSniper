@@ -210,6 +210,10 @@ class Gamba(commands.Cog, name="Gamba"):
         finally:
             session.commit()
             session.close()
+        
+    #See Rstudio for better code
+
+    
 
 async def setup(bot):
     await bot.add_cog(Gamba(bot))
