@@ -254,7 +254,8 @@ class UserCommands(commands.Cog):
             # Commit the changes to the database
             session.commit()
 
-            await ctx.send(f"Congratulations! You are now a(n) {selected_job[0]}! You make {selected_job[1]} every time you work.")
+            j = session.query(Jobs.Jobs).filter_by(name=selected_job).first()
+            await ctx.send(f"Congratulations! You are now a(n) {j.name}! You make {j.salary} every time you work.")
         finally:
             session.close()
 
