@@ -12,7 +12,6 @@ class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
         self.minCoinBid = 5
         self.cfMulti = 2
-        self.work_salary = 10
         self.client = client
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
@@ -187,27 +186,6 @@ class Gamba(commands.Cog, name="Gamba"):
                 embed.description = "No winners to process payouts."
 
             await ctx.send(embed=embed)
-        finally:
-            session.commit()
-            session.close()
-
-    @commands.hybrid_command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def work(self, ctx):
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
-        try:
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            user_jobs = json.loads(u.jobs)
-            job_name = user_jobs[f'{ctx.guild.id}']
-            if job_name is None:
-                await ctx.send("Job not found for this server. Please apply first before working.")
-                return
-            j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
-            am = j.salary + random.randint(1, j.salary)
-            u.balance += am
-            u.total_earned += am
-            await ctx.send(f"You have made {am} from working!")
         finally:
             session.commit()
             session.close()
