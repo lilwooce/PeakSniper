@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from classes import User, database
 from classes import Servers, User, database, Jobs
+import json
 
 class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
@@ -197,7 +198,8 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            job_name = u.jobs.get(ctx.guild.id)
+            user_jobs = json.loads(u.jobs)
+            job_name = user_jobs[f'{ctx.guild.id}']
             if job_name is None:
                 await ctx.send("Job not found for this server. Please apply first before working.")
                 return
