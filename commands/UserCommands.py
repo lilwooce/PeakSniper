@@ -254,6 +254,39 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
+    @commands.hybrid_command()
+    async def jobs(self, ctx):
+        guild = ctx.guild
+        if not guild:
+            await ctx.send("This command can only be used in a server.", ephemeral=True)
+            return
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            server = session.query(Servers).filter_by(server_id=guild.id).first()
+            if not server:
+                await ctx.send("Server not found in the database.", ephemeral=True)
+                return
+
+            jobs = json.loads(server.jobs) if server.jobs else []
+
+            embed = discord.Embed(title=f"Jobs in {guild.name}", color=discord.Color.blue())
+            if jobs:
+                for job_name, salary in jobs.items():
+                    embed.add_field(name=job_name, value=f"Salary: {salary} discoins", inline=False)
+            else:
+                embed.description = "No jobs found for this server."
+
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving the jobs.", ephemeral=True)
+            print(f"Error: {e}")
+
+        finally:
+            session.close()
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
