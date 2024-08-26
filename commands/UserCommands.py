@@ -230,18 +230,18 @@ class UserCommands(commands.Cog):
                 return
 
             # s.jobs is now a JSON column, which is automatically handled as a Python list
-            jobs = []
+            js = []
             for job_name in s.jobs:
                 j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
                 if j:
-                    jobs.append((job_name, j.chance))
+                    js.append((job_name, j.chance))
 
-            if not jobs:
+            if not js:
                 await ctx.send("No jobs available.")
                 return
 
             # Use JobSelector to choose a job
-            js = JobSelector(jobs)
+            js = JobSelector.JobSelection(js)
             selected_job = js.choose_job()
 
             # Update or add the new job for the given server_id in user's jobs
