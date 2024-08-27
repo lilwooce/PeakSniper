@@ -458,7 +458,7 @@ class UserCommands(commands.Cog):
                 effect = {"description": f"{item_name} effect active", "expires_at": str(datetime.now() + timedelta(minutes=item.duration))}
                 used_items[item_name] = effect
                 to_send = f"You have used {item_name}. Effect is now active for {item.duration} minutes!"
-                await asyncio.create_task(self.schedule_effect_removal(ctx.author.id, item_name, datetime.now() + timedelta(minutes=item.duration)))
+                await self.schedule_effect_removal(ctx.author.id, item_name, datetime.now() + timedelta(minutes=item.duration))
             elif item.item_type == "consumable":
                 effect = {"description": f"{item_name} effect active"}
                 used_items[item_name] = effect
@@ -484,13 +484,17 @@ class UserCommands(commands.Cog):
             session.close()
 
     async def schedule_effect_removal(self, user_id, item_name, expiration_time):
-        # Calculate the delay in seconds until expiration
-        logging.warning("scheduling effect removal")
-        delay = (expiration_time - datetime.now()).total_seconds()
-        if delay > 0:
-            await asyncio.sleep(delay)
-            # Remove effect after the delay
-            await self.remove_effect(user_id, item_name)
+        async def remove_after_delay():
+            # Calculate the delay in seconds until expiration
+            logging.warning("Scheduling effect removal")
+            delay = (expiration_time - datetime.now()).total_seconds()
+            if delay > 0:
+                await asyncio.sleep(delay)
+                # Remove effect after the delay
+                await self.remove_effect(user_id, item_name)
+        
+        # Create a background task for effect removal
+        asyncio.create_task(remove_after_delay())
 
     async def remove_effect(self, user_id, item_name):
         Session = sessionmaker(bind=database.engine)
