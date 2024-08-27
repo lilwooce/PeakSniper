@@ -596,9 +596,6 @@ class UserCommands(commands.Cog):
         if thief == victim:
             await ctx.send("You can't rob yourself...")
             return
-        if v.bot:
-            await ctx.send("You can't rob a bot. Don't try this again.")
-            return
 
         try:
             t = session.query(User.User).filter_by(user_id=thief.id).first()
