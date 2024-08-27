@@ -531,6 +531,8 @@ class UserCommands(commands.Cog):
             u = session.query(User.User).filter_by(user_id=author.id).first()
             if type(amount) == str and amount.lower() in all_array:
                 amount = u.balance
+            else:
+                amount = int(amount)
             if amount == 0:
                 await ctx.send("Why are you trying to deposit nothing? What is wrong with you?")
                 return
@@ -561,6 +563,8 @@ class UserCommands(commands.Cog):
             u = session.query(User.User).filter_by(user_id=author.id).first()
             if type(amount) == str and amount.lower() in all_array:
                 amount = u.bank
+            else:
+                amount = int(amount)
             if amount == 0:
                 await ctx.send("Why are you trying to withdraw nothing? What is wrong with you?")
                 return

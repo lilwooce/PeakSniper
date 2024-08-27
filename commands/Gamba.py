@@ -29,6 +29,8 @@ class Gamba(commands.Cog, name="Gamba"):
             bal = u.balance
             if type(amount) == str and amount.lower() in all_array:
                 amount = u.balance
+            else:
+                amount = int(amount)
             if amount > int(bal):
                 await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
                 return
@@ -67,6 +69,8 @@ class Gamba(commands.Cog, name="Gamba"):
             bal = u.balance
             if type(amount) == str and amount.lower() in all_array:
                 amount = u.balance
+            else:
+                amount = int(amount)
             if amount > bal:
                 await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
                 return
@@ -100,6 +104,8 @@ class Gamba(commands.Cog, name="Gamba"):
 
             if type(amount) == str and amount.lower() in all_array:
                 amount = u.balance
+            else:
+                amount = int(amount)
             if amount == 0:
                 u.balance += u.poll_gamba
                 await ctx.send(f"You withdrew your gamble of {u.poll_gamba} discoins")
