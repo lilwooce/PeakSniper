@@ -38,10 +38,14 @@ def admins_only():
 class Stocks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.update_stocks.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
+    
+    def cog_unload(self):
+        self.update_stocks()
 
     @commands.hybrid_command()
     async def purchase(self, ctx, amount: int, *, name: str):
