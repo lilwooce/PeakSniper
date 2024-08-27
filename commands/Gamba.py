@@ -199,11 +199,18 @@ class Gamba(commands.Cog, name="Gamba"):
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
             user_jobs = json.loads(u.jobs)
             job_name = user_jobs[f'{ctx.guild.id}']
+            
             if job_name is None:
                 await ctx.send("Job not found for this server. Please apply first before working.")
                 return
             j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
             am = j.salary + random.randint(1, j.salary)
+            used_items = json.loads(u.used_items) if u.used_items else {}
+
+            # Check if the user has a resume
+            if used_items.get("2x work coupon", True):
+                am = am * 2
+
             u.balance += am
             u.total_earned += am
             await ctx.send(f"You have made {am} from working!")

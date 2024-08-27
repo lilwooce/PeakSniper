@@ -427,7 +427,7 @@ class UserCommands(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def use(self, ctx, item_name: str):
+    async def use(self, ctx, *, item_name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
