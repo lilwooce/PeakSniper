@@ -637,7 +637,7 @@ class UserCommands(commands.Cog):
                 return
 
             # Implement stealing based on a percentage chance for winning and failing
-            steal_success_chance = 15  # 15% chance to succeed
+            steal_success_chance = 100  # 15% chance to succeed
             if random.randint(1, 100) <= steal_success_chance:
                 ret = ""
                 # Determine the amount stolen based on probabilities
@@ -657,7 +657,7 @@ class UserCommands(commands.Cog):
 
                 # Adjust the balances of the thief and the victim
                 t.balance += stolen_amount
-                v.balance = max(v.balance - stolen_amount, 0)
+                v.balance -= stolen_amount
                 await ctx.send(ret)
                 await v.send(f"{t.name} has stolen {stolen_amount} discoins from you.")
             else:
