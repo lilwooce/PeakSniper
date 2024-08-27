@@ -593,6 +593,9 @@ class UserCommands(commands.Cog):
         victim = user
         Session = sessionmaker(bind=database.engine)
         session = Session()
+        if thief == victim:
+            await ctx.send("You can't rob yourself...")
+            return
 
         try:
             t = session.query(User.User).filter_by(user_id=thief.id).first()
@@ -609,6 +612,10 @@ class UserCommands(commands.Cog):
 
             if (t.balance < 500):
                 await ctx.send("You cannot try to rob someone without having at least 500 in your wallet")
+                return
+
+            if (v.balance < 500):
+                await ctx.send("They don't even have 500 discoins to their name... you're too cruel.")
                 return
             
             # Check if the victim has a padlock
