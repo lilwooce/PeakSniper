@@ -57,6 +57,7 @@ class UserCommands(commands.Cog):
             u.balance -= amount
             u.total_gifted += amount
             g.balance += amount
+            g.total_received += amount
 
             session.commit()
 
