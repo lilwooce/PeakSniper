@@ -89,7 +89,6 @@ class Stocks(commands.Cog):
     async def liquidate(self, ctx, amount: int, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
-        
 
         try:
             user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
@@ -105,7 +104,7 @@ class Stocks(commands.Cog):
 
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
 
-            if name not in portfolio or portfolio[name] < amount:
+            if name not in portfolio or portfolio[stock.name] < amount:
                 await ctx.send(f"You do not own enough shares of {stock.name} to sell.")
                 return
 
