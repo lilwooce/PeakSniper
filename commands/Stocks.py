@@ -238,6 +238,20 @@ class Stocks(commands.Cog):
             session.commit()
         finally:
             session.close()
+    
+    @commands.hybrid_command()
+    async def man_update_stocks(self):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            stocks = session.query(Stock.Stock).all()
+            for stock in stocks:
+                stock.update()
+
+            # Commit the changes to the database
+            session.commit()
+        finally:
+            session.close()
 
 async def setup(bot):
     await bot.add_cog(Stocks(bot))
