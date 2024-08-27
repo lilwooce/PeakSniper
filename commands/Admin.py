@@ -18,6 +18,12 @@ getUser = os.getenv('GET_USER')
 updateUser = os.getenv('UPDATE_USER')
 addUser = os.getenv('ADD_USER')
 
+allowed_ids = [347162620996091904]
+def allowed():
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.id in allowed_ids
+    return app_commands.check(predicate)
+
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -25,6 +31,8 @@ class Admin(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
+
+    
 
     @commands.hybrid_command(name="addmoney", aliases=["am"], hidden=True, with_app_command=True)
     @commands.is_owner()
@@ -47,7 +55,7 @@ class Admin(commands.Cog):
         await ctx.send(f"message: [{message}] sent to {channel.name}")
     
     @app_commands.command()
-    @commands.is_owner()
+    @allowed()
     async def add_job(self, interaction: discord.Interaction, name: str, salary: int, chance: float):
         Session = sessionmaker(bind=database.engine)
         session = Session()
@@ -61,7 +69,7 @@ class Admin(commands.Cog):
             session.close()
         
     @app_commands.command()
-    @commands.is_owner()
+    @allowed()
     async def add_shop_item(self, interaction: discord.Interaction, name: str, price: int, uses: int, command: str, item_type: str, duration: int):
         Session = sessionmaker(bind=database.engine)
         session = Session()
@@ -76,7 +84,7 @@ class Admin(commands.Cog):
             session.close()
 
     @app_commands.command()
-    @commands.is_owner()
+    @allowed()
     async def randomize_jobs(self, interaction: discord.Interaction):
         Session = sessionmaker(bind=database.engine)
         session = Session()
