@@ -631,8 +631,8 @@ class UserCommands(commands.Cog):
                     v.used_items = json.dumps(used_items)
                     session.commit()
                     # Optionally notify the user
-                    if v:
-                        await v.send(f"{t.name} has tried to steal from you, your padlock blocked their attempt although it broke doing so.")
+                    if victim:
+                        await victim.send(f"{t.name} has tried to steal from you, your padlock blocked their attempt although it broke doing so.")
                 session.commit()
                 return
 
@@ -659,7 +659,7 @@ class UserCommands(commands.Cog):
                 t.balance += stolen_amount
                 v.balance -= stolen_amount
                 await ctx.send(ret)
-                await v.send(f"{t.name} has stolen {stolen_amount} discoins from you.")
+                await victim.send(f"{t.name} has stolen {stolen_amount} discoins from you.")
             else:
                 # Failed steal
                 fail_outcome = random.randint(1, 100)
