@@ -60,7 +60,7 @@ class Stocks(commands.Cog):
                 await ctx.send(f"Stock '{name}' not found.")
                 return
 
-            total_cost = stock.current_value * amount
+            total_cost = int(stock.current_value) * amount
             if user.balance < total_cost:
                 await ctx.send("You cannot afford this purchase.")
                 return
@@ -109,7 +109,7 @@ class Stocks(commands.Cog):
                 await ctx.send(f"You do not own enough shares of {stock.name} to sell.")
                 return
 
-            total_value = stock.current_value * amount
+            total_value = int(stock.current_value) * amount
             user.balance += total_value
             portfolio[name] -= amount
             if portfolio[name] == 0:
@@ -205,7 +205,7 @@ class Stocks(commands.Cog):
             for stock_name, shares in portfolio.items():
                 stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
                 if stock:
-                    value = stock.current_value * shares
+                    value = int(stock.current_value) * shares
                     total_value += value
                     embed.add_field(
                         name=stock_name,
