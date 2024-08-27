@@ -71,7 +71,7 @@ class Stocks(commands.Cog):
 
             user.balance -= total_cost
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
-            portfolio[name] = portfolio.get(name, 0) + amount
+            portfolio[stock.name] = portfolio.get(stock.name, 0) + amount
 
             user.portfolio = json.dumps(portfolio)
             session.commit()
@@ -111,9 +111,9 @@ class Stocks(commands.Cog):
 
             total_value = int(stock.current_value) * amount
             user.balance += total_value
-            portfolio[name] -= amount
-            if portfolio[name] == 0:
-                del portfolio[name]
+            portfolio[stock.name] -= amount
+            if portfolio[stock.name] == 0:
+                del portfolio[stock.name]
 
             user.portfolio = json.dumps(portfolio)
             session.commit()
