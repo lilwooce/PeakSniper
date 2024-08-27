@@ -105,7 +105,7 @@ class Stocks(commands.Cog):
 
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
 
-            if name not in portfolio or portfolio[stock.name] < amount:
+            if stock.name not in portfolio or portfolio[stock.name] < amount:
                 await ctx.send(f"You do not own enough shares of {stock.name} to sell.")
                 return
 
