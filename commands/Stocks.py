@@ -133,7 +133,7 @@ class Stocks(commands.Cog):
         session = Session()
 
         try:
-            stocks = session.query(Stock).all()
+            stocks = session.query(Stock.Stock).all()
             if not stocks:
                 await ctx.send("No stocks available at the moment.")
                 return
@@ -161,7 +161,7 @@ class Stocks(commands.Cog):
         session = Session()
 
         try:
-            stock = session.query(Stock).filter_by(name=name).first()
+            stock = session.query(Stock.Stock).filter_by(name=name).first()
             if not stock:
                 await ctx.send(f"Stock '{name}' not found.")
                 return
@@ -203,7 +203,7 @@ class Stocks(commands.Cog):
             embed = discord.Embed(title=f"{user.name}'s Portfolio", color=discord.Color.gold())
             total_value = 0
             for stock_name, shares in portfolio.items():
-                stock = session.query(Stock).filter_by(name=stock_name).first()
+                stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
                 if stock:
                     value = stock.current_value * shares
                     total_value += value
