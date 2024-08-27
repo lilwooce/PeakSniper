@@ -208,7 +208,7 @@ class Gamba(commands.Cog, name="Gamba"):
             used_items = json.loads(u.used_items) if u.used_items else {}
 
             # Check if the user has a resume
-            if used_items.get("2x work coupon", True):
+            if used_items.get("2x work coupon", False):
                 am = am * 2
 
             u.balance += am
