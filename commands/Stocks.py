@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 import discord
 from discord import app_commands
 import math
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from dotenv import load_dotenv
 import requests
 import os 
@@ -223,7 +223,7 @@ class Stocks(commands.Cog):
         finally:
             session.close()
 
-    times = [datetime.time(hour=h, tzinfo=eastern) for h in range(0, 24, 3)]
+    times = [time(hour=h, tzinfo=eastern) for h in range(0, 24, 3)]
     @tasks.loop(time=times)
     async def update_stocks(self):
         Session = sessionmaker(bind=database.engine)
