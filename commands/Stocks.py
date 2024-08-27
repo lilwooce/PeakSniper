@@ -240,7 +240,7 @@ class Stocks(commands.Cog):
             session.close()
     
     @commands.hybrid_command()
-    async def man_update_stocks(self):
+    async def man_update_stocks(self, ctx):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
@@ -250,6 +250,7 @@ class Stocks(commands.Cog):
 
             # Commit the changes to the database
             session.commit()
+            await ctx.send("Successfully updated the stock market!!!")
         finally:
             session.close()
 
