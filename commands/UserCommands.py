@@ -406,6 +406,7 @@ class UserCommands(commands.Cog):
             used_items = json.loads(u.used_items) if u.used_items else {}
             if used_items == {}:
                 await ctx.send("You have no currently applied effects")
+                return
 
             embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
             if used_items:
