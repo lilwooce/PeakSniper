@@ -603,7 +603,8 @@ class UserCommands(commands.Cog):
         try:
             t = session.query(User.User).filter_by(user_id=thief.id).first()
             v = session.query(User.User).filter_by(user_id=victim.id).first()
-            used_items = json.loads(v.used_items) if v.used_items else {}
+            v_used_items = json.loads(v.used_items) if v.used_items else {}
+            t_used_items = json.loads(t.used_items) if t.used_items else {}
 
             # Check if the user is on cooldown
             current_time = datetime.now()
@@ -613,49 +614,65 @@ class UserCommands(commands.Cog):
                 await ctx.send(f"You are on cooldown! Please wait {int(minutes)} minutes and {int(seconds)} seconds before stealing again.")
                 return
 
-            if (t.balance < 500):
-                await ctx.send("You cannot try to rob someone without having at least 500 in your wallet")
+            if t.balance < 500:
+                await ctx.send("You cannot try to rob someone without having at least 500 in your wallet.")
                 return
 
-            if (v.balance < 500):
+            if v.balance < 500:
                 await ctx.send("They don't even have 500 discoins to their name... you're too cruel.")
                 return
-            
-            # Check if the victim has a padlock
-            if used_items.get("padlock", False):
-                await ctx.send(f"{victim.name} has a padlock. Your attempt to steal failed, and you got caught by the cops! You lost 500 discoins.")
-                # Lose 500 discoins
-                t.balance = max(t.balance - 500, 0)
-                # Set cooldown even if the steal fails
-                t.steal_cooldown = current_time + timedelta(minutes=10)
-                used_items = json.loads(v.used_items) if v.used_items else {}
-                if "padlock" in used_items:
-                    del used_items["padlock"]
-                    v.used_items = json.dumps(used_items)
+
+            # Check for the Draco scenario
+            if "draco" in v_used_items:
+                if "draco" in t_used_items:
+                    await ctx.send(f"Both {thief.name} and {victim.name} have a Draco! A deadly encounter ensues...")
+                    draco_outcome = random.randint(1, 100)
+                    if draco_outcome <= 65:  # 65% chance the victim wins
+                        await ctx.send(f"{victim.name} wins the encounter! They killed {thief.name} and took their entire balance of {t.balance} discoins.")
+                        v.balance += t.balance
+                        t.balance = 0
+                    else:  # 35% chance the thief wins
+                        await ctx.send(f"{thief.name} wins the encounter! They killed {victim.name} and took their entire balance of {v.balance} discoins.")
+                        t.balance += v.balance
+                        v.balance = 0
                     session.commit()
-                    # Optionally notify the user
-                    if victim:
-                        await victim.send(f"{t.name} has tried to steal from you, your padlock blocked their attempt although it broke doing so.")
-                session.commit()
-                return
-            
-            # Check if the victim has a padlock
-            if used_items.get("draco", False):
-                await ctx.send(f"{victim.name} has a draco. Your attempt to steal failed, and you got smoked! You died and lost all your discoins in your wallet -{t.balance}. Dead Homies.")
-                # Lose all discoins
-                t.balance = 0
-                # Set cooldown even if the steal fails
-                t.steal_cooldown = current_time + timedelta(minutes=10)
-                used_items = json.loads(v.used_items) if v.used_items else {}
-                if "draco" in used_items:
-                    del used_items["draco"]
-                    v.used_items = json.dumps(used_items)
+                    return
+                else:
+                    await ctx.send(f"{victim.name} has a draco. Your attempt to steal failed, and you got smoked! You died and lost all your discoins in your wallet -{t.balance}. Dead Homies.")
+                    # Lose all discoins
+                    t.balance = 0
+                    # Set cooldown even if the steal fails
+                    t.steal_cooldown = current_time + timedelta(minutes=10)
+                    used_items = json.loads(v.used_items) if v.used_items else {}
+                    if "draco" in used_items:
+                        del used_items["draco"]
+                        v.used_items = json.dumps(used_items)
+                        session.commit()
+                        # Optionally notify the user
+                        if victim:
+                            await victim.send(f"{t.name} has tried to steal from you, you used ur drac and turned them into swiss cheese.")
                     session.commit()
-                    # Optionally notify the user
-                    if victim:
-                        await victim.send(f"{t.name} has tried to steal from you, you used ur drac and turned them into swiss cheese.")
-                session.commit()
-                return
+                    return
+
+            # Check if the victim has a padlock
+            if "padlock" in v_used_items:
+                if "bolt cutter" in t_used_items:
+                    await ctx.send(f"{thief.name} used bolt cutters to break {victim.name}'s padlock!")
+                    # Bolt cutters break after use
+                    del t_used_items["bolt_cutters"]
+                    t.used_items = json.dumps(t_used_items)
+                else:
+                    await ctx.send(f"{victim.name} has a padlock. Your attempt to steal failed, and you got caught by the cops! You lost 500 discoins.")
+                    # Lose 500 discoins
+                    t.balance = max(t.balance - 500, 0)
+                    # Set cooldown even if the steal fails
+                    t.steal_cooldown = current_time + timedelta(minutes=10)
+                    # Padlock breaks after use
+                    del v_used_items["padlock"]
+                    v.used_items = json.dumps(v_used_items)
+                    session.commit()
+                    await victim.send(f"{thief.name} tried to steal from you, but your padlock blocked their attempt, although it broke in the process.")
+                    return
 
             # Implement stealing based on a percentage chance for winning and failing
             steal_success_chance = 15  # 15% chance to succeed
@@ -678,9 +695,9 @@ class UserCommands(commands.Cog):
 
                 # Adjust the balances of the thief and the victim
                 t.balance += stolen_amount
-                v.balance -= stolen_amount
+                v.balance = max(v.balance - stolen_amount, 0)
                 await ctx.send(ret)
-                await victim.send(f"{t.name} has stolen {stolen_amount} discoins from you.")
+                await victim.send(f"{thief.name} has stolen {stolen_amount} discoins from you.")
             else:
                 # Failed steal
                 fail_outcome = random.randint(1, 100)
@@ -708,7 +725,6 @@ class UserCommands(commands.Cog):
 
         finally:
             session.close()
-
 
 
 async def setup(bot):
