@@ -485,6 +485,7 @@ class UserCommands(commands.Cog):
 
     async def schedule_effect_removal(self, user_id, item_name, expiration_time):
         # Calculate the delay in seconds until expiration
+        logging.warning("scheduling effect removal")
         delay = (expiration_time - datetime.now()).total_seconds()
         if delay > 0:
             await asyncio.sleep(delay)
