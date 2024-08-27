@@ -32,6 +32,7 @@ class User(Base):
     inventory = Column("inventory", JSON)
     used_items = Column("used_items", JSON)
     bank = Column("bank", BigInteger)
+    portfolio = Column("portfolio", JSON)
 
     def __init__(self, user):
         self.name = user.name
@@ -55,3 +56,4 @@ class User(Base):
         self.inventory = {}
         self.used_items = {}
         self.bank = 0
+        self.portfolio = {}

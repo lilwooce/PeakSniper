@@ -35,3 +35,61 @@ class Stock(Base):
             self.record_low = start_value
             self.record_high = start_value
             self.crashed = False
+    
+    def update(self):
+        # Check for ruination (complete crash)
+        if random.random() < self.ruination and not self.crashed:
+            self.current_value = 5
+            self.crashed = True
+            self.record_low = min(self.record_low, self.current_value)
+            return
+
+        # Chance of swapping growth direction
+        if random.random() < self.swap_chance:
+            self.growth_direction *= -1
+
+        # Update the stock price based on growth rate and volatility
+        self.previous_value = self.current_value
+        change = self.current_value * self.growth_rate * self.growth_direction
+        volatility_effect = self.current_value * self.volatility * (random.random() - 0.5)
+        self.current_value += change + volatility_effect
+
+        # Ensure the price doesn't drop below zero
+        if self.current_value < 5:
+            self.current_value = 5
+
+        # Update record low and high
+        self.record_low = min(self.record_low, self.current_value)
+        self.record_high = max(self.record_high, self.current_value)
+
+        # After the first update post-crash, remove the crashed flag
+        if self.crashed:
+            self.crashed = False
+
+    def get_percentage_change(self):
+        # Calculate the percentage change
+        if self.previous_value == 0:
+            return 0
+        return ((self.current_value - self.previous_value) / self.previous_value) * 100
+
+    def is_stable(self):
+        # Determine if the stock is stable or unstable based on thresholds
+        volatility_threshold = 0.04  # Example threshold for volatility
+        swap_chance_threshold = 0.05  # Example threshold for swap chance
+
+        if self.volatility > volatility_threshold or self.swap_chance > swap_chance_threshold:
+            return "unstable"
+        else:
+            return "stable"
+
+    def __str__(self):
+        percent_change = self.get_percentage_change()
+        direction = "up" if percent_change > 0 else "down"
+        stability = self.is_stable()
+        display_value = int(self.current_value)  # Display the integer part of the value
+
+        # Show "Crashed" if the stock just crashed in the current update
+        if self.crashed:
+            return f"{self.full_name} ({self.name}): {display_value} đ (Crashed)"
+        
+        return f"{self.full_name} ({self.name}): {display_value} đ ({abs(percent_change):.2f}% {direction}, {stability}, {self.growth_direction})"
