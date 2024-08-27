@@ -635,6 +635,24 @@ class UserCommands(commands.Cog):
                         await victim.send(f"{t.name} has tried to steal from you, your padlock blocked their attempt although it broke doing so.")
                 session.commit()
                 return
+            
+            # Check if the victim has a padlock
+            if used_items.get("draco", False):
+                await ctx.send(f"{victim.name} has a draco. Your attempt to steal failed, and you got smoked! You died and lost all your discoins in your wallet. Dead Homies.")
+                # Lose all discoins
+                t.balance = 0
+                # Set cooldown even if the steal fails
+                t.steal_cooldown = current_time + timedelta(minutes=10)
+                used_items = json.loads(v.used_items) if v.used_items else {}
+                if "draco" in used_items:
+                    del used_items["draco"]
+                    v.used_items = json.dumps(used_items)
+                    session.commit()
+                    # Optionally notify the user
+                    if victim:
+                        await victim.send(f"{t.name} has tried to steal from you, you used ur drac and turned them into swiss cheese.")
+                session.commit()
+                return
 
             # Implement stealing based on a percentage chance for winning and failing
             steal_success_chance = 100  # 15% chance to succeed
