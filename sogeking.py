@@ -96,7 +96,7 @@ class Client(commands.Bot):
             for user in users:
                 used_items = json.loads(user.used_items) if user.used_items else {}
                 for item_name, effect in used_items.items():
-                    expires_at = datetime.fromisoformat(effect['expires_at'])
+                    expires_at = effect['expires_at']
                     if expires_at < datetime.now():
                         # Effect has expired
                         user = self.bot.get_user(user.user_id)
