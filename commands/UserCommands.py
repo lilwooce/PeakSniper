@@ -458,6 +458,7 @@ class UserCommands(commands.Cog):
                 effect = {"description": f"{item_name} effect active", "expires_at": str(datetime.now() + timedelta(minutes=item.duration))}
                 used_items[item_name] = effect
                 to_send = f"You have used {item_name}. Effect is now active for {item.duration} minutes!"
+                await self.schedule_effect_removal(ctx.author.id, item_name, datetime.now() + timedelta(minutes=item.duration))
             elif item.item_type == "consumable":
                 effect = {"description": f"{item_name} effect active"}
                 used_items[item_name] = effect
@@ -470,7 +471,6 @@ class UserCommands(commands.Cog):
             
             u.inventory = json.dumps(inventory)
             u.used_items = json.dumps(used_items)
-            await self.schedule_effect_removal(ctx.author.id, item_name, datetime.now() + timedelta(minutes=item.duration))
 
             session.commit()
 
