@@ -12,6 +12,8 @@ import random
 import json
 import asyncio
 
+all_array = ['all', 'ALL', 'al', 'alll']
+
 class UserCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -153,7 +155,7 @@ class UserCommands(commands.Cog):
                 await ctx.send("No account found.")
                 return
 
-            await ctx.send(f"**{user.name}** has `{u.balance}` discoins")
+            await ctx.send(f"**{user.name}** has `{u.balance}` discoins in their wallet\n**{user.name}** has `{u.bank}` discoins in their bank.")
         finally:
             session.close()
 
@@ -518,6 +520,152 @@ class UserCommands(commands.Cog):
             logging.warning(f"Error: {e}")
         finally:
             session.close()
+    
+    @commands.hybrid_command()
+    async def deposit(self, ctx, amount):
+        author = ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=author.id).first()
+            if type(amount) == str and amount.lower() in all_array:
+                amount = u.balance
+            if amount == 0:
+                await ctx.send("Why are you trying to deposit nothing? What is wrong with you?")
+                return
+            if amount < 0:
+                await ctx.send("You can't deposit negative discoins. Are you dumb?")
+                return
+
+            if not u or u.balance < amount:
+                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                return
+            
+            u.balance -= amount
+            u.bank += amount
+
+            session.commit()
+
+            await ctx.send(f"**{ctx.author.name}#{ctx.author.discriminator}** just deposited **{amount}** discoin(s) to their bank")
+        finally:
+            session.close()
+    
+    @commands.hybrid_command()
+    async def withdraw(self, ctx, amount):
+        author = ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=author.id).first()
+            if type(amount) == str and amount.lower() in all_array:
+                amount = u.bank
+            if amount == 0:
+                await ctx.send("Why are you trying to withdraw nothing? What is wrong with you?")
+                return
+            if amount < 0:
+                await ctx.send("Are you trying to deposit discoins? Try using /deposit")
+                return
+
+            if not u or u.bank < amount:
+                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                return
+            
+            u.balance += amount
+            u.bank -= amount
+
+            session.commit()
+
+            await ctx.send(f"**{ctx.author.name}#{ctx.author.discriminator}** just withdrew **{amount}** discoin(s) from their bank")
+        finally:
+            session.close()
+
+    @commands.hybrid_command()
+    async def steal(self, ctx, user: discord.Member):
+        thief = ctx.author
+        victim = user
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            t = session.query(User.User).filter_by(user_id=thief.id).first()
+            v = session.query(User.User).filter_by(user_id=victim.id).first()
+            used_items = json.loads(v.used_items) if v.used_items else {}
+
+            # Check if the user is on cooldown
+            current_time = datetime.now()
+            if t.steal_cooldown and current_time < t.steal_cooldown:
+                remaining_time = (t.steal_cooldown - current_time).total_seconds()
+                minutes, seconds = divmod(remaining_time, 60)
+                await ctx.send(f"You are on cooldown! Please wait {int(minutes)} minutes and {int(seconds)} seconds before stealing again.")
+                return
+
+            if (t.balance < 500):
+                await ctx.send("You cannot try to rob someone without having at least 500 in your wallet")
+                return
+            
+            # Check if the victim has a padlock
+            if used_items.get("padlock", False):
+                await ctx.send(f"{victim.name} has a padlock. Your attempt to steal failed, and you got caught by the cops! You lost 500 discoins.")
+                # Lose 500 discoins
+                t.balance = max(t.balance - 500, 0)
+                # Set cooldown even if the steal fails
+                t.steal_cooldown = current_time + timedelta(minutes=10)
+                session.commit()
+                return
+
+            # Implement stealing based on a percentage chance for winning and failing
+            steal_success_chance = 15  # 15% chance to succeed
+            if random.randint(1, 100) <= steal_success_chance:
+                ret = ""
+                # Determine the amount stolen based on probabilities
+                steal_outcome = random.randint(1, 100)
+                if steal_outcome <= 65:  # 65% chance to steal 30% of victim's balance
+                    stolen_amount = int(v.balance * 0.30)
+                    ret = f"**PAYOUT** YOU STOLE SOME OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+                elif steal_outcome <= 90:  # 25% chance to steal 49% of victim's balance
+                    stolen_amount = int(v.balance * 0.49)
+                    ret = f"**BIG PAYOUT** YOU STOLE ALMOST HALF OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+                elif steal_outcome <= 99:  # 14% chance to steal 75% of victim's balance
+                    stolen_amount = int(v.balance * 0.75)
+                    ret = f"**HUGE PAYOUT** YOU STOLE A BIG PORTION OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+                else:  # 1% chance to steal 99% of victim's balance
+                    stolen_amount = int(v.balance * 0.99)
+                    ret = f"**MASSIVE PAYOUT** YOU STOLE ALMOST ALL OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+
+                # Adjust the balances of the thief and the victim
+                t.balance += stolen_amount
+                v.balance = max(v.balance - stolen_amount, 0)
+                await ctx.send(ret)
+            else:
+                # Failed steal
+                fail_outcome = random.randint(1, 100)
+                if fail_outcome <= 60:  # 60% chance to lose 500 discoins
+                    t.balance = max(t.balance - 500, 0)
+                    await ctx.send(f"You failed to steal from {victim.name} and got caught by the cops! You lost 500 discoins.")
+                elif fail_outcome <= 95:  # 35% chance to lose nothing
+                    await ctx.send(f"You failed to steal from {victim.name} but managed to escape without any penalties.")
+                else:  # 5% chance to lose your job and become a beggar
+                    guild = ctx.guild
+                    current_jobs = json.loads(t.jobs) if t.jobs else {}
+                    current_jobs[str(guild.id)] = "beggar"
+                    t.jobs = json.dumps(current_jobs)
+                    await ctx.send(f"You failed to steal from {victim.name} and got caught by the cops! You lost your job and are now a beggar.")
+
+            # Set cooldown
+            t.steal_cooldown = current_time + timedelta(minutes=10)
+
+            # Commit the changes to the database
+            session.commit()
+
+        except Exception as e:
+            await ctx.send("An error occurred while attempting to steal.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
 
 
 async def setup(bot):

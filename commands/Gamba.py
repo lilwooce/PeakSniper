@@ -8,6 +8,8 @@ from classes import User, database
 from classes import Servers, User, database, Jobs
 import json
 
+all_array = ['all', 'ALL', 'al', 'alll']
+
 class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
         self.minCoinBid = 5
@@ -16,7 +18,7 @@ class Gamba(commands.Cog, name="Gamba"):
 
     @commands.command(aliases=['cf'], description="This is a simple game where the user selects between heads or tails. You double your wager each time you win. It's simple yet addictive, side bets are always welcome!")
     @commands.cooldown(1, .5, commands.BucketType.user)
-    async def coinflip(self, ctx, bet, amount: int):
+    async def coinflip(self, ctx, bet, amount):
         heads = ["heads", "head", "h"]
         tails = ["tails", "tail", "t"]
         author = ctx.author
@@ -25,7 +27,8 @@ class Gamba(commands.Cog, name="Gamba"):
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
             bal = u.balance
-
+            if type(amount) == str and amount.lower() in all_array:
+                amount = u.balance
             if amount > int(bal):
                 await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
                 return
@@ -55,14 +58,15 @@ class Gamba(commands.Cog, name="Gamba"):
 
     @commands.command(description="Lottery style betting functionality, allowing players that have earned coins to pick a number and bet a certain amount to win even more coins.")
     @commands.cooldown(1, .5, commands.BucketType.user)
-    async def bet(self, ctx, bet: int, amount: int):
+    async def bet(self, ctx, bet: int, amount):
         author = ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
             bal = u.balance
-
+            if type(amount) == str and amount.lower() in all_array:
+                amount = u.balance
             if amount > bal:
                 await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
                 return
@@ -87,19 +91,19 @@ class Gamba(commands.Cog, name="Gamba"):
             session.close()
 
     @commands.hybrid_command()
-    async def setpollgamba(self, ctx, amount: int):
-        amount = int(amount)
+    async def setpollgamba(self, ctx, amount):
         author = ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
 
-            if u.poll_gamba > 0:
+            if type(amount) == str and amount.lower() in all_array:
+                amount = u.balance
+            if amount == 0:
                 u.balance += u.poll_gamba
+                await ctx.send(f"You withdrew your gamble of {u.poll_gamba} discoins")
                 u.poll_gamba = 0
-            if not amount:
-                await ctx.send("Please set an amount for your next poll gamble")
                 return
             if amount > u.balance:
                 await ctx.send("You are too poor")
@@ -107,6 +111,9 @@ class Gamba(commands.Cog, name="Gamba"):
             if amount <= 0:
                 await ctx.send("Please bet more than 0")
                 return
+            if u.poll_gamba > 0:
+                u.balance += u.poll_gamba
+                u.poll_gamba = 0
             
             u.poll_gamba = amount
             u.balance -= amount

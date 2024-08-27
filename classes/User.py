@@ -15,20 +15,23 @@ class User(Base):
     user_id = Column("user_id", BigInteger)
     wins = Column("wins", Integer)
     losses = Column("losses", Integer)
-    balance = Column("balance", Integer)
-    total_earned = Column("total_earned", Integer)
-    total_lost = Column("total_lost", Integer)
-    total_bets = Column("total_bets", Integer)
-    total_gifted = Column("total_gifted", Integer)
+    balance = Column("balance", BigInteger)
+    total_earned = Column("total_earned", BigInteger)
+    total_lost = Column("total_lost", BigInteger)
+    total_bets = Column("total_bets", BigInteger)
+    total_gifted = Column("total_gifted", BigInteger)
+    total_received = Column("total_received", BigInteger)
     total_snipes = Column("total_snipes", Integer)
     snipe_message = Column("snipe_message", String(200))
-    poll_gamba = Column("poll_gamba", Integer)
-    last_snipe = Column("last_snipe", Integer)
+    poll_gamba = Column("poll_gamba", BigInteger)
+    last_snipe = Column("last_snipe", BigInteger)
     daily_cooldown = Column("daily_cooldown", DATETIME)
     weekly_cooldown = Column("weekly_cooldown", DATETIME)
+    steal_cooldown = Column("steal_cooldown", DATETIME)
     jobs = Column("jobs", JSON)
     inventory = Column("inventory", JSON)
     used_items = Column("used_items", JSON)
+    bank = Column("bank", BigInteger)
 
     def __init__(self, user):
         self.name = user.name
@@ -40,12 +43,15 @@ class User(Base):
         self.total_lost = 0
         self.total_bets = 0
         self.total_gifted = 0
+        self.total_received = 0
         self.total_snipes = 0
         self.snipe_message = default_snipe_message
         self.poll_gamba = 0
         self.last_snipe = 0
         self.daily_cooldown = ""
         self.weekly_cooldown = ""
+        self.steal_cooldown = ""
         self.jobs = {}
         self.inventory = {}
         self.used_items = {}
+        self.bank = 0
