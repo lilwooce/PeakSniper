@@ -638,7 +638,7 @@ class UserCommands(commands.Cog):
             
             # Check if the victim has a padlock
             if used_items.get("draco", False):
-                await ctx.send(f"{victim.name} has a draco. Your attempt to steal failed, and you got smoked! You died and lost all your discoins in your wallet. Dead Homies.")
+                await ctx.send(f"{victim.name} has a draco. Your attempt to steal failed, and you got smoked! You died and lost all your discoins in your wallet -{t.balance}. Dead Homies.")
                 # Lose all discoins
                 t.balance = 0
                 # Set cooldown even if the steal fails
