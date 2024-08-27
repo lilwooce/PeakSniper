@@ -640,6 +640,7 @@ class UserCommands(commands.Cog):
                 else:
                     await ctx.send(f"{victim.name} has a draco. Your attempt to steal failed, and you got smoked! You died and lost all your discoins in your wallet -{t.balance}. Dead Homies.")
                     # Lose all discoins
+                    v.balance += t.balance
                     t.balance = 0
                     # Set cooldown even if the steal fails
                     t.steal_cooldown = current_time + timedelta(minutes=10)
@@ -647,7 +648,6 @@ class UserCommands(commands.Cog):
                     if "draco" in used_items:
                         del used_items["draco"]
                         v.used_items = json.dumps(used_items)
-                        session.commit()
                         # Optionally notify the user
                         if victim:
                             await victim.send(f"{t.name} has tried to steal from you, you used ur drac and turned them into swiss cheese.")
