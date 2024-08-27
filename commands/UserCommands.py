@@ -83,7 +83,7 @@ class UserCommands(commands.Cog):
             embed.add_field(name="Total Earned", value=f"**{u.total_earned}** discoins earned", inline=False)
             embed.add_field(name="Total Lost", value=f"**{u.total_lost}** discoins lost", inline=False)
             embed.add_field(name="Total Given", value=f"**{u.total_gifted}** discoins given to other players", inline=False)
-            embed.add_field(name="Total Received", value=f"**{u.total_receieved}** discoins received from other players", inline=False)
+            embed.add_field(name="Total Received", value=f"**{u.total_received}** discoins received from other players", inline=False)
             embed.add_field(name="Bets Made", value=f"**{u.total_bets}** gambles attempted", inline=False)
             embed.add_field(name="Messages Sniped", value=f"**{u.total_snipes}** unique messages sniped", inline=False)
 
