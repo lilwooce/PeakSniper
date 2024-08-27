@@ -625,6 +625,14 @@ class UserCommands(commands.Cog):
                 t.balance = max(t.balance - 500, 0)
                 # Set cooldown even if the steal fails
                 t.steal_cooldown = current_time + timedelta(minutes=10)
+                used_items = json.loads(v.used_items) if v.used_items else {}
+                if "padlock" in used_items:
+                    del used_items["padlock"]
+                    v.used_items = json.dumps(used_items)
+                    session.commit()
+                    # Optionally notify the user
+                    if v:
+                        await v.send(f"{t.name} has tried to steal from you, your padlock blocked their attempt although it broke doing so.")
                 session.commit()
                 return
 
@@ -651,6 +659,7 @@ class UserCommands(commands.Cog):
                 t.balance += stolen_amount
                 v.balance = max(v.balance - stolen_amount, 0)
                 await ctx.send(ret)
+                await v.send(f"{t.name} has stolen {stolen_amount} discoins from you.")
             else:
                 # Failed steal
                 fail_outcome = random.randint(1, 100)
