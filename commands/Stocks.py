@@ -70,6 +70,7 @@ class Stocks(commands.Cog):
                 return
 
             user.balance -= total_cost
+            user.total_lost -= total_cost
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
             portfolio[stock.name] = portfolio.get(stock.name, 0) + amount
 
@@ -110,6 +111,7 @@ class Stocks(commands.Cog):
 
             total_value = int(stock.current_value) * amount
             user.balance += total_value
+            user.total_earned += total_value
             portfolio[stock.name] -= amount
             if portfolio[stock.name] == 0:
                 del portfolio[stock.name]
