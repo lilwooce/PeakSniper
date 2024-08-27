@@ -196,7 +196,7 @@ class Stocks(commands.Cog):
                 return
 
             portfolio = json.loads(u.portfolio) if u.portfolio else {}
-            if not portfolio:
+            if not portfolio or len(portfolio) <= 0:
                 await ctx.send(f"{user.name} does not own any stocks.")
                 return
 
