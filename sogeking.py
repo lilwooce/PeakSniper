@@ -12,6 +12,8 @@ import platform
 from discord.ext import commands, tasks
 from discord.ui import Button, View
 from sqlalchemy.orm import sessionmaker
+import json
+import datetime
 
 from classes import Servers, User, database
 
@@ -89,6 +91,22 @@ class Client(commands.Bot):
 
         self.update_bot_status.start()
 
+        try:
+            users = self.session.query(User.User).all()
+            for user in users:
+                used_items = json.loads(user.used_items) if user.used_items else {}
+                for item_name, effect in used_items.items():
+                    expires_at = datetime.fromisoformat(effect['expires_at'])
+                    if expires_at < datetime.now():
+                        # Effect has expired
+                        user = self.bot.get_user(user.user_id)
+                        if user:
+                            await user.send(f"The effect of {item_name} has expired.")
+                        await self.remove_effect(user.user_id, item_name)
+        except Exception as e:
+            logging.warning(f"Error on bot startup: {e}")
+        finally:
+            self.session.close()
         #xecuteQueue(client=self).start()
 
     @tasks.loop(seconds=60)

@@ -408,6 +408,7 @@ class UserCommands(commands.Cog):
             embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
             if used_items:
                 for item_name, effect in used_items.items():
+    
                     # Check if 'expires_at' key exists in the effect dictionary
                     expires_at = effect.get('expires_at', None)
                     if expires_at:
@@ -454,7 +455,7 @@ class UserCommands(commands.Cog):
             to_send = ""
             # Apply the effect of the item
             if item.item_type == "boost":
-                effect = {"description": f"{item_name} effect active", "expires_at": str(datetime.datetime.utcnow() + datetime.timedelta(minutes=item.duration))}
+                effect = {"description": f"{item_name} effect active", "expires_at": str(datetime.now() + timedelta(minutes=item.duration))}
                 used_items[item_name] = effect
                 to_send = f"You have used {item_name}. Effect is now active for {item.duration} minutes!"
             elif item.item_type == "consumable":
@@ -469,6 +470,7 @@ class UserCommands(commands.Cog):
             
             u.inventory = json.dumps(inventory)
             u.used_items = json.dumps(used_items)
+            await self.schedule_effect_removal(ctx.author.id, item_name, datetime.now() + timedelta(minutes=item.duration))
 
             session.commit()
 
@@ -478,6 +480,37 @@ class UserCommands(commands.Cog):
             await ctx.send("An error occurred while using the item.", ephemeral=True)
             logging.warning(f"Error: {e}")
 
+        finally:
+            session.close()
+
+    async def schedule_effect_removal(self, user_id, item_name, expiration_time):
+        # Calculate the delay in seconds until expiration
+        delay = (expiration_time - datetime.now()).total_seconds()
+        if delay > 0:
+            await asyncio.sleep(delay)
+            # Remove effect after the delay
+            await self.remove_effect(user_id, item_name)
+
+    async def remove_effect(self, user_id, item_name):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=user_id).first()
+            if not u:
+                return
+
+            used_items = json.loads(u.used_items) if u.used_items else {}
+            if item_name in used_items:
+                del used_items[item_name]
+                u.used_items = json.dumps(used_items)
+                session.commit()
+                # Optionally notify the user
+                user = self.bot.get_user(user_id)
+                if user:
+                    await user.send(f"The effect of {item_name} has expired.")
+        except Exception as e:
+            logging.warning(f"Error: {e}")
         finally:
             session.close()
 
