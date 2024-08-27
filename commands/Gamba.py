@@ -8,8 +8,6 @@ from classes import User, database
 from classes import Servers, User, database, Jobs
 import json
 
-all_array = ['all', 'ALL', 'al', 'alll']
-
 class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
         self.minCoinBid = 5
@@ -27,8 +25,10 @@ class Gamba(commands.Cog, name="Gamba"):
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
             bal = u.balance
-            if type(amount) == str and amount.lower() in all_array:
+            if type(amount) == str and amount.lower() in "all":
                 amount = u.balance
+            elif type(amount) == str and amount.lower() in "half":
+                amount = u.balance / 2
             else:
                 amount = int(amount)
             if amount > int(bal):
@@ -67,8 +67,10 @@ class Gamba(commands.Cog, name="Gamba"):
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
             bal = u.balance
-            if type(amount) == str and amount.lower() in all_array:
+            if type(amount) == str and amount.lower() in "all":
                 amount = u.balance
+            elif type(amount) == str and amount.lower() in "half":
+                amount = u.balance / 2
             else:
                 amount = int(amount)
             if amount > bal:
@@ -102,8 +104,10 @@ class Gamba(commands.Cog, name="Gamba"):
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
 
-            if type(amount) == str and amount.lower() in all_array:
+            if type(amount) == str and amount.lower() in "all":
                 amount = u.balance
+            elif type(amount) == str and amount.lower() in "half":
+                amount = u.balance / 2
             else:
                 amount = int(amount)
             if amount == 0:

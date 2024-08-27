@@ -12,8 +12,6 @@ import random
 import json
 import asyncio
 
-all_array = ['all', 'ALL', 'al', 'alll']
-
 class UserCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -531,8 +529,10 @@ class UserCommands(commands.Cog):
 
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
-            if type(amount) == str and amount.lower() in all_array:
+            if type(amount) == str and amount.lower() in "all":
                 amount = u.balance
+            elif type(amount) == str and amount.lower() in "half":
+                amount = u.balance / 2
             else:
                 amount = int(amount)
             if amount == 0:
@@ -563,8 +563,10 @@ class UserCommands(commands.Cog):
 
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
-            if type(amount) == str and amount.lower() in all_array:
+            if type(amount) == str and amount.lower() in "all":
                 amount = u.bank
+            elif type(amount) == str and amount.lower() in "half":
+                amount = u.bank / 2
             else:
                 amount = int(amount)
             if amount == 0:
@@ -655,7 +657,7 @@ class UserCommands(commands.Cog):
                 return
 
             # Implement stealing based on a percentage chance for winning and failing
-            steal_success_chance = 100  # 15% chance to succeed
+            steal_success_chance = 15  # 15% chance to succeed
             if random.randint(1, 100) <= steal_success_chance:
                 ret = ""
                 # Determine the amount stolen based on probabilities
