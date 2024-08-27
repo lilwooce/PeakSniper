@@ -50,7 +50,7 @@ class Stocks(commands.Cog):
 
         try:
             user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stockfull_name == name)).first()
+            stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stock.full_name == name)).first()
 
             if not user:
                 await ctx.send("User not found in the database.")
@@ -93,7 +93,7 @@ class Stocks(commands.Cog):
 
         try:
             user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            stock = session.query(Stock).filter_by(name=name).first()
+            stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stock.full_name == name)).first()
 
             if not user:
                 await ctx.send("User not found in the database.")
@@ -161,7 +161,7 @@ class Stocks(commands.Cog):
         session = Session()
 
         try:
-            stock = session.query(Stock.Stock).filter_by(name=name).first()
+            stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stock.full_name == name)).first()
             if not stock:
                 await ctx.send(f"Stock '{name}' not found.")
                 return
