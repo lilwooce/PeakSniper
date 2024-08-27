@@ -44,7 +44,7 @@ class Stocks(commands.Cog):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     @commands.hybrid_command()
-    async def purchase(self, ctx, amount, *, name: str):
+    async def purchase(self, ctx, amount: int, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -86,7 +86,7 @@ class Stocks(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def liquidate(self, ctx, amount, *, name: str):
+    async def liquidate(self, ctx, amount: int, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         
