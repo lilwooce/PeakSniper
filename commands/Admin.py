@@ -11,7 +11,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
 import random
 
-from classes import Servers, User, database, Jobs, ShopItem
+from classes import Servers, User, database, Jobs, ShopItem, Stock
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -19,7 +19,13 @@ updateUser = os.getenv('UPDATE_USER')
 addUser = os.getenv('ADD_USER')
 
 allowed_ids = [347162620996091904]
+admins = [347162620996091904, 187323145273868288]
 def allowed():
+    def predicate(interaction: discord.Interaction) -> bool:
+        return interaction.user.id in allowed_ids
+    return app_commands.check(predicate)
+
+def admins_only():
     def predicate(interaction: discord.Interaction) -> bool:
         return interaction.user.id in allowed_ids
     return app_commands.check(predicate)
@@ -79,6 +85,21 @@ class Admin(commands.Cog):
             session.add(i)
             session.commit()
             await interaction.response.send_message(f"Successfully added a shop item: name {name}, price {price}, uses {uses}, command {command}, type {item_type}, duration {duration} minutes")
+
+        finally:
+            session.close()
+
+    @app_commands.command()
+    @admins_only()
+    async def add_stock(self, interaction: discord.Interaction, name: str, full_name: str, growth_rate: float, start_value:float, volatility: float, swap_chance: float, ruination:float):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            s = Stock.Stock(name, full_name, growth_rate, start_value, volatility, swap_chance, ruination)
+            session.add(s)
+            session.commit()
+            await interaction.response.send_message(f"Successfully added a stock item: name {name}, full_name {full_name}, growth_rate {growth_rate}, start_value {start_value}, volatility {volatility}, swap_chance {swap_chance} ruination {ruination}")
 
         finally:
             session.close()

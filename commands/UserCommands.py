@@ -322,10 +322,11 @@ class UserCommands(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def inventory(self, ctx):
+    async def inventory(self, ctx, user: discord.User):
+        user = user or ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
-
+        
         try:
             # Fetch user data
             user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
@@ -390,7 +391,8 @@ class UserCommands(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def current_effects(self, ctx):
+    async def current_effects(self, ctx, user: discord.User):
+        user = user or ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -591,7 +593,7 @@ class UserCommands(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def steal(self, ctx, user: discord.Member):
+    async def steal(self, ctx, user: discord.User):
         thief = ctx.author
         victim = user
         Session = sessionmaker(bind=database.engine)
