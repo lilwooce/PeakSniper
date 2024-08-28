@@ -405,7 +405,7 @@ class UserCommands(commands.Cog):
         if seconds > 0:
             parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
 
-        return "in " + ", ".join(parts)
+        return ", ".join(parts)
 
     @commands.hybrid_command()
     async def current_effects(self, ctx, user: discord.User = None):
@@ -435,7 +435,7 @@ class UserCommands(commands.Cog):
                     datetime_format = "%Y-%m-%d %H:%M:%S.%f"
                     expires_at = datetime.strptime(expires_at, datetime_format)
                     time_remaining = self.format_time_remaining(expires_at)
-                    embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires at: {time_remaining}", inline=False)
+                    embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires in: {time_remaining}", inline=False)
                 else:
                     embed.add_field(name=item_name, value=f"Effect: {effect['description']}", inline=False)
 
