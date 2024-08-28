@@ -339,6 +339,7 @@ class UserCommands(commands.Cog):
             inventory = json.loads(user.inventory) if user.inventory else {}
             if inventory == {}:
                 await ctx.send("Your inventory is empty")
+                return
 
             # Divide inventory items into pages with a max of 5 items per page
             items = list(inventory.items())
