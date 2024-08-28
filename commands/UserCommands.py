@@ -176,7 +176,7 @@ class UserCommands(commands.Cog):
                 u.total_earned += am
                 u.daily_cooldown = now
                 session.commit()  # Commit the changes to the database
-                await ctx.send(f"You have earned {self.dailyFunds} discoins")
+                await ctx.send(f"You have earned {am} discoins")
             else:
                 # Calculate the remaining time
                 time_left = timedelta(days=1) - (now - dailyCD)
@@ -206,7 +206,7 @@ class UserCommands(commands.Cog):
                 u.total_earned += am
                 u.weekly_cooldown = now
                 session.commit()  # Commit the changes to the database
-                await ctx.send(f"You have earned {self.weeklyFunds} discoins")
+                await ctx.send(f"You have earned {am} discoins")
             else:
                 # Calculate the remaining time
                 time_left = timedelta(days=7) - (now - weeklyCD)
