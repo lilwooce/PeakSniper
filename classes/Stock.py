@@ -3,6 +3,7 @@ import random
 from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP, DATETIME, FLOAT, JSON
 from sqlalchemy.ext.declarative import declarative_base
 import matplotlib.pyplot as plt
+from sqlalchemy.ext.mutable import MutableList
 import base64
 import io
 
@@ -24,7 +25,7 @@ class Stock(Base):
     record_low = Column("record_low", FLOAT)
     record_high = Column("record_high", FLOAT)
     crashed = Column("crashed", Boolean)
-    history = Column("history", JSON)
+    history = Column("history", MutableList.as_mutable(JSON))
 
     def __init__(self, name, full_name, growth_rate, start_value, volatility, swap_chance, ruination):
             self.name = name
