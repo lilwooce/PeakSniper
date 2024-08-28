@@ -117,7 +117,8 @@ class Admin(commands.Cog):
 
             for i, stock in enumerate(stocks, start=1):
                 stock.history.append(stock.current_value)
-                await interaction.response.send_message("Success")
+            session.commit()
+            await interaction.response.send_message("Success")
         finally:
             session.close()
 
