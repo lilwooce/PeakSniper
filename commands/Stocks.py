@@ -92,7 +92,7 @@ class Stocks(commands.Cog):
         finally:
             session.close()
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=['ld'])
     async def liquidate(self, ctx, amount: int, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
@@ -242,7 +242,7 @@ class Stocks(commands.Cog):
             session.close()
 
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=['pf'])
     async def portfolio(self, ctx, user: discord.Member = None):
         Session = sessionmaker(bind=database.engine)
         session = Session()

@@ -107,7 +107,7 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
-    @commands.hybrid_command(description="Display the user's profile.")
+    @commands.hybrid_command(aliases=['p'], description="Display the user's profile.")
     @commands.check(hasAccount)
     async def profile(self, ctx, user: discord.User = None):
         user = user or ctx.author
@@ -319,7 +319,7 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=['inv'])
     async def inventory(self, ctx, user: discord.User = None):
         user = user or ctx.author
         Session = sessionmaker(bind=database.engine)
@@ -411,7 +411,7 @@ class UserCommands(commands.Cog):
 
         return ", ".join(parts)
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=['ce'])
     async def current_effects(self, ctx, user: discord.User = None):
         user = user or ctx.author
         Session = sessionmaker(bind=database.engine)
@@ -548,7 +548,7 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
     
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=['dep'])
     async def deposit(self, ctx, amount):
         author = ctx.author
         Session = sessionmaker(bind=database.engine)
@@ -582,7 +582,7 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
     
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=['with'])
     async def withdraw(self, ctx, amount):
         author = ctx.author
         Session = sessionmaker(bind=database.engine)
