@@ -433,7 +433,7 @@ class UserCommands(commands.Cog):
                 expires_at = effect.get('expires_at', None)
                 if expires_at:
                     datetime_format = "%Y-%m-%d %H:%M:%S.%f"
-                    expires_at = datetime.datetime.strptime(expires_at, datetime_format)
+                    expires_at = datetime.strptime(expires_at, datetime_format)
                     time_remaining = self.format_time_remaining(expires_at)
                     embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires at: {time_remaining}", inline=False)
                 else:
