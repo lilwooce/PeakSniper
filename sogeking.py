@@ -102,7 +102,7 @@ class Client(commands.Bot):
                         expires_at = datetime.datetime.strptime(expires_at_str, datetime_format)
                         if expires_at < datetime.datetime.now():
                             # Effect has expired
-                            discord_user = self.bot.get_user(user.user_id)
+                            discord_user = self.get_user(user.user_id)
                             if discord_user:
                                 await discord_user.send(f"The effect of {item_name} has expired.")
                             await self.remove_effect(user.user_id, item_name)

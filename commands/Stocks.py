@@ -306,11 +306,11 @@ class Stocks(commands.Cog):
                     prev_total += prev_value
                     embed.add_field(
                         name=stock_name,
-                        value=f"Shares: {shares}\nCurrent Value: {value} discoins\nPrevious Value: {prev_value}",
+                        value=f"Shares: {shares}\nCurrent Value: {value} discoins\nPrevious Value: {prev_value} discoins",
                         inline=False
                     )
 
-            embed.set_footer(text=f"Total Portfolio Value: {total_value} discoins\nPrevious Value: {prev_total}\nPercent Change: {(((total_value - prev_total) / prev_total) * 100): .2f}")
+            embed.set_footer(text=f"Total Portfolio Value: {total_value} discoins\nPrevious Value: {prev_total} discoins\nPercent Change: {(((total_value - prev_total) / prev_total) * 100): .2f}")
             await ctx.send(embed=embed)
 
         except Exception as e:
