@@ -324,8 +324,8 @@ class UserCommands(commands.Cog):
             session.close()
 
     @commands.hybrid_command(aliases=['inv'])
-    async def inventory(self, ctx, user: discord.User = None):
-        user = user or ctx.author
+    async def inventory(self, ctx):
+        user = ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
         
@@ -417,8 +417,8 @@ class UserCommands(commands.Cog):
         return ", ".join(parts)
 
     @commands.hybrid_command(aliases=['ce'])
-    async def current_effects(self, ctx, user: discord.User = None):
-        user = user or ctx.author
+    async def current_effects(self, ctx):
+        user = ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
