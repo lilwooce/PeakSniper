@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from sqlalchemy import desc, func
 from sqlalchemy.orm import sessionmaker
 from classes import User, database, Stock
+import logging
 
 class Leaderboard(commands.Cog, name="Leaderboard"):
     def __init__(self, client: commands.Bot):
@@ -51,7 +52,7 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
 
         except Exception as e:
             await interaction.response.send_message("An error occurred while retrieving the leaderboard.", ephemeral=True)
-            print(f"Error: {e}")
+            logging.warning(f"Error: {e}")
 
         finally:
             session.close()
