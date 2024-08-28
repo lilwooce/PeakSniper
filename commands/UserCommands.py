@@ -839,8 +839,8 @@ class UserCommands(commands.Cog):
                 elif fail_outcome <= 41:  # 1% chance to get away scot-free
                     await ctx.send(f"The heist failed, but {thief.name} managed to get away scot-free with no losses.")
                 elif fail_outcome <= 61:  # 20% chance to get shot by the police and can't work for 10 minutes
-                    t.injury = current_time + timedelta(minutes=10)
-                    await ctx.send(f"The heist failed, {thief.name} got shot by the police and cannot work for 10 minutes.")
+                    t.injury = current_time + timedelta(minutes=15)
+                    await ctx.send(f"The heist failed, {thief.name} got shot by the police and cannot work for 15 minutes.")
                 else:  # 39% chance to get caught and lose 1000 discoins
                     t.balance = max(t.balance - 10000, 0)
                     await ctx.send(f"The heist failed, and {thief.name} got caught! They lost 10000 discoins.")
