@@ -40,6 +40,7 @@ class Stock(Base):
             self.record_high = start_value
             self.crashed = False
             self.history = [self.current_value]
+            self.graph_base64 = ""
             
     def update(self):
         # Check for ruination (complete crash)
