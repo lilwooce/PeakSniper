@@ -771,8 +771,8 @@ class UserCommands(commands.Cog):
 
             # Check if the user is on cooldown
             current_time = datetime.now()
-            if t.steal_cooldown and current_time < t.steal_cooldown:
-                remaining_time = (t.steal_cooldown - current_time).total_seconds()
+            if t.heist_cooldown and current_time < t.heist_cooldown:
+                remaining_time = (t.heist_cooldown - current_time).total_seconds()
                 minutes, seconds = divmod(remaining_time, 60)
                 await ctx.send(f"You are on cooldown! Please wait {int(minutes)} minutes and {int(seconds)} seconds before attempting a heist again.")
                 return
@@ -806,7 +806,7 @@ class UserCommands(commands.Cog):
 
                 # Adjust the balances of the thief and the victim
                 t.balance += stolen_amount
-                v.balance -= stolen_amount
+                v.bank -= stolen_amount
                 await ctx.send(ret)
                 await victim.send(f"{thief.name} has stolen {stolen_amount} discoins from you in a heist.")
 
@@ -835,7 +835,7 @@ class UserCommands(commands.Cog):
                 elif fail_outcome <= 41:  # 1% chance to get away scot-free
                     await ctx.send(f"The heist failed, but {thief.name} managed to get away scot-free with no losses.")
                 elif fail_outcome <= 61:  # 20% chance to get shot by the police and can't work for 10 minutes
-                    t.work_cooldown = current_time + timedelta(minutes=10)
+                    t.injury = current_time + timedelta(minutes=10)
                     await ctx.send(f"The heist failed, {thief.name} got shot by the police and cannot work for 10 minutes.")
                 else:  # 39% chance to get caught and lose 1000 discoins
                     t.balance = max(t.balance - 10000, 0)

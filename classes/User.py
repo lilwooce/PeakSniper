@@ -28,6 +28,8 @@ class User(Base):
     daily_cooldown = Column("daily_cooldown", DATETIME)
     weekly_cooldown = Column("weekly_cooldown", DATETIME)
     steal_cooldown = Column("steal_cooldown", DATETIME)
+    injury = Column("injury", DATETIME)
+    heist_cooldown = Column("heist_cooldown", DATETIME)
     jobs = Column("jobs", JSON)
     inventory = Column("inventory", JSON)
     used_items = Column("used_items", JSON)
@@ -52,6 +54,8 @@ class User(Base):
         self.daily_cooldown = ""
         self.weekly_cooldown = ""
         self.steal_cooldown = ""
+        self.injury = ""
+        self.heist_cooldown = ""
         self.jobs = {}
         self.inventory = {}
         self.used_items = {}

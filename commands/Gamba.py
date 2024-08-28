@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from classes import User, database
 from classes import Servers, User, database, Jobs
 import json
+from datetime import datetime
 
 class Gamba(commands.Cog, name="Gamba"):
     def __init__(self, client: commands.Bot):
@@ -218,6 +219,13 @@ class Gamba(commands.Cog, name="Gamba"):
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
             user_jobs = json.loads(u.jobs)
             job_name = user_jobs[f'{ctx.guild.id}']
+
+            current_time = datetime.now()
+            if u.injury and current_time < u.injury:
+                remaining_time = (u.injury - current_time).total_seconds()
+                minutes, seconds = divmod(remaining_time, 60)
+                await ctx.send(f"You are injured! Please wait {int(minutes)} minutes and {int(seconds)} seconds before attempting to work again.")
+                return
             
             if job_name is None:
                 await ctx.send("Job not found for this server. Please apply first before working.")
