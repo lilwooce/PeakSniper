@@ -17,6 +17,8 @@ class UserCommands(commands.Cog):
         self.bot = bot
         self.dailyFunds = 250
         self.weeklyFunds = 2500
+        self.dailyMulti = .05
+        self.weeklyMulti = .15
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -169,7 +171,7 @@ class UserCommands(commands.Cog):
             now = datetime.now()
             
             if (now - dailyCD).days >= 1:
-                u.balance += self.dailyFunds
+                u.balance += ((self.balance + self.bank) * self.dailyMulti) + self.dailyFunds
                 u.total_earned += self.dailyFunds
                 u.daily_cooldown = now
                 session.commit()  # Commit the changes to the database
@@ -198,7 +200,7 @@ class UserCommands(commands.Cog):
             now = datetime.now()
             
             if (now - weeklyCD).days >= 7:
-                u.balance += self.weeklyFunds
+                u.balance += ((self.balance + self.bank) * self.weeklyMulti) + self.weeklyFunds
                 u.total_earned += self.weeklyFunds
                 u.weekly_cooldown = now
                 session.commit()  # Commit the changes to the database
