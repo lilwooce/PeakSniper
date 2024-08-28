@@ -16,6 +16,7 @@ import json
 import datetime
 
 from classes import Servers, User, database
+from commands.UserCommands import remov
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -103,9 +104,13 @@ class Client(commands.Bot):
                         if expires_at < datetime.datetime.now():
                             # Effect has expired
                             discord_user = self.get_user(user.user_id)
+                            used_items = json.loads(u.used_items) if u.used_items else {}
+                            if item_name in used_items:
+                                del used_items[item_name]
+                                user.used_items = json.dumps(used_items)
+                                self.session.commit()
                             if discord_user:
                                 await discord_user.send(f"The effect of {item_name} has expired.")
-                            await self.remove_effect(user.user_id, item_name)
         except Exception as e:
             logging.warning(f"Error on bot startup: {e}")
         finally:
