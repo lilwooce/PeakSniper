@@ -781,8 +781,8 @@ class UserCommands(commands.Cog):
                 await ctx.send("You cannot attempt a heist without having at least 10000 in your wallet.")
                 return
 
-            if v.balance < 10000:
-                await ctx.send("They don't even have 10000 discoins to their name... a heist would be pointless.")
+            if v.bank < 10000:
+                await ctx.send("They don't even have 10000 discoins in their bank... a heist would be pointless.")
                 return
 
             # Implement heist with a 30% chance to succeed
