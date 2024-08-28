@@ -222,7 +222,7 @@ class Stocks(commands.Cog):
                 image_data = f"data:image/png;base64,{stock.graph()}"
                 embed2.set_image(url=image_data)
             except:
-                await ctx.send(embed=embed1)
+                logging.warning("cannot retrieve graph")
 
             # Pagination logic
             pages = [embed1, embed2]
