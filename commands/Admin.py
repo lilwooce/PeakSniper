@@ -102,6 +102,24 @@ class Admin(commands.Cog):
             await interaction.response.send_message(f"Successfully added a stock item: name {name}, full_name {full_name}, growth_rate {growth_rate}, start_value {start_value}, volatility {volatility}, swap_chance {swap_chance} ruination {ruination}")
         finally:
             session.close()
+    
+    @app_commands.command()
+    @allowed()
+    async def add_current_stock(self, interaction: discord.Interaction):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            stocks = session.query(Stock.Stock).all()
+            if not stocks:
+                await interaction.response.send_message("No stocks available at the moment.")
+                return
+
+            for i, stock in enumerate(stocks, start=1):
+                stock.history.append(stock.current_value)
+                await interaction.response.send_message("Success")
+        finally:
+            session.close()
 
     @app_commands.command()
     @allowed()

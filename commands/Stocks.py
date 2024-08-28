@@ -167,6 +167,7 @@ class Stocks(commands.Cog):
 
             await message.add_reaction("◀️")
             await message.add_reaction("▶️")
+            session.close()
 
             def check(reaction, user):
                 return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"] and reaction.message.id == message.id
@@ -192,7 +193,7 @@ class Stocks(commands.Cog):
             logging.warning(f"Error: {e}")
 
         finally:
-            session.close()
+            session.close() if session else None
 
     @commands.hybrid_command()
     async def stock(self, ctx, *, name: str):
@@ -260,7 +261,7 @@ class Stocks(commands.Cog):
             logging.warning(f"Error: {e}")
 
         finally:
-            session.close()
+            session.close() if session else None
 
     @commands.hybrid_command()
     async def portfolio(self, ctx, user: discord.Member = None):

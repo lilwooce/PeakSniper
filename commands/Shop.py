@@ -44,6 +44,7 @@ class Shop(commands.Cog):
 
             # Send the first embed
             message = await ctx.send(embed=create_embed(current_page))
+            session.close()
 
             # Add reactions if there are multiple pages
             if len(pages) > 1:
@@ -76,7 +77,7 @@ class Shop(commands.Cog):
                 await message.clear_reactions()
 
         finally:
-            session.close()
+            session.close() if session else None
 
             
     @app_commands.command()
