@@ -6,6 +6,7 @@ from sqlalchemy import desc, func
 from sqlalchemy.orm import sessionmaker
 from classes import User, database, Stock
 import logging
+import json
 
 class Leaderboard(commands.Cog, name="Leaderboard"):
     def __init__(self, client: commands.Bot):
@@ -33,13 +34,16 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
                 if u.user_id in users:
                     member = guild.get_member(u.user_id)
                     if member:
-                        portfolio = u.portfolio
                         total_value = 0
-                        for stock_name, shares in portfolio.items():
-                            stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
-                            if stock:
-                                value = int(stock.current_value) * shares
-                                total_value += value
+                        portfolio = json.loads(u.portfolio) if u.portfolio else {}
+                        if not portfolio or len(portfolio) <= 0:
+                            total_value = 0
+                        else:
+                            for stock_name, shares in portfolio.items():
+                                stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
+                                if stock:
+                                    value = int(stock.current_value) * shares
+                                    total_value += value
                         embed.add_field(name=member.display_name, value=f"{u.balance + u.bank + total_value} discoins", inline=False)
                         count += 1
                         if count >= 10:  # Display top 10 users
