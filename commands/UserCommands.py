@@ -881,7 +881,50 @@ class UserCommands(commands.Cog):
             return True
         return False
 
+    @commands.hybrid_command(aliases=['cd'])
+    async def cooldowns(self, ctx):
+        # Retrieve the user data from the database
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
 
+        try:
+            user = session.query(User).filter(User.user_id == ctx.author.id).first()
+
+            if not user:
+                await ctx.send("User not found in the database.")
+                return
+
+            # Get the current time
+            now = datetime.now()
+
+            # Calculate remaining cooldown times
+            def format_time(end_time):
+                if end_time < now:
+                    return "Ready"
+                return str(end_time - now).split('.')[0]
+
+            cooldowns = {
+                "Daily Cooldown": user.daily_cooldown,
+                "Weekly Cooldown": user.weekly_cooldown,
+                "Steal Cooldown": user.steal_cooldown,
+                "Injury": user.injury,
+                "Heist Cooldown": user.heist_cooldown
+            }
+
+            embed = discord.Embed(title="Cooldowns", color=discord.Color.blue())
+
+            for name, end_time in cooldowns.items():
+                if isinstance(end_time, str) and end_time == "":
+                    remaining = "Not Set"
+                else:
+                    end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S.%f")
+                    remaining = format_time(end_time)
+                
+                embed.add_field(name=name, value=remaining, inline=False)
+
+            await ctx.send(embed=embed)
+        finally:
+            session.close()
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
