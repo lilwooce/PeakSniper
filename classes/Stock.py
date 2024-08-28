@@ -1,7 +1,10 @@
 import json
 import random
-from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP, DATETIME, FLOAT
+from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, TIMESTAMP, DATETIME, FLOAT, JSON
 from sqlalchemy.ext.declarative import declarative_base
+import matplotlib.pyplot as plt
+import base64
+import io
 
 Base = declarative_base()
 
@@ -21,6 +24,7 @@ class Stock(Base):
     record_low = Column("record_low", FLOAT)
     record_high = Column("record_high", FLOAT)
     crashed = Column("crashed", Boolean)
+    history = Column("history", JSON)
 
     def __init__(self, name, full_name, growth_rate, start_value, volatility, swap_chance, ruination):
             self.name = name
@@ -35,7 +39,8 @@ class Stock(Base):
             self.record_low = start_value
             self.record_high = start_value
             self.crashed = False
-    
+            self.history = [self.current_value]
+            
     def update(self):
         # Check for ruination (complete crash)
         if random.random() < self.ruination and not self.crashed:
@@ -61,6 +66,7 @@ class Stock(Base):
         # Update record low and high
         self.record_low = min(self.record_low, self.current_value)
         self.record_high = max(self.record_high, self.current_value)
+        self.history.append(self.current_value)
 
         # After the first update post-crash, remove the crashed flag
         if self.crashed:
@@ -93,3 +99,24 @@ class Stock(Base):
             return f"{self.full_name} ({self.name}): {display_value} đ (Crashed)"
         
         return f"{self.full_name} ({self.name}): {display_value} đ ({abs(percent_change):.2f}% {direction}, {stability}, {self.growth_direction})"
+    
+    def graph(self):
+        # Generate the graph and save it as a base64-encoded string
+        plt.figure(figsize=(6, 4))
+        plt.plot(self.history, label=self.name)
+        plt.axis([0, len(self.history)*3, 0, max(self.history)])
+        plt.xlabel('Time (hours)')
+        plt.ylabel('Value (Discoins)')
+        plt.title(f'Stock Value Over Time: {self.name}')
+        plt.legend()
+        plt.grid(True)
+        
+        # Save the plot to a BytesIO object
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png')
+        plt.close()
+        
+        # Encode the image to base64
+        buf.seek(0)
+        self.graph_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return self.graph_base64

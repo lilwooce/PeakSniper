@@ -104,8 +104,5 @@ class Shop(commands.Cog):
         finally:
             session.close()
 
-
-        
-
 async def setup(bot):
     await bot.add_cog(Shop(bot))
