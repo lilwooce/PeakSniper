@@ -102,9 +102,18 @@ class Stock(Base):
     
     def graph(self):
         # Generate the graph and save it as a base64-encoded string
+            # Ensure that self.history is not empty and has numeric values
+        if not self.history or not all(isinstance(value, (int, float)) for value in self.history):
+            raise ValueError("History data must be a list of numeric values and cannot be empty.")
+
+        # Generate the graph and save it as a base64-encoded string
         plt.figure(figsize=(6, 4))
-        plt.plot(self.history, label=self.name)
-        plt.axis([0, len(self.history)*3, 0, max(self.history)])
+        
+        # Plot the history data
+        plt.plot(range(len(self.history)), self.history, label=self.name)  # Use range to create x-axis values
+
+        # Set axis limits
+        plt.axis([0, len(self.history) - 1, 0, max(self.history)])
         plt.xlabel('Time (hours)')
         plt.ylabel('Value (Discoins)')
         plt.title(f'Stock Value Over Time: {self.name}')
