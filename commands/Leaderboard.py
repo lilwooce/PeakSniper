@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 from discord import app_commands
 from dotenv import load_dotenv
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 from sqlalchemy.orm import sessionmaker
 from classes import User, database
 
@@ -11,7 +11,7 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
         self.client = client
 
     @app_commands.command(name="leaderboard", description="Display the richest users in the server.")
-    async def leaderboard(self, interaction: discord.Interaction):
+    async def leaderboard(self, interaction: discord.Interaction, stat: str = "Wealth"):
         guild = interaction.guild
         if not guild:
             await interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
@@ -24,8 +24,8 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
             users = [member.id for member in guild.members if not member.bot]
             embed = discord.Embed(title=f"Richest Users in {guild.name}", color=discord.Color.gold())
 
-            # Query the database for users in this server, ordered by balance
-            database_users = session.query(User.User).order_by(desc(User.User.balance)).all()
+            # Query to order users by the combined total of balance and bank
+            database_users = session.query(User.User).order_by(desc(func.coalesce(User.User.balance, 0) + func.coalesce(User.User.bank, 0))).all()
 
             count = 0
             for u in database_users:

@@ -701,7 +701,7 @@ class UserCommands(commands.Cog):
 
                 # Adjust the balances of the thief and the victim
                 t.balance += stolen_amount
-                v.balance = max(v.balance - stolen_amount, 0)
+                v.balance -= stolen_amount
                 await ctx.send(ret)
                 await victim.send(f"{thief.name} has stolen {stolen_amount} discoins from you.")
             else:
