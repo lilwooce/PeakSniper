@@ -74,7 +74,7 @@ class Stocks(commands.Cog):
                 return
 
             user.balance -= total_cost
-            user.total_lost -= total_cost
+            user.total_lost += total_cost
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
             portfolio[stock.name] = portfolio.get(stock.name, 0) + amount
 
