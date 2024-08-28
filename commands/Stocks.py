@@ -145,7 +145,7 @@ class Stocks(commands.Cog):
 
             embed = discord.Embed(title="Available Stocks", color=discord.Color.blue())
             for stock in stocks:
-                percent_change = self.get_percentage_change()
+                percent_change = stock.get_percentage_change()
                 embed.add_field(
                     name=stock.name,
                     value=f"Value: {stock.current_value:.2000f} discoins\nPercent Change: {percent_change:.2000f}%",
