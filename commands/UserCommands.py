@@ -732,106 +732,130 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
     
-    @commands.hybrid_command()
-    async def heist(self, ctx, user: discord.User):
-        thief = ctx.author
-        victim = user
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
+    # @commands.hybrid_command()
+    # async def heist(self, ctx, user: discord.User):
+    #     thief = ctx.author
+    #     victim = user
+    #     Session = sessionmaker(bind=database.engine)
+    #     session = Session()
 
-        if thief == victim:
-            await ctx.send("You can't rob yourself...")
-            return
+    #     if thief == victim:
+    #         await ctx.send("You can't rob yourself...")
+    #         return
 
-        try:
-            t = session.query(User.User).filter_by(user_id=thief.id).first()
-            v = session.query(User.User).filter_by(user_id=victim.id).first()
-            v_used_items = json.loads(v.used_items) if v.used_items else {}
-            t_used_items = json.loads(t.used_items) if t.used_items else {}
+    #     try:
+    #         t = session.query(User.User).filter_by(user_id=thief.id).first()
+    #         v = session.query(User.User).filter_by(user_id=victim.id).first()
+    #         v_used_items = json.loads(v.used_items) if v.used_items else {}
+    #         t_used_items = json.loads(t.used_items) if t.used_items else {}
 
-            # Check if the user is on cooldown
-            current_time = datetime.now()
-            if t.steal_cooldown and current_time < t.steal_cooldown:
-                remaining_time = (t.steal_cooldown - current_time).total_seconds()
-                minutes, seconds = divmod(remaining_time, 60)
-                await ctx.send(f"You are on cooldown! Please wait {int(minutes)} minutes and {int(seconds)} seconds before attempting a heist again.")
-                return
+    #         # Check if the user is on cooldown
+    #         current_time = datetime.now()
+    #         if t.steal_cooldown and current_time < t.steal_cooldown:
+    #             remaining_time = (t.steal_cooldown - current_time).total_seconds()
+    #             minutes, seconds = divmod(remaining_time, 60)
+    #             await ctx.send(f"You are on cooldown! Please wait {int(minutes)} minutes and {int(seconds)} seconds before attempting a heist again.")
+    #             return
 
-            if t.balance < 10000:
-                await ctx.send("You cannot attempt a heist without having at least 10000 in your wallet.")
-                return
+    #         if t.balance < 10000:
+    #             await ctx.send("You cannot attempt a heist without having at least 10000 in your wallet.")
+    #             return
 
-            if v.balance < 10000:
-                await ctx.send("They don't even have 10000 discoins to their name... a heist would be pointless.")
-                return
+    #         if v.balance < 10000:
+    #             await ctx.send("They don't even have 10000 discoins to their name... a heist would be pointless.")
+    #             return
 
-            # Implement heist with a 30% chance to succeed
-            heist_success_chance = 30  # 30% chance to succeed
-            if random.randint(1, 100) <= heist_success_chance:
-                ret = ""
-                # Determine the amount stolen based on probabilities
-                steal_outcome = random.randint(1, 100)
-                if steal_outcome <= 65:  # 65% chance to steal 30% of victim's balance
-                    stolen_amount = int(v.balance * 0.30)
-                    ret = f"**PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 30% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
-                elif steal_outcome <= 90:  # 25% chance to steal 49% of victim's balance
-                    stolen_amount = int(v.balance * 0.49)
-                    ret = f"**BIG PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 49% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
-                elif steal_outcome <= 99:  # 14% chance to steal 75% of victim's balance
-                    stolen_amount = int(v.balance * 0.75)
-                    ret = f"**HUGE PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 75% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
-                else:  # 1% chance to steal 99% of victim's balance
-                    stolen_amount = int(v.balance * 0.99)
-                    ret = f"**MASSIVE PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 99% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+    #         # Implement heist with a 30% chance to succeed
+    #         heist_success_chance = 30  # 30% chance to succeed
+    #         if random.randint(1, 100) <= heist_success_chance:
+    #             ret = ""
+    #             # Determine the amount stolen based on probabilities
+    #             steal_outcome = random.randint(1, 100)
+    #             if steal_outcome <= 65:  # 65% chance to steal 30% of victim's balance
+    #                 stolen_amount = int(v.bank * 0.30)
+    #                 ret = f"**PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 30% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+    #             elif steal_outcome <= 90:  # 25% chance to steal 49% of victim's bank
+    #                 stolen_amount = int(v.bank * 0.49)
+    #                 ret = f"**BIG PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 49% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+    #             elif steal_outcome <= 99:  # 14% chance to steal 75% of victim's bank
+    #                 stolen_amount = int(v.bank * 0.75)
+    #                 ret = f"**HUGE PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 75% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
+    #             else:  # 1% chance to steal 99% of victim's bank
+    #                 stolen_amount = int(v.bank * 0.99)
+    #                 ret = f"**MASSIVE PAYOUT** YOU PULLED OFF THE HEIST SUCCESSFULLY AND STOLE 99% OF THEIR MONEY +{stolen_amount} TO YOU!!!"
 
-                # Adjust the balances of the thief and the victim
-                t.balance += stolen_amount
-                v.balance -= stolen_amount
-                await ctx.send(ret)
-                await victim.send(f"{thief.name} has stolen {stolen_amount} discoins from you in a heist.")
+    #             # Adjust the balances of the thief and the victim
+    #             t.balance += stolen_amount
+    #             v.balance -= stolen_amount
+    #             await ctx.send(ret)
+    #             await victim.send(f"{thief.name} has stolen {stolen_amount} discoins from you in a heist.")
 
-                # Check if the victim has insurance
-                if "insurance" in v_used_items:
-                    insurance_payout = stolen_amount // 2
-                    v.balance += insurance_payout
-                    await victim.send(f"Your insurance covered you for half of the stolen amount. You received {insurance_payout} discoins back.")
-                    del v_used_items["insurance"]
-                    v.used_items = json.dumps(v_used_items)
-            else:
-                # Failed heist
-                fail_outcome = random.randint(1, 100)
-                if fail_outcome <= 10:  # 10% chance to lose everything and become a beggar
-                    guild = ctx.guild
-                    t.balance = 0
-                    current_jobs = json.loads(t.jobs) if t.jobs else {}
-                    current_jobs[str(guild.id)] = "beggar"
-                    t.jobs = json.dumps(current_jobs)
-                    await ctx.send(f"The heist failed disastrously! {thief.name} lost all their discoins and their job, becoming a beggar.")
-                elif fail_outcome <= 40:  # 30% chance to lose half of your money
-                    loss_amount = t.balance // 2
-                    t.balance -= loss_amount
-                    await ctx.send(f"The heist failed, and {thief.name} lost half of their discoins, totaling {loss_amount} discoins.")
-                elif fail_outcome <= 41:  # 1% chance to get away scot-free
-                    await ctx.send(f"The heist failed, but {thief.name} managed to get away scot-free with no losses.")
-                elif fail_outcome <= 61:  # 20% chance to get shot by the police and can't work for 10 minutes
-                    t.work_cooldown = current_time + timedelta(minutes=10)
-                    await ctx.send(f"The heist failed, {thief.name} got shot by the police and cannot work for 10 minutes.")
-                else:  # 39% chance to get caught and lose 1000 discoins
-                    t.balance = max(t.balance - 10000, 0)
-                    await ctx.send(f"The heist failed, and {thief.name} got caught! They lost 10000 discoins.")
+    #             # Check if the victim has insurance
+    #             if "insurance" in v_used_items:
+    #                 insurance_payout = stolen_amount // 2
+    #                 v.bank += insurance_payout
+    #                 await victim.send(f"Your insurance covered you for half of the stolen amount. You received {insurance_payout} discoins back.")
+    #                 del v_used_items["insurance"]
+    #                 v.used_items = json.dumps(v_used_items)
+    #         else:
+    #             # Failed heist
+    #             fail_outcome = random.randint(1, 100)
+    #             if fail_outcome <= 10:  # 10% chance to lose everything and become a beggar
+    #                 guild = ctx.guild
+    #                 t.bank = 0
+    #                 t.balance = 0
+    #                 current_jobs = json.loads(t.jobs) if t.jobs else {}
+    #                 current_jobs[str(guild.id)] = "beggar"
+    #                 t.jobs = json.dumps(current_jobs)
+    #                 await ctx.send(f"The heist failed disastrously! {thief.name} lost all their discoins and their job, becoming a beggar.")
+    #             elif fail_outcome <= 40:  # 30% chance to lose half of your money
+    #                 loss_amount = t.balance // 2
+    #                 t.balance -= loss_amount
+    #                 await ctx.send(f"The heist failed, and {thief.name} lost half of their discoins, totaling {loss_amount} discoins.")
+    #             elif fail_outcome <= 41:  # 1% chance to get away scot-free
+    #                 await ctx.send(f"The heist failed, but {thief.name} managed to get away scot-free with no losses.")
+    #             elif fail_outcome <= 61:  # 20% chance to get shot by the police and can't work for 10 minutes
+    #                 t.work_cooldown = current_time + timedelta(minutes=10)
+    #                 await ctx.send(f"The heist failed, {thief.name} got shot by the police and cannot work for 10 minutes.")
+    #             else:  # 39% chance to get caught and lose 1000 discoins
+    #                 t.balance = max(t.balance - 10000, 0)
+    #                 await ctx.send(f"The heist failed, and {thief.name} got caught! They lost 10000 discoins.")
 
-            # Set cooldown
-            t.heist_cooldown = current_time + timedelta(minutes=15)
+    #         # Set cooldown
+    #         t.heist_cooldown = current_time + timedelta(minutes=15)
 
-            # Commit the changes to the database
-            session.commit()
+    #         # Commit the changes to the database
+    #         session.commit()
 
-        except Exception as e:
-            await ctx.send("An error occurred while attempting the heist.", ephemeral=True)
-            logging.warning(f"Error: {e}")
+    #     except Exception as e:
+    #         await ctx.send("An error occurred while attempting the heist.", ephemeral=True)
+    #         logging.warning(f"Error: {e}")
 
-        finally:
-            session.close()
+    #     finally:
+    #         session.close()
+
+    def deduct_money(user, total_cost):
+        """
+        Deducts the specified total cost from the user's balance first, 
+        then from the bank if necessary.
+
+        Parameters:
+            user (User): The user whose money will be deducted.
+            total_cost (int): The total amount to deduct.
+
+        Returns:
+            bool: True if the deduction was successful, False if not enough money.
+        """
+        if user.balance >= total_cost:
+            user.balance -= total_cost
+            return True
+        elif user.balance + user.bank >= total_cost:
+            amount_from_balance = user.balance
+            amount_from_bank = total_cost - amount_from_balance
+            user.balance = 0
+            user.bank -= amount_from_bank
+            return True
+        return False
 
 
 
