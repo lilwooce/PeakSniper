@@ -103,7 +103,7 @@ class Client(commands.Bot):
                         if expires_at < datetime.datetime.now():
                             # Effect has expired
                             discord_user = self.get_user(user.user_id)
-                            used_items = json.loads(u.used_items) if u.used_items else {}
+                            used_items = json.loads(user.used_items) if user.used_items else {}
                             if item_name in used_items:
                                 del used_items[item_name]
                                 user.used_items = json.dumps(used_items)
