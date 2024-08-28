@@ -151,7 +151,7 @@ class Stocks(commands.Cog):
                 percent_change = stock.get_percentage_change()
                 embed.add_field(
                     name=stock.name,
-                    value=f"Value: {stock.current_value:.2f} discoins\nPercent Change: {percent_change:.2f}%",
+                    value=f"Value: {stock.current_value} discoins\nPercent Change: {percent_change:.2f}%",
                     inline=False
                 )
                 if i % 4 == 0 or i == len(stocks):
@@ -213,9 +213,9 @@ class Stocks(commands.Cog):
             # Create first page embed
             embed1 = discord.Embed(title=f"Details for {stock.name}", color=discord.Color.green())
             embed1.add_field(name="Full Name", value=stock.full_name, inline=False)
-            embed1.add_field(name="Current Value", value=f"{stock.current_value:.2f} discoins", inline=False)
-            embed1.add_field(name="Record Low", value=f"{stock.record_low:.2f} discoins", inline=False)
-            embed1.add_field(name="Record High", value=f"{stock.record_high:.2f} discoins", inline=False)
+            embed1.add_field(name="Current Value", value=f"{stock.current_value:} discoins", inline=False)
+            embed1.add_field(name="Record Low", value=f"{stock.record_low:} discoins", inline=False)
+            embed1.add_field(name="Record High", value=f"{stock.record_high:} discoins", inline=False)
             embed1.add_field(name="Status", value="Crashed" if stock.crashed else stock.is_stable().title(), inline=False)
             
             # Create second page embed with image
@@ -306,11 +306,11 @@ class Stocks(commands.Cog):
                     prev_total += prev_value
                     embed.add_field(
                         name=stock_name,
-                        value=f"Shares: {shares}\nCurrent Value: {value:.2f} discoins\nPrevious Value: {prev_value: .2f}",
+                        value=f"Shares: {shares}\nCurrent Value: {value} discoins\nPrevious Value: {prev_value}",
                         inline=False
                     )
 
-            embed.set_footer(text=f"Total Portfolio Value: {total_value:.2f} discoins\nPrevious Value: {prev_total: .2f}\nPercent Change: {((total_value - prev_total) / prev_total) * 100}")
+            embed.set_footer(text=f"Total Portfolio Value: {total_value} discoins\nPrevious Value: {prev_total}\nPercent Change: {(((total_value - prev_total) / prev_total) * 100): .2f}")
             await ctx.send(embed=embed)
 
         except Exception as e:

@@ -98,7 +98,7 @@ class Client(commands.Bot):
                 for item_name, effect in used_items.items():
                     expires_at_str = effect.get('expires_at')
                     if expires_at_str:
-                        datetime_format = "%Y-%m-%d %H:%M:%S"
+                        datetime_format = "%Y-%m-%d %H:%M:%S.%f"
                         expires_at = datetime.datetime.strptime(expires_at_str, datetime_format)
                         if expires_at < datetime.datetime.now():
                             # Effect has expired
