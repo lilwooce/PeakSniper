@@ -10,6 +10,7 @@ import os
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
 import random
+import json
 
 from classes import Servers, User, database, Jobs, ShopItem, Stock
 
@@ -116,8 +117,10 @@ class Admin(commands.Cog):
                 return
 
             for i, stock in enumerate(stocks, start=1):
-                stock.history.append(stock.previous_value)
-                stock.history.append(stock.current_value)
+                history = json.loads(stock.history)
+                history.append(stock.previous_value)
+                history.append(stock.current_value)
+                stock.history = json.dumps(history)
             session.commit()
             await interaction.response.send_message("Success")
         finally:
