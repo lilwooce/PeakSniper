@@ -16,7 +16,6 @@ import json
 import datetime
 
 from classes import Servers, User, database
-from commands.UserCommands import remov
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
