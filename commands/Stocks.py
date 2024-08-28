@@ -218,7 +218,7 @@ class Stocks(commands.Cog):
 
             # Second page embed
             embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
-            image_data = f"data:image/png;base64,{self.graph()}"
+            image_data = f"data:image/png;base64,{stock.graph()}"
             embed2.set_image(url=image_data)
 
             # Pagination logic
