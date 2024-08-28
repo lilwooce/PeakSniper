@@ -331,7 +331,7 @@ class UserCommands(commands.Cog):
         
         try:
             # Fetch user data
-            user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            user = session.query(User.User).filter_by(user_id=user.id).first()
             if not user:
                 await ctx.send("User not found in the database.", ephemeral=True)
                 return
@@ -423,7 +423,7 @@ class UserCommands(commands.Cog):
 
         try:
             # Fetch user data
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            u = session.query(User.User).filter_by(user_id=user.id).first()
 
             if not u:
                 await ctx.send("User not found in the database.", ephemeral=True)
