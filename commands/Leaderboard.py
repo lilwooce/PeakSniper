@@ -26,28 +26,31 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
             users = [member.id for member in guild.members if not member.bot]
             embed = discord.Embed(title=f"Highest Net Worth in {guild.name}", color=discord.Color.gold())
 
-            # Query to order users by the combined total of balance and bank
-            database_users = session.query(User.User).order_by(desc(func.coalesce(User.User.balance, 0) + func.coalesce(User.User.bank, 0))).all()
+            # Retrieve all users
+            database_users = session.query(User.User).filter(User.User.user_id.in_(users)).all()
+
+            # Calculate total value for each user
+            user_values = []
+            for u in database_users:
+                total_value = u.balance + u.bank
+                portfolio = json.loads(u.portfolio) if u.portfolio else {}
+                for stock_name, shares in portfolio.items():
+                    stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
+                    if stock:
+                        total_value += int(stock.current_value) * shares
+                user_values.append((u.user_id, total_value))
+
+            # Sort users by total value in descending order
+            user_values.sort(key=lambda x: x[1], reverse=True)
 
             count = 0
-            for u in database_users:
-                if u.user_id in users:
-                    member = guild.get_member(u.user_id)
-                    if member:
-                        total_value = 0
-                        portfolio = json.loads(u.portfolio) if u.portfolio else {}
-                        if not portfolio or len(portfolio) <= 0:
-                            total_value = 0
-                        else:
-                            for stock_name, shares in portfolio.items():
-                                stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
-                                if stock:
-                                    value = int(stock.current_value) * shares
-                                    total_value += value
-                        embed.add_field(name=member.display_name, value=f"{u.balance + u.bank + total_value} discoins", inline=False)
-                        count += 1
-                        if count >= 10:  # Display top 10 users
-                            break
+            for user_id, total_value in user_values:
+                if count >= 10:  # Display top 10 users
+                    break
+                member = guild.get_member(user_id)
+                if member:
+                    embed.add_field(name=member.display_name, value=f"{total_value} discoins", inline=False)
+                    count += 1
 
             if count == 0:
                 embed.description = "No users found in the leaderboard."
