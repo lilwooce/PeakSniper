@@ -217,9 +217,12 @@ class Stocks(commands.Cog):
             embed1.add_field(name="Status", value="Crashed" if stock.crashed else stock.is_stable().title(), inline=False)
 
             # Second page embed
-            embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
-            image_data = f"data:image/png;base64,{stock.graph()}"
-            embed2.set_image(url=image_data)
+            try:
+                embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
+                image_data = f"data:image/png;base64,{stock.graph()}"
+                embed2.set_image(url=image_data)
+            except:
+                await ctx.send(embed=embed1)
 
             # Pagination logic
             pages = [embed1, embed2]
