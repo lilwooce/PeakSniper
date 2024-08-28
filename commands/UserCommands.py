@@ -171,8 +171,9 @@ class UserCommands(commands.Cog):
             now = datetime.now()
             
             if (now - dailyCD).days >= 1:
-                u.balance += ((self.balance + self.bank) * self.dailyMulti) + self.dailyFunds
-                u.total_earned += self.dailyFunds
+                am = ((u.balance + u.bank) * self.dailyMulti) + self.dailyFunds
+                u.balance += am
+                u.total_earned += am
                 u.daily_cooldown = now
                 session.commit()  # Commit the changes to the database
                 await ctx.send(f"You have earned {self.dailyFunds} discoins")
@@ -200,8 +201,9 @@ class UserCommands(commands.Cog):
             now = datetime.now()
             
             if (now - weeklyCD).days >= 7:
-                u.balance += ((self.balance + self.bank) * self.weeklyMulti) + self.weeklyFunds
-                u.total_earned += self.weeklyFunds
+                am = ((u.balance + u.bank) * self.weeklyMulti) + self.weeklyFunds
+                u.balance += am
+                u.total_earned += am
                 u.weekly_cooldown = now
                 session.commit()  # Commit the changes to the database
                 await ctx.send(f"You have earned {self.weeklyFunds} discoins")
