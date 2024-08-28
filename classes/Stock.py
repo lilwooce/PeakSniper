@@ -40,7 +40,6 @@ class Stock(Base):
             self.record_high = start_value
             self.crashed = False
             self.history = [self.current_value]
-            self.graph_base64 = ""
             
     def update(self):
         # Check for ruination (complete crash)
@@ -119,5 +118,5 @@ class Stock(Base):
         
         # Encode the image to base64
         buf.seek(0)
-        self.graph_base64 = base64.b64encode(buf.read()).decode('utf-8')
-        return self.graph_base64
+        graph_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return graph_base64
