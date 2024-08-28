@@ -917,7 +917,6 @@ class UserCommands(commands.Cog):
                 if isinstance(end_time, str) and end_time == "":
                     remaining = "Not Set"
                 else:
-                    end_time = datetime.strptime(end_time, "%Y-%m-%d %H:%M:%S.%f")
                     remaining = format_time(end_time)
                 
                 embed.add_field(name=name, value=remaining, inline=False)
