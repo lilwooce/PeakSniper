@@ -834,7 +834,9 @@ class UserCommands(commands.Cog):
                     await ctx.send(f"The heist failed disastrously! {thief.name} lost all their discoins and their job, becoming a beggar.")
                 elif fail_outcome <= 40:  # 30% chance to lose half of your money
                     loss_amount = t.balance // 2
+                    bank_loss = t.bank // 2
                     t.balance -= loss_amount
+                    t.bank -= bank_loss
                     await ctx.send(f"The heist failed, and {thief.name} lost half of their discoins, totaling {loss_amount} discoins.")
                 elif fail_outcome <= 41:  # 1% chance to get away scot-free
                     await ctx.send(f"The heist failed, but {thief.name} managed to get away scot-free with no losses.")
