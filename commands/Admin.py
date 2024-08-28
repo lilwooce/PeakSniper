@@ -116,6 +116,7 @@ class Admin(commands.Cog):
                 return
 
             for i, stock in enumerate(stocks, start=1):
+                stock.history.append(stock.previous_value)
                 stock.history.append(stock.current_value)
             session.commit()
             await interaction.response.send_message("Success")
