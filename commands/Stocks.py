@@ -224,7 +224,6 @@ class Stocks(commands.Cog):
                 file = discord.File(fp=buf, filename=f"{stock.name}_graph.png")
                 embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
                 embed2.set_image(url=f"attachment://{stock.name}_graph.png")
-                await ctx.send(embed=embed2, file=file)
             except:
                 logging.warning("cannot retrieve graph")
 
