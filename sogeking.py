@@ -98,7 +98,7 @@ class Client(commands.Bot):
                 for item_name, effect in used_items.items():
                     expires_at_str = effect.get('expires_at')
                     if expires_at_str:
-                        expires_at = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
+                        expires_at = datetime.date.fromisoformat(expires_at_str.replace("Z", "+00:00"))
                         if expires_at < datetime.now():
                             # Effect has expired
                             discord_user = self.bot.get_user(user.user_id)

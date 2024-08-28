@@ -114,7 +114,7 @@ class Stock(Base):
         plt.plot(range(len(self.history)), self.history, label=self.name)  # Use range to create x-axis values
 
         # Set axis limits
-        plt.axis([0, len(self.history) - 1, 0, max(self.history)])
+        # plt.axis([0, len(self.history) - 1, 0, max(self.history)])
         plt.xlabel('Time (hours)')
         plt.ylabel('Value (Discoins)')
         plt.title(f'Stock Value Over Time: {self.name}')

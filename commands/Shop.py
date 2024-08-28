@@ -26,57 +26,58 @@ class Shop(commands.Cog):
     @commands.hybrid_command()
     async def shop(self, ctx):
         Session = sessionmaker(bind=database.engine)
-        
-        with Session() as session:
-            try:
-                items = session.query(ShopItem.ShopItem).all()
+        session = Session()
 
-                # Divide items into pages with a max of 3 items per page
-                pages = [items[i:i + 3] for i in range(0, len(items), 3)]
-                current_page = 0
+        try:
+            items = session.query(ShopItem.ShopItem).all()
 
-                # Function to create an embed for a given page
-                def create_embed(page):
-                    embed = discord.Embed(title="Shop", description=f"Page {page + 1}/{len(pages)}")
-                    for item in pages[page]:
-                        embed.add_field(name=item.name.title(), value=f"Price: {item.price}\nUses: {item.uses}\nCommand: {item.command}", inline=False)
-                    return embed
+            # Divide items into pages with a max of 3 items per page
+            pages = [items[i:i + 3] for i in range(0, len(items), 3)]
+            current_page = 0
 
-                # Send the first embed
-                message = await ctx.send(embed=create_embed(current_page))
+            # Function to create an embed for a given page
+            def create_embed(page):
+                embed = discord.Embed(title="Shop", description=f"Page {page + 1}/{len(pages)}")
+                for item in pages[page]:
+                    embed.add_field(name=item.name.title(), value=f"Price: {item.price}\nUses: {item.uses}\nCommand: {item.command}", inline=False)
+                return embed
 
-                # Add reactions if there are multiple pages
-                if len(pages) > 1:
-                    await message.add_reaction("⬅️")
-                    await message.add_reaction("➡️")
+            # Send the first embed
+            message = await ctx.send(embed=create_embed(current_page))
+            session.close()
 
-                    # Check for reaction events
-                    def check(reaction, user):
-                        return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
+            # Add reactions if there are multiple pages
+            if len(pages) > 1:
+                await message.add_reaction("⬅️")
+                await message.add_reaction("➡️")
 
-                    while True:
-                        try:
-                            reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+                # Check for reaction events
+                def check(reaction, user):
+                    return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
 
-                            if str(reaction.emoji) == "➡️":
-                                if current_page < len(pages) - 1:
-                                    current_page += 1
-                                    await message.edit(embed=create_embed(current_page))
-                            elif str(reaction.emoji) == "⬅️":
-                                if current_page > 0:
-                                    current_page -= 1
-                                    await message.edit(embed=create_embed(current_page))
+                while True:
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
 
-                            await message.remove_reaction(reaction, user)
+                        if str(reaction.emoji) == "➡️":
+                            if current_page < len(pages) - 1:
+                                current_page += 1
+                                await message.edit(embed=create_embed(current_page))
+                        elif str(reaction.emoji) == "⬅️":
+                            if current_page > 0:
+                                current_page -= 1
+                                await message.edit(embed=create_embed(current_page))
 
-                        except asyncio.TimeoutError:
-                            break
+                        await message.remove_reaction(reaction, user)
 
-                    # Clear reactions after the timeout
-                    await message.clear_reactions()
-            except:
-                return
+                    except asyncio.TimeoutError:
+                        break
 
+                # Clear reactions after the timeout
+                await message.clear_reactions()
+
+        except:
+            return
             
     @app_commands.command()
     async def buy(self, interaction: discord.Interaction, amount: int, name: str):

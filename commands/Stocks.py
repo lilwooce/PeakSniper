@@ -192,8 +192,8 @@ class Stocks(commands.Cog):
             await ctx.send("An error occurred while retrieving stocks.")
             logging.warning(f"Error: {e}")
 
-        finally:
-            session.close() if session else None
+        except:
+            return
 
     @commands.hybrid_command()
     async def stock(self, ctx, *, name: str):
@@ -201,6 +201,7 @@ class Stocks(commands.Cog):
         session = Session()
 
         try:
+            # Query stock details
             stock = session.query(Stock.Stock).filter(
                 or_(Stock.Stock.name == name, Stock.Stock.full_name == name)
             ).first()
@@ -209,7 +210,7 @@ class Stocks(commands.Cog):
                 await ctx.send(f"Stock '{name}' not found.")
                 return
 
-            # First page embed
+            # Create first page embed
             embed1 = discord.Embed(title=f"Details for {stock.name}", color=discord.Color.green())
             embed1.add_field(name="Full Name", value=stock.full_name, inline=False)
             embed1.add_field(name="Current Value", value=f"{stock.current_value:.2f} discoins", inline=False)
@@ -217,25 +218,30 @@ class Stocks(commands.Cog):
             embed1.add_field(name="Record High", value=f"{stock.record_high:.2f} discoins", inline=False)
             embed1.add_field(name="Status", value="Crashed" if stock.crashed else stock.is_stable().title(), inline=False)
             
-            # Second page embed
+            # Create second page embed with image
+            embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
             try:
-                # Sending the graph as an image file
-                buf = stock.graph()  # Get the graph as a BytesIO object
+                # Generate the graph and save it as a BytesIO object
+                buf = stock.graph()
                 file = discord.File(fp=buf, filename=f"{stock.name}_graph.png")
-                embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
                 embed2.set_image(url=f"attachment://{stock.name}_graph.png")
-                await ctx.send(embed=embed2, file=file)
-            except:
-                logging.warning("cannot retrieve graph")
+                image_sent = True
+            except Exception as e:
+                logging.warning(f"Cannot retrieve graph: {e}")
+                image_sent = False
 
             # Pagination logic
-            pages = [embed1, embed2]
-            current_page = 0
+            pages = [embed1]
+            if image_sent:
+                pages.append(embed2)
 
+            current_page = 0
             message = await ctx.send(embed=pages[current_page])
 
-            await message.add_reaction("◀️")
-            await message.add_reaction("▶️")
+            if len(pages) > 1:
+                await message.add_reaction("◀️")
+                await message.add_reaction("▶️")
+            session.close()
 
             def check(reaction, user):
                 return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
@@ -252,16 +258,23 @@ class Stocks(commands.Cog):
                         await message.edit(embed=pages[current_page])
 
                     await message.remove_reaction(reaction, user)
-                except Exception as e:
-                    logging.warning(f"Error: {e}")
+
+                except asyncio.TimeoutError:
                     break
+                except Exception as e:
+                    logging.warning(f"Error during reaction handling: {e}")
+                    break
+
+            # Clear reactions after the timeout
+            if len(pages) > 1:
+                await message.clear_reactions()
 
         except Exception as e:
             await ctx.send("An error occurred while retrieving the stock details.")
             logging.warning(f"Error: {e}")
 
         finally:
-            session.close() if session else None
+            session.close()
 
     @commands.hybrid_command()
     async def portfolio(self, ctx, user: discord.Member = None):
