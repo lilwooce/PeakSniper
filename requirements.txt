@@ -14,3 +14,4 @@ packaging
 SQLAlchemy==2.0.29
 mysql-connector-python
 async-timeout
+matplotlib
