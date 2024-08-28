@@ -32,7 +32,7 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
                 if u.user_id in users:
                     member = guild.get_member(u.user_id)
                     if member:
-                        embed.add_field(name=member.display_name, value=f"{u.balance} discoins", inline=False)
+                        embed.add_field(name=member.display_name, value=f"{u.balance + u.bank} discoins", inline=False)
                         count += 1
                         if count >= 10:  # Display top 10 users
                             break
