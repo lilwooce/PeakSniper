@@ -637,6 +637,11 @@ class UserCommands(commands.Cog):
                         await ctx.send(f"{thief.name} wins the encounter! They killed {victim.name} and took their entire balance of {v.balance} discoins.")
                         t.balance += v.balance
                         v.balance = 0
+
+                    del t_used_items["draco"]
+                    del v_used_items["draco"]
+                    t.used_items = json.dumps(t_used_items)
+                    v.used_items = json.dumps(v_used_items)
                     session.commit()
                     return
                 else:
@@ -646,10 +651,9 @@ class UserCommands(commands.Cog):
                     t.balance = 0
                     # Set cooldown even if the steal fails
                     t.steal_cooldown = current_time + timedelta(minutes=10)
-                    used_items = json.loads(v.used_items) if v.used_items else {}
-                    if "draco" in used_items:
-                        del used_items["draco"]
-                        v.used_items = json.dumps(used_items)
+                    if "draco" in v_used_items:
+                        del v_used_items["draco"]
+                        v.used_items = json.dumps(v_used_items)
                         # Optionally notify the user
                         if victim:
                             await victim.send(f"{t.name} has tried to steal from you, you used ur drac and turned them into swiss cheese.")

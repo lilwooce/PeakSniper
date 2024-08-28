@@ -27,7 +27,7 @@ def allowed():
 
 def admins_only():
     def predicate(interaction: discord.Interaction) -> bool:
-        return interaction.user.id in allowed_ids
+        return interaction.user.id in admins
     return app_commands.check(predicate)
 
 class Admin(commands.Cog):
@@ -100,7 +100,6 @@ class Admin(commands.Cog):
             session.add(s)
             session.commit()
             await interaction.response.send_message(f"Successfully added a stock item: name {name}, full_name {full_name}, growth_rate {growth_rate}, start_value {start_value}, volatility {volatility}, swap_chance {swap_chance} ruination {ruination}")
-
         finally:
             session.close()
 
