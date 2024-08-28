@@ -899,9 +899,15 @@ class UserCommands(commands.Cog):
 
             # Calculate remaining cooldown times
             def format_time(end_time):
+                if not end_time:
+                    return "Not Set"
                 if end_time < now:
                     return "Ready"
-                return str(end_time - now).split('.')[0]
+
+                delta = end_time - now
+                hours, remainder = divmod(delta.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                return f"{delta.days * 24 + hours} hours {minutes} minutes {seconds} seconds"
 
             cooldowns = {
                 "Daily Cooldown": u.daily_cooldown,
