@@ -888,9 +888,9 @@ class UserCommands(commands.Cog):
         session = Session()
 
         try:
-            user = session.query(User).filter(User.user_id == ctx.author.id).first()
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
-            if not user:
+            if not u:
                 await ctx.send("User not found in the database.")
                 return
 
@@ -904,11 +904,11 @@ class UserCommands(commands.Cog):
                 return str(end_time - now).split('.')[0]
 
             cooldowns = {
-                "Daily Cooldown": user.daily_cooldown,
-                "Weekly Cooldown": user.weekly_cooldown,
-                "Steal Cooldown": user.steal_cooldown,
-                "Injury": user.injury,
-                "Heist Cooldown": user.heist_cooldown
+                "Daily Cooldown": u.daily_cooldown,
+                "Weekly Cooldown": u.weekly_cooldown,
+                "Steal Cooldown": u.steal_cooldown,
+                "Injury": u.injury,
+                "Heist Cooldown": u.heist_cooldown
             }
 
             embed = discord.Embed(title="Cooldowns", color=discord.Color.blue())
