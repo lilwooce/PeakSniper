@@ -148,7 +148,7 @@ class Stocks(commands.Cog):
                 percent_change = stock.get_percentage_change()
                 embed.add_field(
                     name=stock.name,
-                    value=f"Value: {stock.current_value:.2000f} discoins\nPercent Change: {percent_change:.2000f}%",
+                    value=f"Value: {stock.current_value:.2f} discoins\nPercent Change: {percent_change:.2f}%",
                     inline=False
                 )
 
@@ -174,9 +174,9 @@ class Stocks(commands.Cog):
 
             embed = discord.Embed(title=f"Details for {stock.name}", color=discord.Color.green())
             embed.add_field(name="Full Name", value=stock.full_name, inline=False)
-            embed.add_field(name="Current Value", value=f"{stock.current_value:.200000f} discoins", inline=False)
-            embed.add_field(name="Record Low", value=f"{stock.record_low:.200000f} discoins", inline=False)
-            embed.add_field(name="Record High", value=f"{stock.record_high:.200000f} discoins", inline=False)
+            embed.add_field(name="Current Value", value=f"{stock.current_value:.2f} discoins", inline=False)
+            embed.add_field(name="Record Low", value=f"{stock.record_low:.2f} discoins", inline=False)
+            embed.add_field(name="Record High", value=f"{stock.record_high:.2f} discoins", inline=False)
             embed.add_field(name="Status", value="Crashed" if stock.crashed else stock.is_stable().title(), inline=False)
 
             await ctx.send(embed=embed)
@@ -215,11 +215,11 @@ class Stocks(commands.Cog):
                     total_value += value
                     embed.add_field(
                         name=stock_name,
-                        value=f"Shares: {shares}\nCurrent Value: {value:.200000f} discoins",
+                        value=f"Shares: {shares}\nCurrent Value: {value:.2f} discoins",
                         inline=False
                     )
 
-            embed.set_footer(text=f"Total Portfolio Value: {total_value:.200000f} discoins")
+            embed.set_footer(text=f"Total Portfolio Value: {total_value:.2f} discoins")
             await ctx.send(embed=embed)
 
         except Exception as e:
