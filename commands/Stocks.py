@@ -210,64 +210,29 @@ class Stocks(commands.Cog):
                 await ctx.send(f"Stock '{name}' not found.")
                 return
 
-            # Create first page embed
-            embed1 = discord.Embed(title=f"Details for {stock.name}", color=discord.Color.green())
-            embed1.add_field(name="Full Name", value=stock.full_name, inline=False)
-            embed1.add_field(name="Current Value", value=f"{stock.current_value:} discoins", inline=False)
-            embed1.add_field(name="Record Low", value=f"{stock.record_low:} discoins", inline=False)
-            embed1.add_field(name="Record High", value=f"{stock.record_high:} discoins", inline=False)
-            embed1.add_field(name="Status", value="Crashed" if stock.crashed else stock.is_stable().title(), inline=False)
-            
-            # Create second page embed with image
-            embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
+            # Create embed with all information
+            embed = discord.Embed(title=f"Details for {stock.name}", color=discord.Color.green())
+            embed.add_field(name="Full Name", value=stock.full_name, inline=False)
+            embed.add_field(name="Current Value", value=f"{stock.current_value:.2f} discoins", inline=False)
+            embed.add_field(name="Record Low", value=f"{stock.record_low:.2f} discoins", inline=False)
+            embed.add_field(name="Record High", value=f"{stock.record_high:.2f} discoins", inline=False)
+            embed.add_field(name="Status", value="Crashed" if stock.crashed else stock.is_stable().title(), inline=False)
+
             try:
                 # Generate the graph and save it as a BytesIO object
                 buf = stock.graph()
                 file = discord.File(fp=buf, filename=f"{stock.name}_graph.png")
-                embed2.set_image(url=f"attachment://{stock.name}_graph.png")
+                embed.set_image(url=f"attachment://{stock.name}_graph.png")
                 image_sent = True
             except Exception as e:
                 logging.warning(f"Cannot retrieve graph: {e}")
                 image_sent = False
 
-            # Pagination logic
-            pages = [embed1]
+            # Send the embed with image if available
             if image_sent:
-                pages.append(embed2)
-
-            current_page = 0
-            message = await ctx.send(embed=pages[current_page])
-
-            if len(pages) > 1:
-                await message.add_reaction("◀️")
-                await message.add_reaction("▶️")
-            session.close()
-
-            def check(reaction, user):
-                return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"]
-
-            while True:
-                try:
-                    reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
-
-                    if str(reaction.emoji) == "▶️" and current_page < len(pages) - 1:
-                        current_page += 1
-                        await message.edit(embed=pages[current_page])
-                    elif str(reaction.emoji) == "◀️" and current_page > 0:
-                        current_page -= 1
-                        await message.edit(embed=pages[current_page])
-
-                    await message.remove_reaction(reaction, user)
-
-                except asyncio.TimeoutError:
-                    break
-                except Exception as e:
-                    logging.warning(f"Error during reaction handling: {e}")
-                    break
-
-            # Clear reactions after the timeout
-            if len(pages) > 1:
-                await message.clear_reactions()
+                await ctx.send(embed=embed, file=file)
+            else:
+                await ctx.send(embed=embed)
 
         except Exception as e:
             await ctx.send("An error occurred while retrieving the stock details.")
@@ -275,6 +240,7 @@ class Stocks(commands.Cog):
 
         finally:
             session.close()
+
 
     @commands.hybrid_command()
     async def portfolio(self, ctx, user: discord.Member = None):
