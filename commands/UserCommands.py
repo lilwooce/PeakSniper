@@ -391,6 +391,29 @@ class UserCommands(commands.Cog):
         finally:
             session.close() if session else None
 
+    def format_time_remaining(self, expiration_time):
+        now = datetime.now()
+        time_remaining = expiration_time - now
+
+        if time_remaining < timedelta(0):
+            return "Expired"
+
+        days = time_remaining.days
+        hours, remainder = divmod(time_remaining.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        parts = []
+        if days > 0:
+            parts.append(f"{days} day{'s' if days > 1 else ''}")
+        if hours > 0:
+            parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
+        if minutes > 0:
+            parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
+        if seconds > 0:
+            parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
+
+        return "in " + ", ".join(parts)
+    
     @commands.hybrid_command()
     async def current_effects(self, ctx, user: discord.User = None):
         user = user or ctx.author
@@ -414,11 +437,12 @@ class UserCommands(commands.Cog):
             embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
             if used_items:
                 for item_name, effect in used_items.items():
-    
                     # Check if 'expires_at' key exists in the effect dictionary
                     expires_at = effect.get('expires_at', None)
                     if expires_at:
-                        embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires at: {expires_at}", inline=False)
+                        expires_at = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+                        time_remaining = self.format_time_remaining(expires_at)
+                        embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires at: {time_remaining}", inline=False)
                     else:
                         embed.add_field(name=item_name, value=f"Effect: {effect['description']}", inline=False)
             else:

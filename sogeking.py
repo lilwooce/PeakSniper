@@ -96,18 +96,19 @@ class Client(commands.Bot):
             for user in users:
                 used_items = json.loads(user.used_items) if user.used_items else {}
                 for item_name, effect in used_items.items():
-                    expires_at = effect['expires_at']
-                    if expires_at < datetime.now():
-                        # Effect has expired
-                        user = self.bot.get_user(user.user_id)
-                        if user:
-                            await user.send(f"The effect of {item_name} has expired.")
-                        await self.remove_effect(user.user_id, item_name)
+                    expires_at_str = effect.get('expires_at')
+                    if expires_at_str:
+                        expires_at = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
+                        if expires_at < datetime.now():
+                            # Effect has expired
+                            discord_user = self.bot.get_user(user.user_id)
+                            if discord_user:
+                                await discord_user.send(f"The effect of {item_name} has expired.")
+                            await self.remove_effect(user.user_id, item_name)
         except Exception as e:
             logging.warning(f"Error on bot startup: {e}")
         finally:
             self.session.close()
-        #xecuteQueue(client=self).start()
 
     @tasks.loop(seconds=60)
     async def update_bot_status(self):

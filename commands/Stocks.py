@@ -216,7 +216,7 @@ class Stocks(commands.Cog):
             embed1.add_field(name="Record Low", value=f"{stock.record_low:.2f} discoins", inline=False)
             embed1.add_field(name="Record High", value=f"{stock.record_high:.2f} discoins", inline=False)
             embed1.add_field(name="Status", value="Crashed" if stock.crashed else stock.is_stable().title(), inline=False)
-
+            
             # Second page embed
             try:
                 # Sending the graph as an image file
@@ -224,6 +224,7 @@ class Stocks(commands.Cog):
                 file = discord.File(fp=buf, filename=f"{stock.name}_graph.png")
                 embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
                 embed2.set_image(url=f"attachment://{stock.name}_graph.png")
+                await ctx.send(embed=embed2, file=file)
             except:
                 logging.warning("cannot retrieve graph")
 
@@ -282,18 +283,21 @@ class Stocks(commands.Cog):
 
             embed = discord.Embed(title=f"{user.name}'s Portfolio", color=discord.Color.gold())
             total_value = 0
+            prev_total = 0
             for stock_name, shares in portfolio.items():
                 stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
                 if stock:
                     value = int(stock.current_value) * shares
+                    prev_value = int(stock.previous_value) * shares
                     total_value += value
+                    prev_total += prev_value
                     embed.add_field(
                         name=stock_name,
-                        value=f"Shares: {shares}\nCurrent Value: {value:.2f} discoins",
+                        value=f"Shares: {shares}\nCurrent Value: {value:.2f} discoins\nPrevious Value: {prev_value: .2f}",
                         inline=False
                     )
 
-            embed.set_footer(text=f"Total Portfolio Value: {total_value:.2f} discoins")
+            embed.set_footer(text=f"Total Portfolio Value: {total_value:.2f} discoins\nPrevious Value: {prev_total: .2f}\nPercent Change: {((total_value - prev_total) / prev_total) * 100}")
             await ctx.send(embed=embed)
 
         except Exception as e:
