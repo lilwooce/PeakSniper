@@ -117,10 +117,9 @@ class Admin(commands.Cog):
                 return
 
             for i, stock in enumerate(stocks, start=1):
-                history = json.loads(stock.history)
-                history.append(stock.previous_value)
-                history.append(stock.current_value)
-                stock.history = json.dumps(history)
+                stock.history.append(stock.previous_value)
+                stock.history.append(stock.current_value)
+                session.add(stock)
             session.commit()
             await interaction.response.send_message("Success")
         finally:
