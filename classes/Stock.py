@@ -102,7 +102,7 @@ class Stock(Base):
     
     def graph(self):
         # Generate the graph and save it as a base64-encoded string
-            # Ensure that self.history is not empty and has numeric values
+        # Ensure that self.history is not empty and has numeric values
         if not self.history or not all(isinstance(value, (int, float)) for value in self.history):
             raise ValueError("History data must be a list of numeric values and cannot be empty.")
 
@@ -124,8 +124,6 @@ class Stock(Base):
         buf = io.BytesIO()
         plt.savefig(buf, format='png')
         plt.close()
-        
-        # Encode the image to base64
         buf.seek(0)
-        graph_base64 = base64.b64encode(buf.read()).decode('utf-8')
-        return graph_base64
+        
+        return buf

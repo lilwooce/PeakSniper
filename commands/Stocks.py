@@ -218,9 +218,12 @@ class Stocks(commands.Cog):
 
             # Second page embed
             try:
+                # Sending the graph as an image file
+                buf = stock.graph()  # Get the graph as a BytesIO object
+                file = discord.File(fp=buf, filename=f"{stock.name}_graph.png")
                 embed2 = discord.Embed(title=f"Graph for {stock.name}", color=discord.Color.green())
-                image_data = f"data:image/png;base64,{stock.graph()}"
-                embed2.set_image(url=image_data)
+                embed2.set_image(url=f"attachment://{stock.name}_graph.png")
+                await ctx.send(embed=embed2, file=file)
             except:
                 logging.warning("cannot retrieve graph")
 
