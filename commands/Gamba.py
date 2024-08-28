@@ -76,6 +76,8 @@ class Gamba(commands.Cog, name="Gamba"):
             if amount > bal:
                 await ctx.send("You are too poor to afford this bet. Check your balance before betting next time.")
                 return
+            if amount <= 0:
+                await ctx.send("Idiot.")
             if bet < 1 or bet > 100:
                 await ctx.send("Please choose a number between 1 and 100 for your bet. Including 1 and 100.")
                 return
