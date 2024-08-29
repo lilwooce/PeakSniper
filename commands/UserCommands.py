@@ -691,7 +691,7 @@ class UserCommands(commands.Cog):
                 if "bolt cutter" in t_used_items:
                     await ctx.send(f"{thief.name} used bolt cutters to break {victim.name}'s padlock!")
                     # Bolt cutters break after use
-                    del t_used_items["bolt_cutter"]
+                    del t_used_items["bolt cutter"]
                     t.used_items = json.dumps(t_used_items)
                 else:
                     await ctx.send(f"{victim.name} has a padlock. Your attempt to steal failed, and you got caught by the cops! You lost 500 discoins.")
