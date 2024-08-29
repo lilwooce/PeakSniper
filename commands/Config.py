@@ -36,6 +36,7 @@ async def hasAccount(ctx):
 class Config(commands.Cog, name="Configuration"):
     def __init__(self, bot):
         self.bot = bot
+        self.min_num_jobs = 4
         self.randomize_jobs.start()
 
     @commands.Cog.listener()
@@ -84,7 +85,7 @@ class Config(commands.Cog, name="Configuration"):
             servers = session.query(Servers.Servers).all()
             for server in servers:
                 # Get a random list of jobs
-                jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3, 6)).all()
+                jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(self.min_num_jobs, self.min_num_jobs*2)).all()
                 jobs = self.weigh_jobs(jobs_query)
 
                 server.jobs = json.dumps(jobs)
