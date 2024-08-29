@@ -76,9 +76,9 @@ class Config(commands.Cog, name="Configuration"):
 
         
 
-    time = datetime.time(hour=20, tzinfo=eastern)
+    time = datetime.time(hour=[8,20], tzinfo=eastern)
     @tasks.loop(time=time)
-    async def randomize_jobs(self):
+    async def randomize_jobs(self, ctx):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:

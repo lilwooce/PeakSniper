@@ -133,8 +133,14 @@ class Admin(commands.Cog):
             return {}
 
         # Invert the salary values: higher salary becomes a lower weight
-        inverted_weights = [1 / job.salary for job in jobs]
+        inverted_weights = []
+        for job in jobs:
+            if job.chance > 0:
+                inverted_weights.append(job.chance)
+            else:
+                inverted_weights.append(1 / job.salary)
 
+        
         # Sum the inverted weights
         total_inverted_weight = sum(inverted_weights)
 
@@ -152,16 +158,16 @@ class Admin(commands.Cog):
     @app_commands.command()
     @allowed()
     async def randomize_jobs(self, interaction: discord.Interaction):
+        guild = interaction.guild
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
-            servers = session.query(Servers.Servers).all()
-            for server in servers:
-                # Get a random list of jobs
-                jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3, 6)).all()
-                jobs = self.weigh_jobs(jobs_query)
+            server = session.query(Servers.Servers).filter_by(server_id=guild.id)
+            # Get a random list of jobs
+            jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(self.min_num_jobs, self.min_num_jobs*2)).all()
+            jobs = self.weigh_jobs(jobs_query)
 
-                server.jobs = json.dumps(jobs)
+            server.jobs = json.dumps(jobs)
 
             # Commit the changes to the database
             session.commit()
