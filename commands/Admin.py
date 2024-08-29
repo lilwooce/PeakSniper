@@ -163,6 +163,34 @@ class Admin(commands.Cog):
             await interaction.response.send_message(f"Failed because {e}")
         finally:
             session.close()
+    
+    @commands.hybrid_command()
+    @allowed()
+    async def give_item(self, ctx, user: discord.User, amount: int, name: str):
+        Session = sessionmaker(bind=database.engine)
+        
+        with Session() as session:
+            try:
+                item = session.query(ShopItem.ShopItem).filter_by(name=name).first()
+                if not item:
+                    await ctx.send(f"{name} was not found in shop.")
+                    return
+
+                u = session.query(User.User).filter_by(user_id=user.id).first()
+
+                if not u:
+                    await ctx.send("User not found.")
+                    return
+                
+                inven = json.loads(u.inventory) if u.inventory else {}
+                inven[item.name] = inven.get(item.name, 0) + amount
+                u.inventory = json.dumps(inven)
+
+                session.commit()
+                await ctx.send(f"You have given {amount} {name}(s).")
+            except Exception as e:
+                print(f"Error in give items command: {e}")
+                await ctx.send("An error occurred while giving the items.")
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
