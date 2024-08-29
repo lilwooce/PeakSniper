@@ -145,8 +145,14 @@ class Admin(commands.Cog):
         if len(jobs) <= 0:
             return {}
 
-        total_weight = sum(job.salary for job in jobs)  # Sum of unnormalized chances
-        normalized_weights = [(job.salary / total_weight) * 100 for job in jobs]  # Normalize the weights
+        # Invert the salary values: higher salary becomes a lower weight
+        inverted_weights = [1 / job.salary for job in jobs]
+
+        # Sum the inverted weights
+        total_inverted_weight = sum(inverted_weights)
+
+        # Normalize the inverted weights
+        normalized_weights = [(weight / total_inverted_weight) * 100 for weight in inverted_weights]
 
         ret = {}
         for job, weight in zip(jobs, normalized_weights):  # Zip through jobs and normalized weights
@@ -154,6 +160,7 @@ class Admin(commands.Cog):
             logging.warning(f"{job.name} | {ret[job.name]} % chance")
 
         return ret
+
 
     @app_commands.command()
     @allowed()
