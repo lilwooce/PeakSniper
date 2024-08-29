@@ -6,12 +6,15 @@ from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
 import datetime
+from datetime import time
 import random
 import json
 from zoneinfo import ZoneInfo
 
 from classes import Servers, User, database, Jobs
 eastern = ZoneInfo("America/New_York")
+time_am = time(hour=8, tzinfo=eastern)  # 8:00 AM Eastern
+time_pm = time(hour=20, tzinfo=eastern)  # 8:00 PM Eastern
 
 async def addAccount(user, session):
     u = User.User(user=user)
@@ -74,10 +77,7 @@ class Config(commands.Cog, name="Configuration"):
 
         return ret
 
-        
-
-    time = datetime.time(hour=[8,20], tzinfo=eastern)
-    @tasks.loop(time=time)
+    @tasks.loop(time=[time_am, time_pm])
     async def randomize_jobs(self, ctx):
         Session = sessionmaker(bind=database.engine)
         session = Session()
