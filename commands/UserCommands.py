@@ -901,18 +901,6 @@ class UserCommands(commands.Cog):
             # Get the current time
             now = datetime.now()
 
-            # Calculate remaining cooldown times
-            def format_time(end_time):
-                if not end_time:
-                    return "Not Set"
-                if end_time < now:
-                    return "Ready"
-
-                delta = end_time - now
-                hours, remainder = divmod(delta.seconds, 3600)
-                minutes, seconds = divmod(remainder, 60)
-                return f"{delta.days * 24 + hours} hours {minutes} minutes {seconds} seconds"
-
             cooldowns = {
                 "Daily Cooldown": u.daily_cooldown,
                 "Weekly Cooldown": u.weekly_cooldown,
@@ -928,7 +916,7 @@ class UserCommands(commands.Cog):
                 if isinstance(end_time, str) and end_time == "":
                     remaining = "Not Set"
                 else:
-                    remaining = format_time(end_time)
+                    remaining = self.format_time_remaining(end_time)
                 
                 embed.add_field(name=name, value=remaining, inline=False)
 
