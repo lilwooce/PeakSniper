@@ -35,6 +35,7 @@ def admins_only():
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.min_num_jobs = 3
 
     @commands.Cog.listener()
     async def on_ready(self):
