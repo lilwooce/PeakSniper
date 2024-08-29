@@ -171,9 +171,11 @@ class Admin(commands.Cog):
             jobs = self.weigh_jobs(jobs_query)
 
             server.jobs = json.dumps(jobs)
-
+            logging.warning(jobs)
+            logging.warning(server.jobs)
             # Commit the changes to the database
             session.commit()
+            logging.warning(server.jobs)
             
             await interaction.response.send_message("Success")
         except Exception as e:
