@@ -137,11 +137,13 @@ class Admin(commands.Cog):
         inverted_weights = []
         for job in jobs:
             if job.chance > 0:
+                logging.warning(f"{job.name} | {job.chance}")
                 inverted_weights.append(job.chance)
             else:
+                logging.warning(f"{job.name} | {job.salary}")
                 inverted_weights.append(1 / job.salary)
 
-        
+        logging.warning(inverted_weights)
         # Sum the inverted weights
         total_inverted_weight = sum(inverted_weights)
 
