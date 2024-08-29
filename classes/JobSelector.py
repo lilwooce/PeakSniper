@@ -1,10 +1,11 @@
 import random
 import logging
+import json
 
 class JobSelection:
     def __init__(self, jobs_with_weights):
         self.jobs = jobs_with_weights  # List of tuples (job_name, weight)
-        self.normalized_weights = [weight for _, weight in self.jobs]
+        self.normalized_weights = [weight for _, weight in self.jobs.items()]
 
     def choose_job(self):
         if not self.jobs:

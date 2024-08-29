@@ -250,7 +250,7 @@ class UserCommands(commands.Cog):
                 return
 
             # s.jobs is now a JSON column, which is automatically handled as a Python list
-            jobs = json.loads(s.jobs)
+            jobs = json.loads(s.jobs) if s.jobs else {}
 
             if not jobs:
                 await ctx.send("No jobs available.")
