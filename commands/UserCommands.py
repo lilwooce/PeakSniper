@@ -169,17 +169,16 @@ class UserCommands(commands.Cog):
             logging.warning(u.daily_cooldown)
             dailyCD = u.daily_cooldown
             now = datetime.now()
-            
+
             if (now - dailyCD).days >= 1:
                 am = ((u.balance + u.bank) * self.dailyMulti) + self.dailyFunds
                 u.balance += am
                 u.total_earned += am
-                u.daily_cooldown = now
-                session.commit()  # Commit the changes to the database
+                u.daily_cooldown = now + timedelta(days=1)  # Set cooldown a day from now
+                session.commit()
                 await ctx.send(f"You have earned {am} discoins")
             else:
-                # Calculate the remaining time
-                time_left = timedelta(days=1) - (now - dailyCD)
+                time_left = dailyCD - now
                 hours, remainder = divmod(time_left.total_seconds(), 3600)
                 minutes, _ = divmod(remainder, 60)
 
@@ -199,18 +198,17 @@ class UserCommands(commands.Cog):
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
             weeklyCD = u.weekly_cooldown
             now = datetime.now()
-            
+
             if (now - weeklyCD).days >= 7:
                 am = ((u.balance + u.bank) * self.weeklyMulti) + self.weeklyFunds
                 u.balance += am
                 u.total_earned += am
-                u.weekly_cooldown = now
-                session.commit()  # Commit the changes to the database
+                u.weekly_cooldown = now + timedelta(days=7)  # Set cooldown a week from now
+                session.commit()
                 await ctx.send(f"You have earned {am} discoins")
             else:
-                # Calculate the remaining time
-                time_left = timedelta(days=7) - (now - weeklyCD)
-                days, remainder = divmod(time_left.total_seconds(), 86400)  # 86400 seconds in a day
+                time_left = weeklyCD - now
+                days, remainder = divmod(time_left.total_seconds(), 86400)
                 hours, remainder = divmod(remainder, 3600)
                 minutes, _ = divmod(remainder, 60)
 
@@ -970,7 +968,7 @@ class UserCommands(commands.Cog):
 
             # Update the user's bank balance and the interest_cooldown time
             user.bank += interest_amount
-            user.interest_cooldown = now
+            user.interest_cooldown = now + timedelta(days=1)
             session.commit()
 
             await ctx.send(f"You have received {interest_amount} discoins as interest! Your new bank balance is {user.bank} discoins.")
