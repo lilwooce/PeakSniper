@@ -265,9 +265,6 @@ class Stocks(commands.Cog):
             await ctx.send("An error occurred while retrieving stocks.")
             logging.warning(f"Error: {e}")
 
-        finally:
-            session.close()
-
 
     @commands.hybrid_command()
     async def stock(self, ctx, *, name: str):
