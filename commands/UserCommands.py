@@ -668,6 +668,7 @@ class UserCommands(commands.Cog):
                     del v_used_items["draco"]
                     t.used_items = json.dumps(t_used_items)
                     v.used_items = json.dumps(v_used_items)
+                    t.steal_cooldown = current_time + timedelta(minutes=10)
                     session.commit()
                     return
                 else:
@@ -926,6 +927,7 @@ class UserCommands(commands.Cog):
                 if isinstance(end_time, str) and end_time == "":
                     remaining = "Not Set"
                 else:
+                    logging.warning(end_time)
                     remaining = format_time(end_time)
                 
                 embed.add_field(name=name, value=remaining, inline=False)
