@@ -10,6 +10,7 @@ from datetime import time
 import random
 import json
 from zoneinfo import ZoneInfo
+import logging
 
 from classes import Servers, User, database, Jobs
 eastern = ZoneInfo("America/New_York")
@@ -76,6 +77,34 @@ class Config(commands.Cog, name="Configuration"):
             ret[job.name] = weight  # Assign the normalized weight to the corresponding job name
 
         return ret
+    
+    def weigh_jobs_salary(self, jobs):
+        if len(jobs) <= 0:
+            return {}
+
+        # Invert the salary values: higher salary becomes a lower weight
+        inverted_weights = []
+        for job in jobs:
+            if job.chance > 0:
+                logging.warning(f"{job.name} | {job.chance}")
+                inverted_weights.append(job.chance)
+            else:
+                logging.warning(f"{job.name} | {job.salary}")
+                inverted_weights.append(1 / job.salary)
+
+        logging.warning(inverted_weights)
+        # Sum the inverted weights
+        total_inverted_weight = sum(inverted_weights)
+
+        # Normalize the inverted weights
+        normalized_weights = [(weight / total_inverted_weight) * 100 for weight in inverted_weights]
+
+        ret = {}
+        for job, weight in zip(jobs, normalized_weights):  # Zip through jobs and normalized weights
+            ret[job.name] = weight  # Assign the normalized weight to the corresponding job name
+            logging.warning(f"{job.name} | {ret[job.name]} % chance")
+
+        return ret
 
     @tasks.loop(time=[time_am, time_pm])
     async def randomize_jobs(self, ctx):
@@ -86,7 +115,7 @@ class Config(commands.Cog, name="Configuration"):
             for server in servers:
                 # Get a random list of jobs
                 jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(self.min_num_jobs, self.min_num_jobs*2)).all()
-                jobs = self.weigh_jobs(jobs_query)
+                jobs = self.weigh_jobs_salary(jobs_query)
 
                 server.jobs = json.dumps(jobs)
 
