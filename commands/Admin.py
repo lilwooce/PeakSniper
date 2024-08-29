@@ -165,7 +165,7 @@ class Admin(commands.Cog):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
-            server = session.query(Servers.Servers).filter_by(server_id=guild.id)
+            server = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
             # Get a random list of jobs
             jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(self.min_num_jobs, self.min_num_jobs*2)).all()
             jobs = self.weigh_jobs(jobs_query)
