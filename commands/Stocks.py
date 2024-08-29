@@ -212,18 +212,18 @@ class Stocks(commands.Cog):
                         max_shares = shares
                         majority_shareholder = user
 
-                shareholder_info = f"{majority_shareholder.username} with {max_shares} shares" if majority_shareholder else "None"
+                shareholder_info = f"{majority_shareholder.name}: {max_shares} shares" if majority_shareholder else "None"
 
                 # Create an embed with the majority shareholder in the title
                 if i % 4 == 1:  # Start a new embed every 4 stocks
                     embed = discord.Embed(
-                        title=f"Available Stocks - Majority Shareholder: {shareholder_info}",
+                        title=f"Available Stocks",
                         color=discord.Color.blue()
                     )
 
                 percent_change = stock.get_percentage_change()
                 embed.add_field(
-                    name=stock.name,
+                    name=f"{stock.name} | {shareholder_info}",
                     value=f"Value: {stock.current_value} discoins\nPercent Change: {percent_change:.2f}%",
                     inline=False
                 )
