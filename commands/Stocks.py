@@ -73,9 +73,6 @@ class Stocks(commands.Cog):
                 amount = (user.balance // 2) // int(stock.current_value)
             else:
                 amount = int(amount)
-                if amount <= 0:
-                    await ctx.send("Dumbass!")
-                    return
 
             total_cost = int(stock.current_value) * amount
 
@@ -83,7 +80,9 @@ class Stocks(commands.Cog):
                 await ctx.send("You cannot afford this purchase.")
                 return
 
-            
+            if amount <= 0:
+                await ctx.send("Buy more than one stock please!")
+                return
 
             user.balance -= total_cost
             user.total_lost += total_cost

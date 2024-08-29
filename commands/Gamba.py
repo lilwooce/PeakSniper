@@ -25,7 +25,7 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
-            
+
             m, s = self.check_injured(u)
             if m and s:
                 await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to gamble again.")
@@ -226,7 +226,8 @@ class Gamba(commands.Cog, name="Gamba"):
             remaining_time = (u.injury - current_time).total_seconds()
             minutes, seconds = divmod(remaining_time, 60)
             return minutes, seconds
-        
+        return None  # Return None if there's no injury or the injury has expired
+
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def work(self, ctx):
@@ -235,20 +236,24 @@ class Gamba(commands.Cog, name="Gamba"):
         try:
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
             user_jobs = json.loads(u.jobs)
-            job_name = user_jobs[f'{ctx.guild.id}']
+            job_name = user_jobs.get(f'{ctx.guild.id}', None)
 
-            m, s = self.check_injured(u)
-            if m and s:
+            # Check for injury
+            injured = self.check_injured(u)
+            if injured:
+                m, s = injured
                 await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to work again.")
+                return  # Return early if the user is injured
             
             if job_name is None:
                 await ctx.send("Job not found for this server. Please apply first before working.")
                 return
+            
             j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
             am = j.salary + random.randint(1, j.salary)
             used_items = json.loads(u.used_items) if u.used_items else {}
 
-            # Check if the user has a resume
+            # Check if the user has a 2x work coupon
             if used_items.get("2x work coupon", False):
                 am = am * 2
 
@@ -258,6 +263,7 @@ class Gamba(commands.Cog, name="Gamba"):
         finally:
             session.commit()
             session.close()
+
         
     #See Rstudio for better code
 
