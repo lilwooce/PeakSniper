@@ -921,7 +921,8 @@ class UserCommands(commands.Cog):
                 "Weekly Cooldown": u.weekly_cooldown,
                 "Steal Cooldown": u.steal_cooldown,
                 "Injury": u.injury,
-                "Heist Cooldown": u.heist_cooldown
+                "Heist Cooldown": u.heist_cooldown,
+                "Interest Cooldown": u.interest_cooldown
             }
 
             embed = discord.Embed(title="Cooldowns", color=discord.Color.blue())

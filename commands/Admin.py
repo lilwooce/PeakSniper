@@ -63,7 +63,7 @@ class Admin(commands.Cog):
         await ctx.send(f"message: [{message}] sent to {channel.name}")
     
     @app_commands.command()
-    @allowed()
+    @admins_only()
     async def add_job(self, interaction: discord.Interaction, name: str, salary: int, chance: float):
         Session = sessionmaker(bind=database.engine)
         session = Session()
