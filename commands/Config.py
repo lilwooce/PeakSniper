@@ -36,7 +36,7 @@ async def hasAccount(ctx):
 class Config(commands.Cog, name="Configuration"):
     def __init__(self, bot):
         self.bot = bot
-        self.min_num_jobs = 5
+        self.min_num_jobs = 3
         self.randomize_jobs.start()
 
     @commands.Cog.listener()

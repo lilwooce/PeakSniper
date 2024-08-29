@@ -132,19 +132,6 @@ class Admin(commands.Cog):
         if len(jobs) <= 0:
             return {}
 
-        total_weight = sum(job.chance for job in jobs)  # Sum of unnormalized chances
-        normalized_weights = [(job.chance / total_weight) * 100 for job in jobs]  # Normalize the weights
-
-        ret = {}
-        for job, weight in zip(jobs, normalized_weights):  # Zip through jobs and normalized weights
-            ret[job.name] = weight  # Assign the normalized weight to the corresponding job name
-
-        return ret
-
-    def weigh_jobs_salary(self, jobs):
-        if len(jobs) <= 0:
-            return {}
-
         # Invert the salary values: higher salary becomes a lower weight
         inverted_weights = [1 / job.salary for job in jobs]
 
@@ -173,7 +160,6 @@ class Admin(commands.Cog):
                 # Get a random list of jobs
                 jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3, 6)).all()
                 jobs = self.weigh_jobs(jobs_query)
-                j2 = self.weigh_jobs_salary(jobs_query)
 
                 server.jobs = json.dumps(jobs)
 
