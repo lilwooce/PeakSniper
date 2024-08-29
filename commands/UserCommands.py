@@ -909,7 +909,19 @@ class UserCommands(commands.Cog):
                 days, seconds = divmod(delta.total_seconds(), 86400)
                 hours, remainder = divmod(seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
-                return f"{int(days)} days, {int(hours)} hours, {int(minutes)} minutes, {int(seconds)} seconds"
+
+                # Build the time string based on the components that are necessary
+                time_components = []
+                if days > 0:
+                    time_components.append(f"{int(days)} day(s)")
+                if hours > 0:
+                    time_components.append(f"{int(hours)} hour(s)")
+                if minutes > 0:
+                    time_components.append(f"{int(minutes)} minute(s)")
+                if seconds > 0:
+                    time_components.append(f"{int(seconds)} second(s)")
+
+                return ", ".join(time_components)
 
             # Create a dictionary of cooldowns
             cooldowns = {
@@ -931,6 +943,7 @@ class UserCommands(commands.Cog):
             await ctx.send(embed=embed)
         finally:
             session.close()
+
 
     @commands.hybrid_command()
     async def interest(self, ctx):
