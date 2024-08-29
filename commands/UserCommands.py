@@ -303,10 +303,10 @@ class UserCommands(commands.Cog):
 
             embed = discord.Embed(title=f"Jobs in {guild.name}", color=discord.Color.blue())
             if jobs:
-                for job_name, weight in jobs:
+                for job_name, weight in jobs.items():  # Use .items() to correctly unpack key-value pairs
                     j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
-                    # If you store salary information separately, retrieve and display it here
-                    embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {weight}%", inline=False)
+                    if j:
+                        embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {weight:.2f}%", inline=False)
             else:
                 embed.description = "No jobs found for this server."
 
@@ -318,6 +318,7 @@ class UserCommands(commands.Cog):
 
         finally:
             session.close()
+
 
     @commands.hybrid_command(aliases=['inv'])
     async def inventory(self, ctx):
