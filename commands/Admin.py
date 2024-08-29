@@ -141,7 +141,7 @@ class Admin(commands.Cog):
 
         return ret
 
-    def weigh_jobs(self, jobs):
+    def weigh_jobs_salary(self, jobs):
         if len(jobs) <= 0:
             return {}
 
