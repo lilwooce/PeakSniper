@@ -63,12 +63,16 @@ class Config(commands.Cog, name="Configuration"):
     def weigh_jobs(self, jobs):
         if len(jobs) <= 0:
             return {}
-        total_weight = sum((weight) for _, weight in jobs)
-        normalized_weights = [((weight / total_weight) * 100) for _, weight in self.jobs]
+
+        total_weight = sum(job.chance for job in jobs)  # Sum of unnormalized chances
+        normalized_weights = [(job.chance / total_weight) * 100 for job in jobs]  # Normalize the weights
+
         ret = {}
-        for name, weight in jobs:
-            ret[name] = weight
+        for job, weight in zip(jobs, normalized_weights):  # Zip through jobs and normalized weights
+            ret[job.name] = weight  # Assign the normalized weight to the corresponding job name
+
         return ret
+
         
 
     time = datetime.time(hour=20, tzinfo=eastern)

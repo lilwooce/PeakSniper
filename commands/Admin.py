@@ -128,6 +128,19 @@ class Admin(commands.Cog):
         finally:
             session.close()
 
+    def weigh_jobs(self, jobs):
+        if len(jobs) <= 0:
+            return {}
+
+        total_weight = sum(job.chance for job in jobs)  # Sum of unnormalized chances
+        normalized_weights = [(job.chance / total_weight) * 100 for job in jobs]  # Normalize the weights
+
+        ret = {}
+        for job, weight in zip(jobs, normalized_weights):  # Zip through jobs and normalized weights
+            ret[job.name] = weight  # Assign the normalized weight to the corresponding job name
+
+        return ret
+
     @app_commands.command()
     @allowed()
     async def randomize_jobs(self, interaction: discord.Interaction):
@@ -138,10 +151,9 @@ class Admin(commands.Cog):
             for server in servers:
                 # Get a random list of jobs
                 jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3, 6)).all()
-                job_names = [job.name for job in jobs_query]
-                
-                # Update the server's jobs with the new list of job names
-                server.jobs = job_names
+                jobs = self.weigh_jobs(jobs_query)
+
+                server.jobs = json.dumps(jobs)
 
             # Commit the changes to the database
             session.commit()
