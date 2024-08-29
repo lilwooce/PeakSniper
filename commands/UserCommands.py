@@ -965,7 +965,7 @@ class UserCommands(commands.Cog):
                 return
 
             # Calculate interest (e.g., 2% of the current bank balance)
-            interest_rate = 0.02
+            interest_rate = 0.1
             interest_amount = int(user.bank * interest_rate)
 
             if interest_amount <= 0:
