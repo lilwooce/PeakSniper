@@ -899,20 +899,21 @@ class UserCommands(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            # Calculate remaining cooldown times
+            # Helper function to format time
             def format_time(end_time):
                 now = datetime.now()
-                logging.warning(f"{end_time} | now {now}")
                 if not end_time:
                     return "Not Set"
                 if end_time < now:
                     return "Ready"
                 
                 delta = end_time - now
-                hours, remainder = divmod(delta.seconds, 3600)
+                days, seconds = divmod(delta.total_seconds(), 86400)
+                hours, remainder = divmod(seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
-                return f"{delta.days * 24 + hours} hours {minutes} minutes {seconds} seconds"
+                return f"{int(days)} days, {int(hours)} hours, {int(minutes)} minutes, {int(seconds)} seconds"
 
+            # Create a dictionary of cooldowns
             cooldowns = {
                 "Daily Cooldown": u.daily_cooldown,
                 "Weekly Cooldown": u.weekly_cooldown,
@@ -924,13 +925,9 @@ class UserCommands(commands.Cog):
 
             embed = discord.Embed(title="Cooldowns", color=discord.Color.blue())
 
+            # Add each cooldown to the embed
             for name, end_time in cooldowns.items():
-                if isinstance(end_time, str) and end_time == "":
-                    remaining = "Not Set"
-                else:
-                    logging.warning(end_time)
-                    remaining = format_time(end_time)
-                
+                remaining = format_time(end_time)
                 embed.add_field(name=name, value=remaining, inline=False)
 
             await ctx.send(embed=embed)
