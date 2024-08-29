@@ -141,6 +141,20 @@ class Admin(commands.Cog):
 
         return ret
 
+    def weigh_jobs(self, jobs):
+        if len(jobs) <= 0:
+            return {}
+
+        total_weight = sum(job.salary for job in jobs)  # Sum of unnormalized chances
+        normalized_weights = [(job.salary / total_weight) * 100 for job in jobs]  # Normalize the weights
+
+        ret = {}
+        for job, weight in zip(jobs, normalized_weights):  # Zip through jobs and normalized weights
+            ret[job.name] = weight  # Assign the normalized weight to the corresponding job name
+            logging.warning(f"{job.name} | {ret[job.name]} % chance")
+
+        return ret
+
     @app_commands.command()
     @allowed()
     async def randomize_jobs(self, interaction: discord.Interaction):
@@ -152,6 +166,7 @@ class Admin(commands.Cog):
                 # Get a random list of jobs
                 jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3, 6)).all()
                 jobs = self.weigh_jobs(jobs_query)
+                j2 = self.weigh_jobs_salary(jobs_query)
 
                 server.jobs = json.dumps(jobs)
 
