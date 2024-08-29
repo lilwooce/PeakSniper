@@ -7,6 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
 import datetime
 import random
+import json
 from zoneinfo import ZoneInfo
 
 from classes import Servers, User, database, Jobs
@@ -59,6 +60,17 @@ class Config(commands.Cog, name="Configuration"):
         else:
             await ctx.send("Please input a new prefix.")
 
+    def weigh_jobs(self, jobs):
+        if len(jobs) <= 0:
+            return {}
+        total_weight = sum((weight) for _, weight in jobs)
+        normalized_weights = [((weight / total_weight) * 100) for _, weight in self.jobs]
+        ret = {}
+        for name, weight in jobs:
+            ret[name] = weight
+        return ret
+        
+
     time = datetime.time(hour=20, tzinfo=eastern)
     @tasks.loop(time=time)
     async def randomize_jobs(self):
@@ -69,10 +81,9 @@ class Config(commands.Cog, name="Configuration"):
             for server in servers:
                 # Get a random list of jobs
                 jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(3, 6)).all()
-                job_names = [job.name for job in jobs_query]
-                
-                # Update the server's jobs with the new list of job names
-                server.jobs = job_names
+                jobs = self.weigh_jobs(jobs_query)
+
+                server.jobs = json.dumps(jobs)
 
             # Commit the changes to the database
             session.commit()

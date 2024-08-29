@@ -250,11 +250,7 @@ class UserCommands(commands.Cog):
                 return
 
             # s.jobs is now a JSON column, which is automatically handled as a Python list
-            jobs = []
-            for job_name in s.jobs:
-                j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
-                if j:
-                    jobs.append((job_name, j.chance))
+            jobs = json.loads(s.jobs)
 
             if not jobs:
                 await ctx.send("No jobs available.")
@@ -303,14 +299,14 @@ class UserCommands(commands.Cog):
                 await ctx.send("Server not found in the database.", ephemeral=True)
                 return
 
-            jobs = server.jobs if isinstance(server.jobs, list) else []
+            jobs = json.loads(server.jobs) if server.jobs else {}
 
             embed = discord.Embed(title=f"Jobs in {guild.name}", color=discord.Color.blue())
             if jobs:
-                for job_name in jobs:
+                for job_name, weight in jobs:
                     j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
                     # If you store salary information separately, retrieve and display it here
-                    embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {j.chance}%", inline=False)
+                    embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {weight}%", inline=False)
             else:
                 embed.description = "No jobs found for this server."
 

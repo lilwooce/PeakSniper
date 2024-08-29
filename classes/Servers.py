@@ -50,4 +50,4 @@ class Servers(Base):
         self.recently_edited_before_message = ""
         self.recently_edited_after_message = ""
         self.recently_edited_reply = ""
-        self.jobs = ["beggar"]
+        self.jobs = {"beggar": 10}
