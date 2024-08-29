@@ -1,4 +1,5 @@
 import random
+import logging
 
 class JobSelection:
     def __init__(self, jobs_with_weights):
@@ -11,6 +12,9 @@ class JobSelection:
 
         # Normalize weights
         normalized_weights = [(weight/100) / self.total_weight for _, weight in self.jobs]
+        for _, weight in self.jobs:
+            logging.warning((weight/100) / self.total_weight)
+        logging.warning(normalized_weights)
 
         # Select a job based on normalized weights
         chosen_index = random.choices(range(len(self.jobs)), weights=normalized_weights)[0]
