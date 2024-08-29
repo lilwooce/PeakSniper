@@ -26,9 +26,12 @@ class Gamba(commands.Cog, name="Gamba"):
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
 
-            m, s = self.check_injured(u)
-            if m and s:
-                await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to gamble again.")
+            # Check for injury
+            injured = self.check_injured(u)
+            if injured:
+                m, s = injured
+                await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to work again.")
+                return  # Return early if the user is injured
 
             bal = u.balance
             if type(amount) == str and amount.lower() in "all":
@@ -73,9 +76,12 @@ class Gamba(commands.Cog, name="Gamba"):
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
             
-            m, s = self.check_injured(u)
-            if m and s:
-                await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to gamble again.")
+            # Check for injury
+            injured = self.check_injured(u)
+            if injured:
+                m, s = injured
+                await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to work again.")
+                return  # Return early if the user is injured
 
             bal = u.balance
             if type(amount) == str and amount.lower() in "all":
