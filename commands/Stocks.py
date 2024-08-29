@@ -50,7 +50,7 @@ class Stocks(commands.Cog):
         self.update_stocks()
 
     @commands.hybrid_command()
-    async def purchase(self, ctx, amount: int, *, name: str):
+    async def purchase(self, ctx, amount: str, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -66,11 +66,20 @@ class Stocks(commands.Cog):
                 await ctx.send(f"Stock '{name}' not found.")
                 return
 
+            # Calculate the amount of shares to buy based on user's balance
+            if amount.lower() == "all":
+                amount = user.balance // int(stock.current_value)
+            elif amount.lower() == "half":
+                amount = (user.balance // 2) // int(stock.current_value)
+            else:
+                amount = int(amount)
+
             total_cost = int(stock.current_value) * amount
+
             if user.balance < total_cost:
                 await ctx.send("You cannot afford this purchase.")
                 return
-            
+
             if amount <= 0:
                 await ctx.send("Dumbass!")
                 return
@@ -92,40 +101,82 @@ class Stocks(commands.Cog):
         finally:
             session.close()
 
+
     @commands.hybrid_command(aliases=['ld'])
-    async def liquidate(self, ctx, amount: int, *, name: str):
+    async def liquidate(self, ctx, amount: str, *, name: str = None):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
         try:
             user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stock.full_name == name)).first()
 
             if not user:
                 await ctx.send("User not found in the database.")
                 return
 
-            if not stock:
-                await ctx.send(f"Stock '{name}' not found.")
-                return
-
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
 
-            if stock.name not in portfolio or portfolio[stock.name] < amount:
-                await ctx.send(f"You do not own enough shares of {stock.name} to sell.")
-                return
+            # Determine the amount of stocks to liquidate
+            def get_liquidation_amount(available_amount):
+                if amount.lower() == "all":
+                    return available_amount
+                elif amount.lower() == "half":
+                    return available_amount // 2
+                else:
+                    return int(amount)
 
-            total_value = int(stock.current_value) * amount
-            user.balance += total_value
-            user.total_earned += total_value
-            portfolio[stock.name] -= amount
-            if portfolio[stock.name] == 0:
-                del portfolio[stock.name]
+            # If a specific stock name is provided
+            if name:
+                stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stock.full_name == name)).first()
 
-            user.portfolio = json.dumps(portfolio)
-            session.commit()
+                if not stock:
+                    await ctx.send(f"Stock '{name}' not found.")
+                    return
 
-            await ctx.send(f"You have liquidated {amount} shares of {stock.name} for {total_value} discoins.")
+                if stock.name not in portfolio:
+                    await ctx.send(f"You do not own any shares of {stock.name}.")
+                    return
+
+                available_amount = portfolio[stock.name]
+                liquidation_amount = get_liquidation_amount(available_amount)
+
+                if liquidation_amount <= 0 or liquidation_amount > available_amount:
+                    await ctx.send(f"You do not own enough shares of {stock.name} to sell {liquidation_amount}.")
+                    return
+
+                total_value = int(stock.current_value) * liquidation_amount
+                user.bank += total_value
+                user.total_earned += total_value
+                portfolio[stock.name] -= liquidation_amount
+
+                if portfolio[stock.name] == 0:
+                    del portfolio[stock.name]
+
+                user.portfolio = json.dumps(portfolio)
+                session.commit()
+
+                await ctx.send(f"You have liquidated {liquidation_amount} shares of {stock.name} for {total_value} discoins.")
+
+            # If no stock name is provided, liquidate from all stocks
+            else:
+                total_value = 0
+                for stock_name, shares in list(portfolio.items()):
+                    stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
+                    if stock:
+                        liquidation_amount = get_liquidation_amount(shares)
+                        value = int(stock.current_value) * liquidation_amount
+                        total_value += value
+                        portfolio[stock_name] -= liquidation_amount
+
+                        if portfolio[stock_name] == 0:
+                            del portfolio[stock_name]
+
+                user.bank += total_value
+                user.total_earned += total_value
+                user.portfolio = json.dumps(portfolio)
+                session.commit()
+
+                await ctx.send(f"You have liquidated {amount} of all your stocks for a total of {total_value} discoins.")
 
         except Exception as e:
             await ctx.send("An error occurred while processing your liquidation.")
@@ -133,6 +184,7 @@ class Stocks(commands.Cog):
 
         finally:
             session.close()
+
 
     @commands.hybrid_command()
     async def stocks(self, ctx):
@@ -146,17 +198,38 @@ class Stocks(commands.Cog):
                 return
 
             embeds = []
-            embed = discord.Embed(title="Available Stocks", color=discord.Color.blue())
+
             for i, stock in enumerate(stocks, start=1):
+                # Find the majority shareholder for the stock
+                majority_shareholder = None
+                max_shares = 0
+                users = session.query(User.User).all()
+
+                for user in users:
+                    portfolio = json.loads(user.portfolio) if user.portfolio else {}
+                    shares = portfolio.get(stock.name, 0)
+                    if shares > max_shares:
+                        max_shares = shares
+                        majority_shareholder = user
+
+                shareholder_info = f"{majority_shareholder.username} with {max_shares} shares" if majority_shareholder else "None"
+
+                # Create an embed with the majority shareholder in the title
+                if i % 4 == 1:  # Start a new embed every 4 stocks
+                    embed = discord.Embed(
+                        title=f"Available Stocks - Majority Shareholder: {shareholder_info}",
+                        color=discord.Color.blue()
+                    )
+
                 percent_change = stock.get_percentage_change()
                 embed.add_field(
                     name=stock.name,
                     value=f"Value: {stock.current_value} discoins\nPercent Change: {percent_change:.2f}%",
                     inline=False
                 )
+
                 if i % 4 == 0 or i == len(stocks):
                     embeds.append(embed)
-                    embed = discord.Embed(title="Available Stocks", color=discord.Color.blue())
 
             if not embeds:
                 await ctx.send("No stocks available at the moment.")
@@ -167,7 +240,7 @@ class Stocks(commands.Cog):
 
             await message.add_reaction("◀️")
             await message.add_reaction("▶️")
-            session.close()
+            session.close
 
             def check(reaction, user):
                 return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"] and reaction.message.id == message.id
@@ -192,8 +265,9 @@ class Stocks(commands.Cog):
             await ctx.send("An error occurred while retrieving stocks.")
             logging.warning(f"Error: {e}")
 
-        except:
-            return
+        finally:
+            session.close()
+
 
     @commands.hybrid_command()
     async def stock(self, ctx, *, name: str):
@@ -316,5 +390,6 @@ class Stocks(commands.Cog):
         finally:
             session.close()
 
+    
 async def setup(bot):
     await bot.add_cog(Stocks(bot))

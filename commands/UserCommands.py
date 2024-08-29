@@ -938,5 +938,53 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
+    @commands.hybrid_command()
+    async def interest(self, ctx):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not user:
+                await ctx.send("User not found in the database.")
+                return
+
+            now = datetime.now()
+
+            # Ensure the user has a `interest_cooldown` attribute
+            if not hasattr(user, 'interest_cooldown'):
+                user.interest_cooldown = None
+
+            # Check if the user is eligible for interest
+            if user.interest_cooldown and now - user.interest_cooldown < timedelta(days=1):
+                remaining_time = timedelta(days=1) - (now - user.interest_cooldown)
+                hours, remainder = divmod(remaining_time.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                await ctx.send(f"You can collect interest again in {hours} hours, {minutes} minutes, and {seconds} seconds.")
+                return
+
+            # Calculate interest (e.g., 2% of the current bank balance)
+            interest_rate = 0.02
+            interest_amount = int(user.bank * interest_rate)
+
+            if interest_amount <= 0:
+                await ctx.send("You do not have enough funds in your bank to earn interest.")
+                return
+
+            # Update the user's bank balance and the interest_cooldown time
+            user.bank += interest_amount
+            user.interest_cooldown = now
+            session.commit()
+
+            await ctx.send(f"You have received {interest_amount} discoins as interest! Your new bank balance is {user.bank} discoins.")
+
+        except Exception as e:
+            await ctx.send("An error occurred while processing your interest.")
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+            
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))

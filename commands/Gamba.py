@@ -25,6 +25,11 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
+            
+            m, s = self.check_injured(u)
+            if m and s:
+                await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to gamble again.")
+
             bal = u.balance
             if type(amount) == str and amount.lower() in "all":
                 amount = u.balance
@@ -67,6 +72,11 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=author.id).first()
+            
+            m, s = self.check_injured(u)
+            if m and s:
+                await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to gamble again.")
+
             bal = u.balance
             if type(amount) == str and amount.lower() in "all":
                 amount = u.balance
@@ -210,6 +220,13 @@ class Gamba(commands.Cog, name="Gamba"):
             session.commit()
             session.close()
 
+    def check_injured(self, u):
+        current_time = datetime.now()
+        if u.injury and current_time < u.injury:
+            remaining_time = (u.injury - current_time).total_seconds()
+            minutes, seconds = divmod(remaining_time, 60)
+            return minutes, seconds
+        
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def work(self, ctx):
@@ -220,12 +237,9 @@ class Gamba(commands.Cog, name="Gamba"):
             user_jobs = json.loads(u.jobs)
             job_name = user_jobs[f'{ctx.guild.id}']
 
-            current_time = datetime.now()
-            if u.injury and current_time < u.injury:
-                remaining_time = (u.injury - current_time).total_seconds()
-                minutes, seconds = divmod(remaining_time, 60)
-                await ctx.send(f"You are injured! Please wait {int(minutes)} minutes and {int(seconds)} seconds before attempting to work again.")
-                return
+            m, s = self.check_injured(u)
+            if m and s:
+                await ctx.send(f"You are injured! Please wait {int(m)} minutes and {int(s)} seconds before attempting to work again.")
             
             if job_name is None:
                 await ctx.send("Job not found for this server. Please apply first before working.")
