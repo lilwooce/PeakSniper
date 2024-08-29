@@ -902,12 +902,12 @@ class UserCommands(commands.Cog):
             # Calculate remaining cooldown times
             def format_time(end_time):
                 now = datetime.now()
+                logging.warning(f"{end_time} | now {now}")
                 if not end_time:
                     return "Not Set"
                 if end_time < now:
                     return "Ready"
                 
-                logging.warning(f"{end_time} | now {now}")
                 delta = end_time - now
                 hours, remainder = divmod(delta.seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
