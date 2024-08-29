@@ -898,8 +898,18 @@ class UserCommands(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            # Get the current time
-            now = datetime.now()
+            # Calculate remaining cooldown times
+            def format_time(end_time):
+                now = datetime.now()
+                if not end_time:
+                    return "Not Set"
+                if end_time < now:
+                    return "Ready"
+
+                delta = end_time - now
+                hours, remainder = divmod(delta.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                return f"{delta.days * 24 + hours} hours {minutes} minutes {seconds} seconds"
 
             cooldowns = {
                 "Daily Cooldown": u.daily_cooldown,
@@ -916,7 +926,7 @@ class UserCommands(commands.Cog):
                 if isinstance(end_time, str) and end_time == "":
                     remaining = "Not Set"
                 else:
-                    remaining = self.format_time_remaining(end_time)
+                    remaining = format_time(end_time)
                 
                 embed.add_field(name=name, value=remaining, inline=False)
 
