@@ -5,7 +5,7 @@ import random
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from classes import User, database
-from classes import Servers, User, database, Jobs
+from classes import Servers, User, database, Jobs, Global
 import json
 from datetime import datetime
 
@@ -241,8 +241,7 @@ class Gamba(commands.Cog, name="Gamba"):
         session = Session()
         try:
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            user_jobs = json.loads(u.jobs)
-            job_name = user_jobs.get(f'{ctx.guild.id}', None)
+            job_name = u.job
 
             # Check for injury
             injured = self.check_injured(u)
@@ -252,7 +251,7 @@ class Gamba(commands.Cog, name="Gamba"):
                 return  # Return early if the user is injured
             
             if job_name is None:
-                await ctx.send("Job not found for this server. Please apply first before working.")
+                await ctx.send("Job not found. Please apply first before working.")
                 return
             
             j = session.query(Jobs.Jobs).filter_by(name=job_name).first()

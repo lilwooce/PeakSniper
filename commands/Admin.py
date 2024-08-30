@@ -13,7 +13,7 @@ import random
 import json
 import logging
 
-from classes import Servers, User, database, Jobs, ShopItem, Stock
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Global
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -161,22 +161,65 @@ class Admin(commands.Cog):
     @app_commands.command()
     @allowed()
     async def randomize_jobs(self, interaction: discord.Interaction):
-        guild = interaction.guild
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
-            server = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
+            g = session.query(Global.Global).first()
             # Get a random list of jobs
             jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(self.min_num_jobs, self.min_num_jobs*2)).all()
-            jobs = self.weigh_jobs(jobs_query)
+            jobs = self.weigh_jobs_salary(jobs_query)
 
-            server.jobs = json.dumps(jobs)
+            g.jobs = json.dumps(jobs)
+
             # Commit the changes to the database
-            session.commit()
-            
             await interaction.response.send_message("Success")
-        except Exception as e:
-            await interaction.response.send_message(f"Failed because {e}")
+            session.commit()
+        finally:
+            session.close()
+    
+    @app_commands.command()
+    @allowed()
+    async def daily_tax(self, interaction: discord.Interaction):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            users = session.query(User.User).all()
+            for u in users:
+                if u.balance == 0 and u.in_jail == True:
+                    # Don't tax
+                    continue
+                
+                # Get the user's bills
+                bills = json.loads(u.bills)
+                
+                if bills and "daily" in bills:
+                    # Double the daily tax amount
+                    bills["daily"] *= 2
+                    
+                    # Update the user's bills
+                    u.bills = json.dumps(bills)
+                    
+                    # Check if reminders are enabled
+                    if u.reminders == True:
+                        # Calculate current day (n) based on the daily tax amount
+                        n = math.log2(bills["daily"] / 1000) + 1
+                        
+                        # Calculate days left before going to jail
+                        days_left = 7 - n
+                        
+                        # Send reminder message
+                        if days_left > 0:
+                            await self.send_reminder(u, f"You have {days_left} days left to pay your bills before you lose your job, all your money, and go to jail.")
+                        else:
+                            # Handle the case where the user should now go to jail
+                            u.in_jail = True
+                            u.balance = -10000
+                            u.bank = 0
+                            u.job = "beggar"
+                            
+                # Commit the changes to the database
+                session.commit()
+                await interaction.response.send_message("Success")
         finally:
             session.close()
     

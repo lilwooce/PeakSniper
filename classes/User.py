@@ -31,11 +31,15 @@ class User(Base):
     interest_cooldown = Column("interest_cooldown", DATETIME)
     injury = Column("injury", DATETIME)
     heist_cooldown = Column("heist_cooldown", DATETIME)
-    jobs = Column("jobs", JSON)
+    job = Column("job", String(200))
     inventory = Column("inventory", JSON)
     used_items = Column("used_items", JSON)
     bank = Column("bank", BigInteger)
     portfolio = Column("portfolio", JSON)
+
+    last_worked = Column("last_worked", DATETIME)
+    bills = Column("bills", JSON)
+    in_jail = Column("in_jail", Boolean)
 
     def __init__(self, user):
         self.name = user.name
@@ -58,8 +62,12 @@ class User(Base):
         self.injury = ""
         self.heist_cooldown = ""
         self.interest_cooldown = ""
-        self.jobs = {}
+        self.job = "beggar"
         self.inventory = {}
         self.used_items = {}
         self.bank = 0
         self.portfolio = {}
+
+        self.in_jail = False
+        self.last_worked = ""
+        self.bills = {}

@@ -40,6 +40,7 @@ def admins_only():
 class Stocks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.stock_tax = .02
         self.update_stocks.start()
 
     @commands.Cog.listener()
@@ -61,6 +62,9 @@ class Stocks(commands.Cog):
             if not user:
                 await ctx.send("User not found in the database.")
                 return
+
+            if user.in_jail == True:
+                await ctx.send("You cannot purchase stocks while in jail.")
 
             if not stock:
                 await ctx.send(f"Stock '{name}' not found.")
@@ -145,8 +149,9 @@ class Stocks(commands.Cog):
                     return
 
                 total_value = int(stock.current_value) * liquidation_amount
-                user.bank += total_value
-                user.total_earned += total_value
+                tax = total_value * self.stock_tax
+                user.bank += total_value - tax
+                user.total_earned += total_value - tax
                 portfolio[stock.name] -= liquidation_amount
 
                 if portfolio[stock.name] == 0:
@@ -155,7 +160,7 @@ class Stocks(commands.Cog):
                 user.portfolio = json.dumps(portfolio)
                 session.commit()
 
-                await ctx.send(f"You have liquidated {liquidation_amount} shares of {stock.name} for {total_value} discoins.")
+                await ctx.send(f"You have liquidated {liquidation_amount} shares of {stock.name} for {total_value - tax} discoins. You were taxed {tax} discoins for this transaction.")
 
             # If no stock name is provided, liquidate from all stocks
             else:

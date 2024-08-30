@@ -4,7 +4,7 @@ from discord import app_commands
 from dotenv import load_dotenv
 import os
 from sqlalchemy.orm import sessionmaker
-from classes import Servers, User, database, Jobs, JobSelector, ShopItem
+from classes import Servers, User, database, Jobs, JobSelector, ShopItem, Global
 from .Config import hasAccount
 from datetime import datetime, timedelta
 import logging
@@ -15,10 +15,6 @@ import asyncio
 class UserCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.dailyFunds = 250
-        self.weeklyFunds = 2500
-        self.dailyMulti = .05
-        self.weeklyMulti = .15
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -123,9 +119,8 @@ class UserCommands(commands.Cog):
             if not u:
                 await ctx.send("No profile available.")
                 return
-
-            user_jobs = json.loads(u.jobs)
-            job_name = user_jobs[f'{ctx.guild.id}']
+            
+            job_name = u.job
             if job_name is None:
                 await ctx.send("Job not found for this server. Please apply first before working.")
                 return
@@ -160,68 +155,6 @@ class UserCommands(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def daily(self, ctx):
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
-
-        try:
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            logging.warning(u.daily_cooldown)
-            dailyCD = u.daily_cooldown
-            now = datetime.now()
-
-            if (now - dailyCD).days >= 1:
-                am = ((u.balance + u.bank) * self.dailyMulti) + self.dailyFunds
-                u.balance += am
-                u.total_earned += am
-                u.daily_cooldown = now + timedelta(days=1)  # Set cooldown a day from now
-                session.commit()
-                await ctx.send(f"You have earned {am} discoins")
-            else:
-                time_left = dailyCD - now
-                hours, remainder = divmod(time_left.total_seconds(), 3600)
-                minutes, _ = divmod(remainder, 60)
-
-                if hours >= 1:
-                    await ctx.send(f"Your daily reward will be available in {int(hours)} hour(s) and {int(minutes)} minute(s).")
-                else:
-                    await ctx.send(f"Your daily reward will be available in {int(minutes)} minute(s).")
-        finally:
-            session.close()
-
-    @commands.hybrid_command()
-    async def weekly(self, ctx):
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
-
-        try:
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            weeklyCD = u.weekly_cooldown
-            now = datetime.now()
-
-            if (now - weeklyCD).days >= 7:
-                am = ((u.balance + u.bank) * self.weeklyMulti) + self.weeklyFunds
-                u.balance += am
-                u.total_earned += am
-                u.weekly_cooldown = now + timedelta(days=7)  # Set cooldown a week from now
-                session.commit()
-                await ctx.send(f"You have earned {am} discoins")
-            else:
-                time_left = weeklyCD - now
-                days, remainder = divmod(time_left.total_seconds(), 86400)
-                hours, remainder = divmod(remainder, 3600)
-                minutes, _ = divmod(remainder, 60)
-
-                if days >= 1:
-                    await ctx.send(f"Your weekly reward will be available in {int(days)} day(s), {int(hours)} hour(s), and {int(minutes)} minute(s).")
-                elif hours >= 1:
-                    await ctx.send(f"Your weekly reward will be available in {int(hours)} hour(s) and {int(minutes)} minute(s).")
-                else:
-                    await ctx.send(f"Your weekly reward will be available in {int(minutes)} minute(s).")
-        finally:
-            session.close()
-
-    @commands.hybrid_command()
     async def apply(self, ctx):
         Session = sessionmaker(bind=database.engine)
         session = Session()
@@ -229,7 +162,7 @@ class UserCommands(commands.Cog):
 
         try:
             # Get the server entry
-            s = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
+            g = session.query(Global.Global).first()
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
             if not u:
@@ -243,12 +176,12 @@ class UserCommands(commands.Cog):
                 await ctx.send("You cannot apply for a job without a *Resume*. Try purchasing one from the Shop.")
                 return
 
-            if not s:
-                await ctx.send("Server not found.")
+            if not g:
+                await ctx.send("Data not found.")
                 return
 
             # s.jobs is now a JSON column, which is automatically handled as a Python list
-            jobs = json.loads(s.jobs) if s.jobs else {}
+            jobs = json.loads(g.jobs) if g.jobs else {}
 
             if not jobs:
                 await ctx.send("No jobs available.")
@@ -259,13 +192,9 @@ class UserCommands(commands.Cog):
             selected_job = js.choose_job()
 
             # Update or add the new job for the given server_id in user's jobs
-            current_jobs = json.loads(u.jobs) if u.jobs else {}
-            current_jobs[str(guild.id)] = selected_job
+            u.job = selected_job
             del used_items['resume']
             u.used_items = json.dumps(used_items)
-
-            # Convert the dictionary back to JSON and update the jobs column
-            u.jobs = json.dumps(current_jobs)
 
             # Commit the changes to the database
             session.commit()
@@ -292,12 +221,12 @@ class UserCommands(commands.Cog):
         session = Session()
 
         try:
-            server = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
+            g = session.query(Global.Global).first()
             if not server:
                 await ctx.send("Server not found in the database.", ephemeral=True)
                 return
 
-            jobs = json.loads(server.jobs) if server.jobs else {}
+            jobs = json.loads(g.jobs) if g.jobs else {}
 
             embed = discord.Embed(title=f"Jobs in {guild.name}", color=discord.Color.blue())
             if jobs:
@@ -738,10 +667,7 @@ class UserCommands(commands.Cog):
                 elif fail_outcome <= 95:  # 35% chance to lose nothing
                     await ctx.send(f"You failed to steal from {victim.name} but managed to escape without any penalties.")
                 else:  # 5% chance to lose your job and become a beggar
-                    guild = ctx.guild
-                    current_jobs = json.loads(t.jobs) if t.jobs else {}
-                    current_jobs[str(guild.id)] = "beggar"
-                    t.jobs = json.dumps(current_jobs)
+                    t.job = "beggar"
                     await ctx.send(f"You failed to steal from {victim.name} and got caught by the cops! You lost your job and are now a beggar.")
 
             # Set cooldown
@@ -829,9 +755,7 @@ class UserCommands(commands.Cog):
                     guild = ctx.guild
                     t.bank = 0
                     t.balance = 0
-                    current_jobs = json.loads(t.jobs) if t.jobs else {}
-                    current_jobs[str(guild.id)] = "beggar"
-                    t.jobs = json.dumps(current_jobs)
+                    t.job = "beggar"
                     await ctx.send(f"The heist failed disastrously! {thief.name} lost all their discoins and their job, becoming a beggar.")
                 elif fail_outcome <= 40:  # 30% chance to lose half of your money
                     loss_amount = t.balance // 2
@@ -925,8 +849,6 @@ class UserCommands(commands.Cog):
 
             # Create a dictionary of cooldowns
             cooldowns = {
-                "Daily Cooldown": u.daily_cooldown,
-                "Weekly Cooldown": u.weekly_cooldown,
                 "Steal Cooldown": u.steal_cooldown,
                 "Injury": u.injury,
                 "Heist Cooldown": u.heist_cooldown,
@@ -972,7 +894,7 @@ class UserCommands(commands.Cog):
                 return
 
             # Calculate interest (e.g., 2% of the current bank balance)
-            interest_rate = 0.1
+            interest_rate = 0.01
             interest_amount = int(user.bank * interest_rate)
 
             if interest_amount <= 0:
@@ -988,6 +910,124 @@ class UserCommands(commands.Cog):
 
         except Exception as e:
             await ctx.send("An error occurred while processing your interest.")
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+    
+    @commands.hybrid_command()
+    async def bills(self, ctx):
+        user = ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        
+        try:
+            # Fetch user data
+            user = session.query(User.User).filter_by(user_id=user.id).first()
+            if not user:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            bills = json.loads(user.bills) if user.bills else {}
+            if bills == {}:
+                await ctx.send("You have no bills to pay.")
+                return
+
+            # Divide bills items into pages with a max of 5 items per page
+            items = list(bills.items())
+            pages = [items[i:i + 5] for i in range(0, len(items), 5)]
+            current_page = 0
+
+            # Function to create an embed for a given page
+            def create_embed(page):
+                embed = discord.Embed(title=f"{ctx.author.name}'s Bills", description=f"Page {page + 1}/{len(pages)}", color=discord.Color.green())
+                for item_name, amount in pages[page]:
+                    embed.add_field(name=item_name.title(), value=f"Balance: {amount}", inline=False)
+                return embed
+
+            # Send the first embed
+            message = await ctx.send(embed=create_embed(current_page))
+
+            # Add reactions if there are multiple pages
+            if len(pages) > 1:
+                await message.add_reaction("⬅️")
+                await message.add_reaction("➡️")
+
+                # Check for reaction events
+                def check(reaction, user):
+                    return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
+
+                while True:
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+                        if str(reaction.emoji) == "➡️":
+                            if current_page < len(pages) - 1:
+                                current_page += 1
+                                await message.edit(embed=create_embed(current_page))
+                        elif str(reaction.emoji) == "⬅️":
+                            if current_page > 0:
+                                current_page -= 1
+                                await message.edit(embed=create_embed(current_page))
+
+                        await message.remove_reaction(reaction, user)
+
+                    except asyncio.TimeoutError:
+                        break
+
+                # Clear reactions after the timeout
+                await message.clear_reactions()
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving your bills.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+    
+    @commands.hybrid_command()
+    async def pay(self, ctx, name: str, amount: str = "all"):
+        name = name.lower()
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if type(amount) == str and amount.lower() in "all":
+                amount = u.balance
+            elif type(amount) == str and amount.lower() in "half":
+                amount = u.balance / 2
+            else:
+                amount = int(amount)
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            bills = json.loads(u.bills) if u.bills else {}
+
+            if name not in bills or bills[name] <= 0:
+                await ctx.send(f"You don't have a bill named {name}.", ephemeral=True)
+                return
+            
+            if u.balance < amount:
+                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                return
+
+            u.balance -= bills[name]
+            bills[name] -= amount
+            if bills[name] == 0:
+                del bills[name]
+            
+            u.bills = json.dumps(bills)
+
+            session.commit()
+
+            await ctx.send(f"You paid {amount} towards your {name} bill.", ephemeral=True)
+
+        except Exception as e:
+            await ctx.send("An error occurred while using the item.", ephemeral=True)
             logging.warning(f"Error: {e}")
 
         finally:

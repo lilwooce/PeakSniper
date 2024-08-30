@@ -15,7 +15,6 @@ class Servers(Base):
     name = Column("name", String(80))
     prefix = Column("prefix", String(80))
     currently_in_server = Column("currently_in_server", Boolean)
-    jobs = Column("jobs", JSON)
 
     recently_deleted_message = Column("recently_deleted_message", String(2000))
     recently_deleted_images = Column("recently_deleted_images", String(2000))
@@ -50,4 +49,3 @@ class Servers(Base):
         self.recently_edited_before_message = ""
         self.recently_edited_after_message = ""
         self.recently_edited_reply = ""
-        self.jobs = {"beggar": 10}
