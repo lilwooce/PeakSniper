@@ -994,17 +994,6 @@ class UserCommands(commands.Cog):
         try:
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
-            if type(amount) == str and amount.lower() in "all":
-                amount = u.balance
-            elif type(amount) == str and amount.lower() in "half":
-                amount = u.balance / 2
-            else:
-                amount = int(amount)
-
-            if not u:
-                await ctx.send("User not found in the database.", ephemeral=True)
-                return
-
             bills = json.loads(u.bills) if u.bills else {}
 
             if name not in bills or bills[name] <= 0:
@@ -1013,6 +1002,17 @@ class UserCommands(commands.Cog):
             
             if u.balance < amount:
                 await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                return
+
+            if type(amount) == str and amount.lower() in "all":
+                amount = bills[name]
+            elif type(amount) == str and amount.lower() in "half":
+                amount = bills[name] / 2
+            else:
+                amount = int(amount)
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
                 return
 
             u.balance -= bills[name]
