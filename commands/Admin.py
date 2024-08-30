@@ -225,7 +225,7 @@ class Admin(commands.Cog):
     
     @app_commands.command()
     @allowed()
-    async def daily_tax(self, interaction: discord.Interaction, user: discord.User):
+    async def daily_tax_user(self, interaction: discord.Interaction, user: discord.User):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
