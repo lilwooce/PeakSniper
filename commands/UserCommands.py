@@ -999,10 +999,6 @@ class UserCommands(commands.Cog):
             if name not in bills or bills[name] <= 0:
                 await ctx.send(f"You don't have a bill named {name}.", ephemeral=True)
                 return
-            
-            if u.balance < amount:
-                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
-                return
 
             if type(amount) == str and amount.lower() in "all":
                 amount = bills[name]
@@ -1010,6 +1006,10 @@ class UserCommands(commands.Cog):
                 amount = bills[name] / 2
             else:
                 amount = int(amount)
+            
+            if u.balance < amount:
+                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                return
 
             if not u:
                 await ctx.send("User not found in the database.", ephemeral=True)
