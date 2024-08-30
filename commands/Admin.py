@@ -245,6 +245,7 @@ class Admin(commands.Cog):
                 u.bills = json.dumps(bills)
             else:
                 bills["daily"] = 1000
+                u.bills = json.dumps(bills)
             
             # Check if reminders are enabled
             if u.reminders == True:
