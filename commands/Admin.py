@@ -229,7 +229,7 @@ class Admin(commands.Cog):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
-            u = session.query(User.User).filter_by(user_id=user.id).first
+            u = session.query(User.User).filter_by(user_id=user.id).first()
             if u.balance == 0 and u.in_jail == True:
                 # Don't tax
                 return
