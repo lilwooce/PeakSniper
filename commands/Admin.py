@@ -235,7 +235,7 @@ class Admin(commands.Cog):
                 return
             
             # Get the user's bills
-            bills = json.loads(u.bills)
+            bills = json.loads(u.bills) if u.bills else {}
             
             if bills and "daily" in bills:
                 # Double the daily tax amount
@@ -243,24 +243,26 @@ class Admin(commands.Cog):
                 
                 # Update the user's bills
                 u.bills = json.dumps(bills)
+            else:
+                bills["daily"] = 1000
+            
+            # Check if reminders are enabled
+            if u.reminders == True:
+                # Calculate current day (n) based on the daily tax amount
+                n = math.log2(bills["daily"] / 1000) + 1
                 
-                # Check if reminders are enabled
-                if u.reminders == True:
-                    # Calculate current day (n) based on the daily tax amount
-                    n = math.log2(bills["daily"] / 1000) + 1
-                    
-                    # Calculate days left before going to jail
-                    days_left = 7 - n
-                    
-                    # Send reminder message
-                    if days_left > 0:
-                        await self.send_reminder(u, f"You have {days_left} days left to pay your bills before you lose your job, all your money, and go to jail.")
-                    else:
-                        # Handle the case where the user should now go to jail
-                        u.in_jail = True
-                        u.balance = -10000
-                        u.bank = 0
-                        u.job = "beggar"
+                # Calculate days left before going to jail
+                days_left = 7 - n
+                
+                # Send reminder message
+                if days_left > 0:
+                    await self.send_reminder(u, f"You have {days_left} days left to pay your bills before you lose your job, all your money, and go to jail.")
+                else:
+                    # Handle the case where the user should now go to jail
+                    u.in_jail = True
+                    u.balance = -10000
+                    u.bank = 0
+                    u.job = "beggar"
                         
             # Commit the changes to the database
             session.commit()
