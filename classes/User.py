@@ -40,6 +40,7 @@ class User(Base):
     last_worked = Column("last_worked", DATETIME)
     bills = Column("bills", JSON)
     in_jail = Column("in_jail", Boolean)
+    reminders = Column("reminders", Boolean)
 
     def __init__(self, user):
         self.name = user.name
@@ -71,3 +72,4 @@ class User(Base):
         self.in_jail = False
         self.last_worked = ""
         self.bills = {}
+        self.reminders = False
