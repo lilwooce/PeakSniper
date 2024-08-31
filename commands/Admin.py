@@ -222,6 +222,7 @@ class Admin(commands.Cog):
                             
                 # Commit the changes to the database
                 session.commit()
+                await interaction.response.send_message("Success")
         finally:
             session.close()
     
