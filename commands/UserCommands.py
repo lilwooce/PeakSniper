@@ -222,9 +222,6 @@ class UserCommands(commands.Cog):
 
         try:
             g = session.query(Global.Global).first()
-            if not server:
-                await ctx.send("Server not found in the database.", ephemeral=True)
-                return
 
             jobs = json.loads(g.jobs) if g.jobs else {}
 
