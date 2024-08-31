@@ -167,7 +167,7 @@ class Admin(commands.Cog):
             g = session.query(Global.Global).first()
             # Get a random list of jobs
             jobs_query = session.query(Jobs.Jobs).order_by(func.rand()).limit(random.randint(self.min_num_jobs, self.min_num_jobs*2)).all()
-            jobs = self.weigh_jobs_salary(jobs_query)
+            jobs = self.weigh_jobs(jobs_query)
 
             g.jobs = json.dumps(jobs)
 
