@@ -12,7 +12,7 @@ import json
 from zoneinfo import ZoneInfo
 import logging
 import math
-from classes import Servers, User, database, Jobs, Global, Stock
+from classes import Servers, User, database, Jobs, Global, Stock, Assets, Freelancers, Businesses, Houses
 eastern = ZoneInfo("America/New_York")
 time_am = time(hour=8, tzinfo=eastern)  # 8:00 AM Eastern
 time_pm = time(hour=20, tzinfo=eastern)  # 8:00 PM Eastern
@@ -46,10 +46,35 @@ async def hasAccount(ctx):
         session.commit()
         session.close()
 
+# Define update methods for each type of stock
+def update_house_value(stock, session):
+    house = session.query(Houses.House).filter_by(id=stock.reference_id).first()
+    if house:
+        house.current_value = stock.current_value
+        session.commit()
+
+def update_asset_value(stock, session):
+    asset = session.query(Assets.Asset).filter_by(id=stock.reference_id).first()
+    if asset:
+        asset.current_value = stock.current_value
+        session.commit()
+
+def update_business_value(stock, session):
+    business = session.query(Businesses.Business).filter_by(id=stock.reference_id).first()
+    if business:
+        business.current_value = stock.current_value
+        session.commit()
+        
 class Config(commands.Cog, name="Configuration"):
     def __init__(self, bot):
         self.bot = bot
         self.min_num_jobs = 3
+        # Stock type mapping
+        self.stock_update_mapping = {
+            "house": update_house_value,
+            "asset": update_asset_value,
+            "business": update_business_value,
+        }
         self.randomize_jobs.start()
         self.daily_tax.start()
         self.daily_revenue.start()
@@ -246,6 +271,30 @@ class Config(commands.Cog, name="Configuration"):
             session.commit()
         finally:
             session.close()
+
+    @tasks.loop(time=times)
+    async def update_stocks(self):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            stocks = session.query(Stock.Stock).all()
+            for stock in stocks:
+                # Get the stock type
+                stock_type = stock.type_of
+                
+                # Check if the stock type has a corresponding update method
+                if stock_type in self.stock_update_mapping:
+                    # Call the appropriate update method
+                    self.stock_update_mapping[stock_type](stock, session)
+                    
+                # Call stock.update() for general updates
+                stock.update()
+            
+            # Commit changes to the database
+            session.commit()
+        finally:
+            session.close()
+
 
 
 async def setup(bot):

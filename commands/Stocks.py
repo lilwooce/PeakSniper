@@ -409,6 +409,42 @@ class Stocks(commands.Cog):
             await ctx.send("Successfully updated the stock market!!!")
         finally:
             session.close()
+    
+    @commands.hybrid_command()
+    async def history(self, ctx, stock_name: str):
+        """Returns the historical graph of the given stock."""
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            # Query the stock by name
+            stock = session.query(Stock.Stock).filter_by(name=stock_name).first()
+
+            if not stock:
+                await ctx.send(f"Stock with name {stock_name} not found.")
+                return
+
+            embed = discord.Embed(title=f"{stock_name} Stock History")
+
+            # Attempt to generate the graph
+            try:
+                # Generate the graph and save it as a BytesIO object
+                buf = stock.graph()
+                file = discord.File(fp=buf, filename=f"{stock.name}_graph.png")
+                embed.set_image(url=f"attachment://{stock.name}_graph.png")
+                image_sent = True
+            except Exception as e:
+                logging.warning(f"Cannot retrieve graph: {e}")
+                image_sent = False
+
+            # Send the embed along with the graph file if available
+            if image_sent:
+                await ctx.send(embed=embed, file=file)
+            else:
+                await ctx.send(embed=embed)
+        finally:
+            session.close()
+        
 
     
 async def setup(bot):
