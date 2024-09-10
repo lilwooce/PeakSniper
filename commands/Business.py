@@ -10,7 +10,7 @@ class BusinessCog(commands.Cog):
         self.bot = bot
         self.session = session
 
-    @commands.hybrid_command(aliases="bs")
+    @commands.hybrid_command(aliases=["bs"])
     async def businesses(self, ctx):
         """View all currently available businesses."""
         businesses = self.session.query(Businesses.Businesses.Business).filter_by(owner=None).all()
