@@ -15,7 +15,7 @@ class House(Base):
     daily_expense = Column("daily_expense", BigInteger)
     last_expense_paid = Column("last_expense_paid", DATETIME)
     expenses = Column("expenses", BigInteger)
-    bid_history = Column("current_value", JSON)
+    bid_history = Column("bid_history", JSON)
     in_market = Column("in_market", Boolean)
     rob_chance = Column("rob_chance", FLOAT)
 
