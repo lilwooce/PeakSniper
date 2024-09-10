@@ -47,7 +47,7 @@ class BusinessCog(commands.Cog):
         except NoResultFound:
             await ctx.send(f"{ctx.author.mention}, {business_name} is not available or doesn't exist.")
 
-    @commands.hybrid_command(name="list")
+    @commands.hybrid_command(name="auction")
     async def auction(self, ctx, business_name: str, price: int):
         """List a business you own for sale."""
         try:
@@ -61,7 +61,7 @@ class BusinessCog(commands.Cog):
         except NoResultFound:
             await ctx.send(f"{ctx.author.mention}, you do not own {business_name} or it is not available.")
 
-    @commands.hybrid_command(name="business")
+    @commands.hybrid_command(name="details")
     async def details(self, ctx, business_name: str):
         """See detailed information about a business."""
         try:
@@ -88,7 +88,7 @@ class BusinessCog(commands.Cog):
         except NoResultFound:
             await ctx.send(f"{ctx.author.mention}, no business named {business_name} found.")
 
-    @commands.hybrid_command(name="mb")
+    @commands.hybrid_command(aliases=["mb"])
     async def mybiz(self, ctx):
         """View all businesses a user owns."""
         businesses = self.session.query(Businesses.Business).filter_by(owner=ctx.author.id).all()
