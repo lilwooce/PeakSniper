@@ -12,7 +12,7 @@ import json
 from zoneinfo import ZoneInfo
 import logging
 import math
-from classes import Servers, User, database, Jobs, Global
+from classes import Servers, User, database, Jobs, Global, Stock
 eastern = ZoneInfo("America/New_York")
 time_am = time(hour=8, tzinfo=eastern)  # 8:00 AM Eastern
 time_pm = time(hour=20, tzinfo=eastern)  # 8:00 PM Eastern
@@ -51,6 +51,9 @@ class Config(commands.Cog, name="Configuration"):
         self.bot = bot
         self.min_num_jobs = 3
         self.randomize_jobs.start()
+        self.daily_tax.start()
+        self.daily_revenue.start()
+        self.update_stocks.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -58,6 +61,9 @@ class Config(commands.Cog, name="Configuration"):
     
     def cog_unload(self):
         self.randomize_jobs()
+        self.daily_tax()
+        self.daily_revenue()
+        self.update_stocks()
 
     @commands.command(description="Allows the user to change the prefix of the bot")
     async def prefix(self, ctx, new_prefix=None):
@@ -223,6 +229,21 @@ class Config(commands.Cog, name="Configuration"):
                 # Commit the changes
                 session.commit()
 
+        finally:
+            session.close()
+    
+    times = [time(hour=h, tzinfo=eastern) for h in range(0, 24, 3)]
+    @tasks.loop(time=times)
+    async def update_stocks(self):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            stocks = session.query(Stock.Stock).all()
+            for stock in stocks:
+                stock.update()
+
+            # Commit the changes to the database
+            session.commit()
         finally:
             session.close()
 

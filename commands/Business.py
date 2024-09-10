@@ -32,7 +32,7 @@ class BusinessCog(commands.Cog):
         
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name="purchase")
+    @commands.hybrid_command(name="acquire")
     async def acquire(self, ctx, business_name: str):
         """Purchase a business if available."""
         try:

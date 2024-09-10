@@ -41,14 +41,10 @@ class Stocks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.stock_tax = .02
-        self.update_stocks.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
-    
-    def cog_unload(self):
-        self.update_stocks()
 
     @commands.hybrid_command()
     async def purchase(self, ctx, amount: str, *, name: str):
@@ -396,21 +392,6 @@ class Stocks(commands.Cog):
             await ctx.send("An error occurred while retrieving the portfolio.")
             logging.warning(f"Error: {e}")
 
-        finally:
-            session.close()
-
-    times = [time(hour=h, tzinfo=eastern) for h in range(0, 24, 3)]
-    @tasks.loop(time=times)
-    async def update_stocks(self):
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
-        try:
-            stocks = session.query(Stock.Stock).all()
-            for stock in stocks:
-                stock.update()
-
-            # Commit the changes to the database
-            session.commit()
         finally:
             session.close()
     
