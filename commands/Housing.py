@@ -14,7 +14,7 @@ import random
 import logging
 import json
 from zoneinfo import ZoneInfo
-from classes import Servers, User, database, Jobs, ShopItem, Stock, Houses
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Houses, Freelancers
 import asyncio
 import matplotlib.pyplot as plt
 
@@ -41,14 +41,10 @@ class Housing(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.stock_tax = .02
-        self.update_stocks.start()
 
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
-    
-    def cog_unload(self):
-        self.update_stocks()
 
     @commands.hybrid_command()
     async def bid(self, ctx, amount: str, *, name: str):
@@ -58,7 +54,7 @@ class Housing(commands.Cog):
         try:
             # Fetch the user and house from the database
             user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            house = session.query(House).filter_by(name=name).first()
+            house = session.query(Houses.House).filter_by(name=name).first()
 
             if not user:
                 await ctx.send("User not found in the database.")
@@ -129,14 +125,14 @@ class Housing(commands.Cog):
                 return
 
             # Check if the user has a Real Estate Agent type freelancer
-            agent = session.query(Freelancer).filter_by(boss=user.user_id, job_title="Real Estate Agent").first()
+            agent = session.query(Freelancers.Freelancer).filter_by(boss=user.user_id, job_title="Real Estate Agent").first()
 
             if not agent:
                 await ctx.send("You need to hire a Real Estate Agent to list a house on the market.")
                 return
 
             # Find the house by name and ensure the user owns it
-            house = session.query(House).filter_by(owner=user.user_id, name=name).first()
+            house = session.query(Houses.House).filter_by(owner=user.user_id, name=name).first()
 
             if not house:
                 await ctx.send(f"House '{name}' not found or you do not own it.")
@@ -167,7 +163,7 @@ class Housing(commands.Cog):
 
         try:
             # Query all houses that are in the market
-            houses = session.query(House).filter_by(in_market=True).all()
+            houses = session.query(Houses.House).filter_by(in_market=True).all()
             if not houses:
                 await ctx.send("No houses are currently available in the market.")
                 return
@@ -240,7 +236,7 @@ class Housing(commands.Cog):
 
         try:
             # Query house details
-            house = session.query(House).filter(House.name == name).first()
+            house = session.query(Houses.House).filter(Houses.House.name == name).first()
 
             if not house:
                 await ctx.send(f"House '{name}' not found.")
@@ -301,7 +297,7 @@ class Housing(commands.Cog):
                 return
 
             # Retrieve the user's portfolio (houses)
-            houses = session.query(House).filter_by(owner=u.user_id).all()
+            houses = session.query(Houses.House).filter_by(owner=u.user_id).all()
             if not houses:
                 await ctx.send(f"{user.name} does not own any houses.")
                 return
