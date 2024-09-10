@@ -10,8 +10,10 @@ class Global(Base):
 
     id = Column("id", Integer, primary_key=True)
     jobs = Column("jobs", JSON)
+    freelancers = Column("freelancers", JSON)
 
 
 
     def __init__(self):
         self.jobs = {"beggar": 10}
+        self.freelancers = {"Wealth Creation", "Assistant"}

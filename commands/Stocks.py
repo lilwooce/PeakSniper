@@ -63,8 +63,9 @@ class Stocks(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            if user.in_jail == True:
+            if user.in_jail:
                 await ctx.send("You cannot purchase stocks while in jail.")
+                return
 
             if not stock:
                 await ctx.send(f"Stock '{name}' not found.")
@@ -88,12 +89,26 @@ class Stocks(commands.Cog):
                 await ctx.send("Buy more than one stock please!")
                 return
 
+            # Update user's balance and portfolio
             user.balance -= total_cost
             user.total_lost += total_cost
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
             portfolio[stock.name] = portfolio.get(stock.name, 0) + amount
-
             user.portfolio = json.dumps(portfolio)
+
+            # Adjust stock based on growth direction
+            if stock.growth_direction == 1:
+                stock.growth_rate += 0.00000001 * total_cost
+                stock.swap_chance -= 0.00000001 * total_cost
+                if total_cost > 370000:
+                    stock.ruination *= 1.35
+            elif stock.growth_direction == -1:
+                stock.growth_rate -= 0.00000001 * total_cost
+                stock.swap_chance += 0.00000001 * total_cost
+                if total_cost > 370000:
+                    stock.ruination *= 0.65
+
+            # Commit the transaction
             session.commit()
 
             await ctx.send(f"You have purchased {amount} shares of {stock.name} for {total_cost} discoins.")
@@ -104,7 +119,6 @@ class Stocks(commands.Cog):
 
         finally:
             session.close()
-
 
     @commands.hybrid_command(aliases=['ld'])
     async def liquidate(self, ctx, amount: str, *, name: str = None):
@@ -120,16 +134,14 @@ class Stocks(commands.Cog):
 
             portfolio = json.loads(user.portfolio) if user.portfolio else {}
 
-            # Determine the amount of stocks to liquidate
             def get_liquidation_amount(available_amount):
                 if amount.lower() == "all":
-                    return available_amount
+                    return int(available_amount)
                 elif amount.lower() == "half":
                     return available_amount // 2
                 else:
                     return int(amount)
 
-            # If a specific stock name is provided
             if name:
                 stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stock.full_name == name)).first()
 
@@ -157,12 +169,23 @@ class Stocks(commands.Cog):
                 if portfolio[stock.name] == 0:
                     del portfolio[stock.name]
 
+                # Adjust stock properties based on growth direction
+                if stock.growth_direction == 1:
+                    stock.growth_rate -= 0.00000001 * total_value
+                    stock.swap_chance += 0.00000001 * total_value
+                    if total_value > 370000:
+                        stock.ruination *= 1.1
+                elif stock.growth_direction == -1:
+                    stock.growth_rate -= 0.00000001 * total_value
+                    stock.swap_chance += 0.00000001 * total_value
+                    if total_value > 370000:
+                        stock.ruination *= 1.35
+
                 user.portfolio = json.dumps(portfolio)
                 session.commit()
 
                 await ctx.send(f"You have liquidated {liquidation_amount} shares of {stock.name} for {total_value - tax} discoins. You were taxed {tax} discoins for this transaction.")
 
-            # If no stock name is provided, liquidate from all stocks
             else:
                 total_value = 0
                 for stock_name, shares in list(portfolio.items()):
@@ -176,12 +199,25 @@ class Stocks(commands.Cog):
                         if portfolio[stock_name] == 0:
                             del portfolio[stock_name]
 
-                user.bank += total_value
-                user.total_earned += total_value
+                        # Adjust stock properties based on growth direction
+                        if stock.growth_direction == 1:
+                            stock.growth_rate -= 0.00000001 * value
+                            stock.swap_chance += 0.00000001 * value
+                            if value > 370000:
+                                stock.ruination *= 1.1
+                        elif stock.growth_direction == -1:
+                            stock.growth_rate -= 0.00000001 * value
+                            stock.swap_chance += 0.00000001 * value
+                            if value > 370000:
+                                stock.ruination *= 1.35
+
+                tax = total_value * self.stock_tax
+                user.bank += total_value - tax
+                user.total_earned += total_value - tax
                 user.portfolio = json.dumps(portfolio)
                 session.commit()
 
-                await ctx.send(f"You have liquidated {amount} of all your stocks for a total of {total_value} discoins.")
+                await ctx.send(f"You have liquidated shares for {total_value - tax} discoins. You were taxed {tax} discoins for this transaction.")
 
         except Exception as e:
             await ctx.send("An error occurred while processing your liquidation.")
@@ -189,7 +225,6 @@ class Stocks(commands.Cog):
 
         finally:
             session.close()
-
 
     @commands.hybrid_command()
     async def stocks(self, ctx):
@@ -205,6 +240,8 @@ class Stocks(commands.Cog):
             embeds = []
 
             for i, stock in enumerate(stocks, start=1):
+                if not stock.type_of == "stock":
+                    continue
                 # Find the majority shareholder for the stock
                 majority_shareholder = None
                 max_shares = 0

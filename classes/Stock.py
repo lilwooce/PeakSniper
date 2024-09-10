@@ -26,8 +26,9 @@ class Stock(Base):
     record_high = Column("record_high", FLOAT)
     crashed = Column("crashed", Boolean)
     history = Column("history", MutableList.as_mutable(JSON))
+    type_of = Column("type_of", String(80))
 
-    def __init__(self, name, full_name, growth_rate, start_value, volatility, swap_chance, ruination):
+    def __init__(self, name, full_name, growth_rate, start_value, volatility, swap_chance, ruination, type_of):
             self.name = name
             self.full_name = full_name
             self.growth_rate = growth_rate
@@ -41,6 +42,7 @@ class Stock(Base):
             self.record_high = start_value
             self.crashed = False
             self.history = [self.current_value]
+            self.type_of = type_of
             
     def update(self):
         # Check for ruination (complete crash)

@@ -21,6 +21,15 @@ async def addAccount(user, session):
     u = User.User(user=user)
     session.add(u)
     session.commit()
+
+def handle_amount(amount, to_get):
+    if type(amount) == str and amount.lower() in "all":
+        amount = to_get
+    elif type(amount) == str and amount.lower() in "half":
+        amount = to_get / 2
+    else:
+        amount = int(amount)
+    return amount
     
 async def hasAccount(ctx):
     user = ctx.author
@@ -122,8 +131,11 @@ class Config(commands.Cog, name="Configuration"):
             session.commit()
         finally:
             session.close()
-
-    import math
+    
+    async def send_reminder(self, id, message):
+        user = self.bot.get_user(id)
+        if user:
+            await user.send(message)
 
     @tasks.loop(time=[time_pm])
     async def daily_tax(self):
@@ -171,6 +183,49 @@ class Config(commands.Cog, name="Configuration"):
                 session.commit()
         finally:
             session.close()
+
+    @tasks.loop(time=[time_pm])
+    async def daily_revenue(self):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            users = session.query(User.User).all()
+            for u in users:
+                # Load the user's businesses and revenue (if any)
+                businesses = json.loads(u.businesses) if u.businesses else {}
+                revenue_data = json.loads(u.revenue) if u.revenue else {}
+
+                total_revenue = 0
+                total_boost = 0
+
+                # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
+                freelancers = json.loads(u.freelancers) if u.freelancers else []
+                for freelancer in freelancers:
+                    if freelancer["job_type"] == "assistant" and (
+                        "wealth" in freelancer["job_name"].lower() or "business" in freelancer["job_name"].lower()
+                    ):
+                        total_boost += freelancer.get("boost_amount", 0)
+
+                # Calculate the revenue for each business
+                for business_id, business in businesses.items():
+                    daily_revenue = business.get("daily_revenue", 0)
+
+                    # Apply the boost to the revenue
+                    boosted_revenue = daily_revenue * (1 + total_boost)
+
+                    # Add the boosted revenue to the total
+                    total_revenue += boosted_revenue
+
+                # Update the user's revenue in the JSON variable
+                revenue_data["daily"] = revenue_data.get("daily", 0) + total_revenue
+                u.revenue = json.dumps(revenue_data)
+
+                # Commit the changes
+                session.commit()
+
+        finally:
+            session.close()
+
 
 async def setup(bot):
     await bot.add_cog(Config(bot))

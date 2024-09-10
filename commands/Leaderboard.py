@@ -12,11 +12,12 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
     def __init__(self, client: commands.Bot):
         self.client = client
 
-    @app_commands.command(name="leaderboard", description="Display the richest users in the server.")
-    async def leaderboard(self, interaction: discord.Interaction, stat: str = "Wealth"):
-        guild = interaction.guild
+    #@app_commands.command(name="leaderboard", description="Display the richest users in the server.")
+    @commands.hybrid_command(aliases=['lb'])
+    async def leaderboard(self, ctx, stat: str = "Wealth"):
+        guild = ctx.guild
         if not guild:
-            await interaction.response.send_message("This command can only be used in a server.", ephemeral=True)
+            await ctx.send("This command can only be used in a server.", ephemeral=True)
             return
         
         Session = sessionmaker(bind=database.engine)
@@ -55,10 +56,10 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
             if count == 0:
                 embed.description = "No users found in the leaderboard."
 
-            await interaction.response.send_message(embed=embed)
+            await ctx.send(embed=embed)
 
         except Exception as e:
-            await interaction.response.send_message("An error occurred while retrieving the leaderboard.", ephemeral=True)
+            await ctx.send("An error occurred while retrieving the leaderboard.", ephemeral=True)
             logging.warning(f"Error: {e}")
 
         finally:
