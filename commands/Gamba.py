@@ -65,7 +65,7 @@ class Gamba(commands.Cog, name="Gamba"):
 
 
                 multi = u.get_multiplier(used_items_objects, "gamba")
-                won *= multi
+                won = int(won * multi)
                 u.total_earned += won
                 u.balance += won
                 await ctx.send(f"Congrats!!! You won {int(won)} discoins")
@@ -125,7 +125,7 @@ class Gamba(commands.Cog, name="Gamba"):
 
 
                 multi = u.get_multiplier(used_items_objects, "gamba")
-                won *= multi
+                won = int(won * multi)
                 u.balance += won
                 u.total_earned += won
                 await ctx.send(f"Congrats!!! You won {int(won)} discoins")
@@ -291,7 +291,7 @@ class Gamba(commands.Cog, name="Gamba"):
 
 
             multi = u.get_multiplier(used_items_objects, "work")
-            am *= multi
+            am = int(am * multi)
             u.balance += am
             u.total_earned += am
             await ctx.send(f"You have made {am} from working!")

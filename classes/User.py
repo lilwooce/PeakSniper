@@ -118,4 +118,5 @@ class User(Base):
         except:
             logging.warning("user has no freelancers")
 
+        logging.warning(f"{self.name} has a {multi} total multiplier for {type_of}")
         return multi
