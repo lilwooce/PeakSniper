@@ -108,7 +108,7 @@ class Admin(commands.Cog):
     
     @app_commands.command()
     @admins_only()
-    async def add_house(self, interaction: discord.Interaction, name: str, purchase_value, type_of, owner, daily_expense, growth_rate, volatility, swap_chance, ruination):
+    async def add_house(self, interaction: discord.Interaction, name: str, purchase_value: float, type_of: str, owner: str, daily_expense: float, growth_rate: float, volatility: float, swap_chance: float, ruination: float):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -122,9 +122,10 @@ class Admin(commands.Cog):
         finally:
             session.close()
 
+
     @app_commands.command()
     @admins_only()
-    async def add_business(self, interaction: discord.Interaction, name, purchase_value, type_of, daily_expense, daily_revenue):
+    async def add_business(self, interaction: discord.Interaction, name: str, purchase_value: float, type_of: str, daily_expense: float, daily_revenue: float):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -132,16 +133,14 @@ class Admin(commands.Cog):
             b = Businesses.Business(name, purchase_value, type_of, daily_expense, daily_revenue)
             session.add(b)
             session.commit()
-            await interaction.response.send_message(
-                f"Successfully added a Business: name {name}, purchase_value {purchase_value}, type_of {type_of}, daily_expense {daily_expense}, daily_revenue {daily_revenue}"
-            )
+            await interaction.response.send_message(f"Successfully added a Business: name {name}, purchase_value {purchase_value}, type_of {type_of}, daily_expense {daily_expense}, daily_revenue {daily_revenue}")
         finally:
             session.close()
 
-    
+
     @app_commands.command()
     @admins_only()
-    async def add_asset(self, interaction: discord.Interaction, name, material, purchase_value, type_of):
+    async def add_asset(self, interaction: discord.Interaction, name: str, material: str, purchase_value: float, type_of: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -149,16 +148,14 @@ class Admin(commands.Cog):
             a = Assets.Asset(name, material, purchase_value, type_of)
             session.add(a)
             session.commit()
-            await interaction.response.send_message(
-                f"Successfully added an Asset: name {name}, material {material}, purchase_value {purchase_value}, type_of {type_of}"
-            )
+            await interaction.response.send_message(f"Successfully added an Asset: name {name}, material {material}, purchase_value {purchase_value}, type_of {type_of}")
         finally:
             session.close()
 
-    
+
     @app_commands.command()
     @admins_only()
-    async def add_freelancer(self, interaction: discord.Interaction, name, job_title, initial_cost, daily_expense, type_of, poach_minimum, boost_amount):
+    async def add_freelancer(self, interaction: discord.Interaction, name: str, job_title: str, initial_cost: float, daily_expense: float, type_of: str, poach_minimum: float, boost_amount: float):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -166,11 +163,10 @@ class Admin(commands.Cog):
             f = Freelancers.Freelancer(name, job_title, initial_cost, daily_expense, type_of, poach_minimum, boost_amount)
             session.add(f)
             session.commit()
-            await interaction.response.send_message(
-                f"Successfully added a freelancer: name {name}, job_title {job_title}, initial_cost {initial_cost}, daily_expense {daily_expense}, type_of {type_of}, poach_minimum {poach_minimum}, boost_amount {boost_amount}"
-            )
+            await interaction.response.send_message(f"Successfully added a freelancer: name {name}, job_title {job_title}, initial_cost {initial_cost}, daily_expense {daily_expense}, type_of {type_of}, poach_minimum {poach_minimum}, boost_amount {boost_amount}")
         finally:
             session.close()
+
 
     
     @app_commands.command()
