@@ -2,6 +2,7 @@ import json
 import random
 from sqlalchemy import Column, String, Integer, Boolean, Text, BigInteger, DATETIME, JSON
 from sqlalchemy.ext.declarative import declarative_base
+import logging
 
 Base = declarative_base()
 
@@ -89,10 +90,14 @@ class User(Base):
             if item.type_of == "wealth":
                 multiplier += item.boost_amount
 
-        # Check if user has a freelancer with job_type "assistant" and "wealth" in job_name
-        for freelancer in self.freelancers:
-            if freelancer["job_type"].lower() == "assistant" and "wealth" in freelancer["job_name"].lower():
-                multiplier += freelancer.get("boost_amount", 0)
+        try:
+            # Check if user has a freelancer with job_type "assistant" and "wealth" in job_name
+            for freelancer in self.freelancers:
+                if freelancer["job_type"].lower() == "assistant" and "wealth" in freelancer["job_name"].lower():
+                    multiplier += freelancer.get("boost_amount", 0)
+        except:
+            logging.warning("user has no freelancers")
+
         
         return multiplier
     
@@ -104,8 +109,13 @@ class User(Base):
             if item.type_of == type_of:
                 multi += item.boost_amount
 
-        for freelancer in self.freelancers:
-            if freelancer["job_type"].lower() == "assistant" and type_of in freelancer["job_name"].lower():
-                multi += freelancer.get("boost_amount", 0)
+        
+        try:
+            # Check if user has a freelancer with job_type "assistant" and "wealth" in job_name
+            for freelancer in self.freelancers:
+                if freelancer["job_type"].lower() == "assistant" and type_of in freelancer["job_name"].lower():
+                    multi += freelancer.get("boost_amount", 0)
+        except:
+            logging.warning("user has no freelancers")
 
         return multi
