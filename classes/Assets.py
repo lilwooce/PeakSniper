@@ -14,10 +14,10 @@ class Asset(Base):
     type_of = Column("type_of", String(80))
     owner = Column("owner", BigInteger)
 
-    def __init__(self, name, material, purchase_value, current_value, type_of, owner):
+    def __init__(self, name, material, purchase_value, type_of):
         self.name = name
         self.material = material
         self.purchase_value = purchase_value
-        self.current_value = current_value
+        self.current_value = purchase_value
         self.type_of = type_of
-        self.owner = owner
+        self.owner = 0

@@ -13,7 +13,7 @@ import random
 import json
 import logging
 
-from classes import Servers, User, database, Jobs, ShopItem, Stock, Global
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Global, Houses, Freelancers, Businesses, Assets
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -105,6 +105,73 @@ class Admin(commands.Cog):
             await interaction.response.send_message(f"Successfully added a stock item: name {name}, full_name {full_name}, growth_rate {growth_rate}, start_value {start_value}, volatility {volatility}, swap_chance {swap_chance} ruination {ruination}")
         finally:
             session.close()
+    
+    @app_commands.command()
+    @admins_only()
+    async def add_house(self, interaction: discord.Interaction, name: str, purchase_value, type_of, owner, daily_expense, growth_rate, volatility, swap_chance, ruination):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            h = Houses.House(name, purchase_value, type_of, owner, daily_expense)
+            s = Stock.Stock(name, name, growth_rate, purchase_value, volatility, swap_chance, ruination)
+            session.add(s)
+            session.add(h)
+            session.commit()
+            await interaction.response.send_message(f"Successfully added a house: name {name}, growth_rate {growth_rate}, start_value {purchase_value}, volatility {volatility}, swap_chance {swap_chance} ruination {ruination}")
+        finally:
+            session.close()
+
+    @app_commands.command()
+    @admins_only()
+    async def add_business(self, interaction: discord.Interaction, name, purchase_value, type_of, daily_expense, daily_revenue):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            b = Businesses.Business(name, purchase_value, type_of, daily_expense, daily_revenue)
+            session.add(b)
+            session.commit()
+            await interaction.response.send_message(
+                f"Successfully added a Business: name {name}, purchase_value {purchase_value}, type_of {type_of}, daily_expense {daily_expense}, daily_revenue {daily_revenue}"
+            )
+        finally:
+            session.close()
+
+    
+    @app_commands.command()
+    @admins_only()
+    async def add_asset(self, interaction: discord.Interaction, name, material, purchase_value, type_of):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            a = Assets.Asset(name, material, purchase_value, type_of)
+            session.add(a)
+            session.commit()
+            await interaction.response.send_message(
+                f"Successfully added an Asset: name {name}, material {material}, purchase_value {purchase_value}, type_of {type_of}"
+            )
+        finally:
+            session.close()
+
+    
+    @app_commands.command()
+    @admins_only()
+    async def add_freelancer(self, interaction: discord.Interaction, name, job_title, initial_cost, daily_expense, type_of, poach_minimum, boost_amount):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            f = Freelancers.Freelancer(name, job_title, initial_cost, daily_expense, type_of, poach_minimum, boost_amount)
+            session.add(f)
+            session.commit()
+            await interaction.response.send_message(
+                f"Successfully added a freelancer: name {name}, job_title {job_title}, initial_cost {initial_cost}, daily_expense {daily_expense}, type_of {type_of}, poach_minimum {poach_minimum}, boost_amount {boost_amount}"
+            )
+        finally:
+            session.close()
+
     
     @app_commands.command()
     @allowed()

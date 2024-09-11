@@ -19,15 +19,15 @@ class House(Base):
     in_market = Column("in_market", Boolean)
     rob_chance = Column("rob_chance", FLOAT)
 
-    def __init__(self, name, purchase_value, current_value, type_of, owner, daily_expense, last_expense_paid, expenses):
+    def __init__(self, name, purchase_value, type_of, owner, daily_expense):
         self.name = name
         self.purchase_value = purchase_value
-        self.current_value = current_value
+        self.current_value = purchase_value
         self.type_of = type_of
         self.owner = owner
         self.daily_expense = daily_expense
-        self.last_expense_paid = last_expense_paid
-        self.expenses = expenses
+        self.last_expense_paid = ""
+        self.expenses = 0
         self.in_market = True
         self.bid_history = {}
         self.rob_chance = .01

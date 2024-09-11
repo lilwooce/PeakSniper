@@ -4,17 +4,21 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.exc import NoResultFound
 from classes import Servers, User, database, Jobs, Global, Freelancers
 import json
+from sqlalchemy.sql.expression import func
+import random
 
 class FreelancerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.min_num = 2
+        self.max_num = 4
 
     @commands.hybrid_command(aliases=['fl'])
     async def freelancers(self, ctx):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         """Lists all currently available freelancers."""
-        freelancers = session.query(Freelancers.Freelancer).filter_by(is_free=True).all()
+        freelancers = session.query(Freelancers.Freelancer).filter_by(is_free=True).order_by(func.rand()).limit(random.randint(self.min_num, self.max_num)).all()
 
         if not freelancers:
             await ctx.send("No freelancers are available at the moment.")

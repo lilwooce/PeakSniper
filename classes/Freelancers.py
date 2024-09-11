@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, BigInteger, FLOAT, Boolean
+from sqlalchemy import Column, Integer, String, BigInteger, FLOAT, Boolean, DATETIME
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -16,16 +16,17 @@ class Freelancer(Base):
     poach_minimum = Column("poach_minimum", BigInteger)
     expense = Column("expense", BigInteger)
     is_free = Column("is_free", Boolean)
-    expense = Column("expense", FLOAT)
+    last_paid = Column("last_paid", DATETIME)
 
-    def __init__(self, name, job_title, initial_cost, daily_expense, type_of, boss, poach_minimum, boost_amount):
+    def __init__(self, name, job_title, initial_cost, daily_expense, type_of, poach_minimum, boost_amount):
         self.name = name
         self.job_title = job_title
         self.initial_cost = initial_cost
         self.daily_expense = daily_expense
         self.type_of = type_of
-        self.boss = boss
+        self.boss = 0
         self.poach_minimum = poach_minimum
         self.expense = 0
         self.is_free = True
+        self.last_paid = ""
         self.boost_amount = boost_amount

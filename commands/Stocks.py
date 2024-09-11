@@ -41,6 +41,8 @@ class Stocks(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.stock_tax = .02
+        self.stock_multi = 0.00000000001
+        self.min_stock_amount = 37000000
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -65,6 +67,10 @@ class Stocks(commands.Cog):
 
             if not stock:
                 await ctx.send(f"Stock '{name}' not found.")
+                return
+
+            if not stock.type_of == "stock":
+                await ctx.send("You cannot purchase this.")
                 return
 
             # Calculate the amount of shares to buy based on user's balance
@@ -94,14 +100,14 @@ class Stocks(commands.Cog):
 
             # Adjust stock based on growth direction
             if stock.growth_direction == 1:
-                stock.growth_rate += 0.00000001 * total_cost
-                stock.swap_chance -= 0.00000001 * total_cost
-                if total_cost > 370000:
+                stock.growth_rate += self.stock_multi * total_cost
+                stock.swap_chance -= self.stock_multi * total_cost
+                if total_cost > self.min_stock_amount:
                     stock.ruination *= 1.35
             elif stock.growth_direction == -1:
-                stock.growth_rate -= 0.00000001 * total_cost
-                stock.swap_chance += 0.00000001 * total_cost
-                if total_cost > 370000:
+                stock.growth_rate -= self.stock_multi * total_cost
+                stock.swap_chance += self.stock_multi * total_cost
+                if total_cost > self.min_stock_amount:
                     stock.ruination *= 0.65
 
             # Commit the transaction
@@ -167,14 +173,14 @@ class Stocks(commands.Cog):
 
                 # Adjust stock properties based on growth direction
                 if stock.growth_direction == 1:
-                    stock.growth_rate -= 0.00000000001 * total_value
-                    stock.swap_chance += 0.00000000001 * total_value
-                    if total_value > 37000000:
+                    stock.growth_rate -= self.stock_multi * total_value
+                    stock.swap_chance += self.stock_multi * total_value
+                    if total_value > self.min_stock_amount:
                         stock.ruination *= 1.1
                 elif stock.growth_direction == -1:
-                    stock.growth_rate -= 0.00000000001 * total_value
-                    stock.swap_chance += 0.00000000001 * total_value
-                    if total_value > 37000000:
+                    stock.growth_rate -= self.stock_multi * total_value
+                    stock.swap_chance += self.stock_multi * total_value
+                    if total_value > self.min_stock_amount:
                         stock.ruination *= 1.35
 
                 user.portfolio = json.dumps(portfolio)
@@ -197,14 +203,14 @@ class Stocks(commands.Cog):
 
                         # Adjust stock properties based on growth direction
                         if stock.growth_direction == 1:
-                            stock.growth_rate -= 0.00000000001 * value
-                            stock.swap_chance += 0.00000000001 * value
-                            if value > 37000000:
+                            stock.growth_rate -= self.stock_multi * value
+                            stock.swap_chance += self.stock_multi * value
+                            if value > self.min_stock_amount:
                                 stock.ruination *= 1.1
                         elif stock.growth_direction == -1:
-                            stock.growth_rate -= 0.00000000001 * value
-                            stock.swap_chance += 0.00000000001 * value
-                            if value > 37000000:
+                            stock.growth_rate -= self.stock_multi * value
+                            stock.swap_chance += self.stock_multi * value
+                            if value > self.min_stock_amount:
                                 stock.ruination *= 1.35
 
                 tax = total_value * self.stock_tax

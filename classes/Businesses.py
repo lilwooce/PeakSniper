@@ -18,14 +18,14 @@ class Business(Base):
     revenue = Column("revenue", BigInteger)
     expenses = Column("expenses", BigInteger)
 
-    def __init__(self, name, purchase_value, current_value, type_of, owner, daily_expense, daily_revenue, last_expense_paid):
+    def __init__(self, name, purchase_value, type_of, daily_expense, daily_revenue):
         self.name = name
         self.purchase_value = purchase_value
-        self.current_value = current_value
+        self.current_value = purchase_value
         self.type_of = type_of
-        self.owner = owner
+        self.owner = 0
         self.daily_expense = daily_expense
         self.daily_revenue = daily_revenue
-        self.last_expense_paid = last_expense_paid
+        self.last_expense_paid = ""
         self.revenue = 0
         self.expenses = 0

@@ -13,7 +13,7 @@ class BusinessCog(commands.Cog):
     @commands.hybrid_command(aliases=["bs"])
     async def businesses(self, ctx):
         """View all currently available businesses."""
-        businesses = self.session.query(Businesses.Businesses.Business).filter_by(owner=None).all()
+        businesses = self.session.query(Businesses.Business).filter_by(owner=0).all()
 
         if not businesses:
             await ctx.send("No businesses are available at the moment.")
@@ -36,7 +36,7 @@ class BusinessCog(commands.Cog):
     async def acquire(self, ctx, business_name: str):
         """Purchase a business if available."""
         try:
-            business = self.session.query(Businesses.Business).filter_by(name=business_name, owner=None).one()
+            business = self.session.query(Businesses.Business).filter_by(name=business_name, owner=0).one()
 
             # Here you would check if the user can afford the business
             # Assuming user has enough money and meets the conditions
@@ -45,7 +45,7 @@ class BusinessCog(commands.Cog):
 
             await ctx.send(f"{ctx.author.mention}, you have successfully purchased {business_name}!")
         except NoResultFound:
-            await ctx.send(f"{ctx.author.mention}, {business_name} is not available or doesn't exist.")
+            await ctx.send(f"{ctx.author.mention}, {business_name} is not available for purchase or doesn't exist.")
 
     @commands.hybrid_command(name="auction")
     async def auction(self, ctx, business_name: str, price: int):
@@ -54,7 +54,7 @@ class BusinessCog(commands.Cog):
             business = self.session.query(Businesses.Business).filter_by(name=business_name, owner=ctx.author.id).one()
 
             business.current_value = price
-            business.owner = None  # The business is now listed for sale
+            business.owner = 0  # The business is now listed for sale
             self.session.commit()
 
             await ctx.send(f"{ctx.author.mention}, {business_name} is now listed for {price}!")
@@ -78,7 +78,7 @@ class BusinessCog(commands.Cog):
                             f"Expenses: {business.expenses}",
             )
 
-            if business.owner is None:
+            if business.owner == 0:
                 embed.add_field(name="Status", value="Available for purchase", inline=False)
             else:
                 owner = self.bot.get_user(business.owner)
