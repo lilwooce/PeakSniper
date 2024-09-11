@@ -64,7 +64,7 @@ def update_business_value(stock, session):
     if business:
         business.current_value = stock.current_value
         session.commit()
-        
+
 class Config(commands.Cog, name="Configuration"):
     def __init__(self, bot):
         self.bot = bot
@@ -273,7 +273,7 @@ class Config(commands.Cog, name="Configuration"):
             session.close()
 
     @tasks.loop(time=times)
-    async def update_stocks(self):
+    async def update_stock_visuals(self):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
@@ -286,9 +286,6 @@ class Config(commands.Cog, name="Configuration"):
                 if stock_type in self.stock_update_mapping:
                     # Call the appropriate update method
                     self.stock_update_mapping[stock_type](stock, session)
-                    
-                # Call stock.update() for general updates
-                stock.update()
             
             # Commit changes to the database
             session.commit()

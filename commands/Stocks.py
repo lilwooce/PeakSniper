@@ -167,14 +167,14 @@ class Stocks(commands.Cog):
 
                 # Adjust stock properties based on growth direction
                 if stock.growth_direction == 1:
-                    stock.growth_rate -= 0.00000001 * total_value
-                    stock.swap_chance += 0.00000001 * total_value
-                    if total_value > 370000:
+                    stock.growth_rate -= 0.00000000001 * total_value
+                    stock.swap_chance += 0.00000000001 * total_value
+                    if total_value > 37000000:
                         stock.ruination *= 1.1
                 elif stock.growth_direction == -1:
-                    stock.growth_rate -= 0.00000001 * total_value
-                    stock.swap_chance += 0.00000001 * total_value
-                    if total_value > 370000:
+                    stock.growth_rate -= 0.00000000001 * total_value
+                    stock.swap_chance += 0.00000000001 * total_value
+                    if total_value > 37000000:
                         stock.ruination *= 1.35
 
                 user.portfolio = json.dumps(portfolio)
@@ -197,14 +197,14 @@ class Stocks(commands.Cog):
 
                         # Adjust stock properties based on growth direction
                         if stock.growth_direction == 1:
-                            stock.growth_rate -= 0.00000001 * value
-                            stock.swap_chance += 0.00000001 * value
-                            if value > 370000:
+                            stock.growth_rate -= 0.00000000001 * value
+                            stock.swap_chance += 0.00000000001 * value
+                            if value > 37000000:
                                 stock.ruination *= 1.1
                         elif stock.growth_direction == -1:
-                            stock.growth_rate -= 0.00000001 * value
-                            stock.swap_chance += 0.00000001 * value
-                            if value > 370000:
+                            stock.growth_rate -= 0.00000000001 * value
+                            stock.swap_chance += 0.00000000001 * value
+                            if value > 37000000:
                                 stock.ruination *= 1.35
 
                 tax = total_value * self.stock_tax

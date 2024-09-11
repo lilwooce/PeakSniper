@@ -80,53 +80,32 @@ class User(Base):
         self.freelancers = {}
         self.reminders = False
 
-    def get_coin_multiplier(self):
-        multiplier = 1.0
-
+    def get_base_multiplier(self, items):
+        multiplier = 0
         # Load used_items from JSON
-        used_items = json.loads(self.used_items) if isinstance(self.used_items, str) else self.used_items
+        used_items = items if items else {}
 
-        # Check if LSD is in used_items
-        if "lsd" in used_items:
-            multiplier += 0.05
+        for item in used_items:
+            if item.type_of == "wealth":
+                multiplier += item.boost_amount
 
         # Check if user has a freelancer with job_type "assistant" and "wealth" in job_name
         for freelancer in self.freelancers:
-            if freelancer["job_type"] == "assistant" and "wealth" in freelancer["job_name"].lower():
+            if freelancer["job_type"].lower() == "assistant" and "wealth" in freelancer["job_name"].lower():
                 multiplier += freelancer.get("boost_amount", 0)
         
         return multiplier
+    
+    def get_multiplier(self, items, type_of):
+        base_multi = self.get_base_multiplier(items)
+        multi = 1 + base_multi
 
-    def get_work_multiplier(self):
-        multiplier = 1.0
+        for item in items:
+            if item.type_of == type_of:
+                multi += item.boost_amount
 
-        # Load used_items from JSON
-        used_items = json.loads(self.used_items) if isinstance(self.used_items, str) else self.used_items
-
-        # Check if weed is in used_items
-        if "weed" in used_items:
-            multiplier += 1.0
-
-        # Check if user has a freelancer with job_type "assistant" and "work" in job_name
         for freelancer in self.freelancers:
-            if freelancer["job_type"] == "assistant" and "work" in freelancer["job_name"].lower():
-                multiplier += freelancer.get("boost_amount", 0)
-        
-        return multiplier
+            if freelancer["job_type"].lower() == "assistant" and type_of in freelancer["job_name"].lower():
+                multi += freelancer.get("boost_amount", 0)
 
-    def get_gamba_multiplier(self):
-        multiplier = 1.0
-
-        # Load used_items from JSON
-        used_items = json.loads(self.used_items) if isinstance(self.used_items, str) else self.used_items
-
-        # Check if shrooms is in used_items
-        if "shrooms" in used_items:
-            multiplier += 0.05
-
-        # Check if user has a freelancer with job_type "assistant" and "gambling" in job_name
-        for freelancer in self.freelancers:
-            if freelancer["job_type"] == "assistant" and "gambling" in freelancer["job_name"].lower():
-                multiplier += freelancer.get("boost_amount", 0)
-        
-        return multiplier
+        return multi

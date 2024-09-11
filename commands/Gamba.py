@@ -5,7 +5,7 @@ import random
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from classes import User, database
-from classes import Servers, User, database, Jobs, Global
+from classes import Servers, User, database, Jobs, Global, ShopItem
 import json
 from datetime import datetime
 
@@ -54,6 +54,18 @@ class Gamba(commands.Cog, name="Gamba"):
             if result == 0 and bet.lower() in heads or result == 1 and bet.lower() in tails:
                 total = amount * self.cfMulti
                 won = total - amount
+                used_items = json.loads(u.used_items) if u.used_items else {}
+                used_items_objects = []
+                for item in used_items:
+                    shop_item = session.query(ShopItem.ShopItem).filter_by(name=item).first()
+                    
+                    if shop_item:
+                        # Add the queried ShopItem object to the used_items_objects array
+                        used_items_objects.append(shop_item)
+
+
+                multi = u.get_multiplier(used_items_objects, "gamba")
+                won *= multi
                 u.total_earned += won
                 u.balance += won
                 await ctx.send(f"Congrats!!! You won {int(won)} discoins")
@@ -102,6 +114,18 @@ class Gamba(commands.Cog, name="Gamba"):
             result = random.randint(1, 100)
             if result == bet:
                 won = amount * 100
+                used_items = json.loads(u.used_items) if u.used_items else {}
+                used_items_objects = []
+                for item in used_items:
+                    shop_item = session.query(ShopItem.ShopItem).filter_by(name=item).first()
+                    
+                    if shop_item:
+                        # Add the queried ShopItem object to the used_items_objects array
+                        used_items_objects.append(shop_item)
+
+
+                multi = u.get_multiplier(used_items_objects, "gamba")
+                won *= multi
                 u.balance += won
                 u.total_earned += won
                 await ctx.send(f"Congrats!!! You won {int(won)} discoins")
@@ -257,11 +281,17 @@ class Gamba(commands.Cog, name="Gamba"):
             j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
             am = j.salary + random.randint(1, j.salary)
             used_items = json.loads(u.used_items) if u.used_items else {}
+            used_items_objects = []
+            for item in used_items:
+                shop_item = session.query(ShopItem.ShopItem).filter_by(name=item).first()
+                
+                if shop_item:
+                    # Add the queried ShopItem object to the used_items_objects array
+                    used_items_objects.append(shop_item)
 
-            # Check if the user has a 2x work coupon
-            if used_items.get("2x work coupon", False):
-                am = am * 2
 
+            multi = u.get_multiplier(used_items_objects, "work")
+            am *= multi
             u.balance += am
             u.total_earned += am
             await ctx.send(f"You have made {am} from working!")
@@ -271,8 +301,6 @@ class Gamba(commands.Cog, name="Gamba"):
 
         
     #See Rstudio for better code
-
-    
 
 async def setup(bot):
     await bot.add_cog(Gamba(bot))

@@ -3,6 +3,7 @@ from discord.ext import commands
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.exc import NoResultFound
 from classes import Servers, User, database, Jobs, Global, Freelancers
+import json
 
 class FreelancerCog(commands.Cog):
     def __init__(self, bot):
@@ -34,21 +35,37 @@ class FreelancerCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    async def hire(self, ctx, freelancer_name: str):
+    async def hire(self, ctx, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         """Hire a freelancer if available."""
         try:
-            freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name, is_free=True).one()
+            freelancer = session.query(Freelancers.Freelancer).filter_by(name=name, is_free=True).first()
 
-            # Here, you would check if the user can afford the freelancer and proceed accordingly
-            # Assuming user has enough money and meets the conditions
+            if not freelancer:
+                await ctx.send(f"{name} was not found in shop.")
+                return
+
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not u:
+                await ctx.send("User not found.")
+                return
+
+            if u.balance < freelancer.initial_cost:
+                await ctx.send("You cannot afford to hire this person.")
+                return
+
+            u.balance -= freelancer.initial_cost
+            freelancers = json.loads(u.freelancers) if u.freelancers else {}
+            freelancers[freelancer.name] = freelancer.type_of
+            u.freelancers = json.dumps(freelancers)
             freelancer.boss = ctx.author.id
             freelancer.is_free = False
             session.commit()
-            await ctx.send(f"{ctx.author.mention}, you successfully hired {freelancer_name}!")
+            await ctx.send(f"{ctx.author.mention}, you successfully hired {name}!")
         except NoResultFound:
-            await ctx.send(f"{ctx.author.mention}, {freelancer_name} is not available or doesn't exist.")
+            await ctx.send(f"{ctx.author.mention}, {name} is not available or doesn't exist.")
     
     @commands.hybrid_command()
     async def fire(self, ctx, freelancer_name: str):
@@ -56,7 +73,7 @@ class FreelancerCog(commands.Cog):
         session = Session()
         """Fire a freelancer you currently employ."""
         try:
-            freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name, boss=ctx.author.id).one()
+            freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name, boss=ctx.author.id).first()
 
             freelancer.boss = None
             freelancer.is_free = True
@@ -71,7 +88,7 @@ class FreelancerCog(commands.Cog):
         session = Session()
         """Poach a freelancer from another user."""
         try:
-            freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name, is_free=False).one()
+            freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name, is_free=False).first()
 
             if freelancer.poach_minimum > ctx.author.balance:
                 await ctx.send(f"{ctx.author.mention}, you do not have enough funds to poach {freelancer_name}.")
@@ -92,7 +109,7 @@ class FreelancerCog(commands.Cog):
         session = Session()
         """See detailed information about a specific freelancer."""
         try:
-            freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name).one()
+            freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name).first()
 
             embed = discord.Embed(
                 title=f"Freelancer: {freelancer.name}",
