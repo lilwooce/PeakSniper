@@ -205,7 +205,7 @@ class Admin(commands.Cog):
                 return
 
             for i, stock in enumerate(stocks, start=1):
-                amount = stock.determine_stock_amount(stock.volatility, stock.growth_rate)
+                amount = stock.determine_stock_amount()
                 stock.amount = amount
             session.commit()
             await interaction.response.send_message("Success")

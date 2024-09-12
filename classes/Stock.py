@@ -45,20 +45,22 @@ class Stock(Base):
             self.crashed = False
             self.history = [self.current_value]
             self.type_of = type_of
-            self.amount = self.determine_stock_amount(volatility, growth_rate)
+            self.amount = self.determine_stock_amount()
 
-    def determine_stock_amount(self, volatility, growth_rate, baseline_net_worth=2622406):
+    def determine_stock_amount(self, baseline_net_worth=2622406):
         # Random factor between 0.8 and 1.2
         random_factor = random.uniform(0.8, 1.2)
         
         # Adjust for volatility and growth rate
-        volatility_factor = max(0.5, 1 - volatility)  # Higher volatility means lower amount
-        growth_factor = 1 + (growth_rate / 10)  # Higher growth means slightly higher amount
+        volatility_factor = max(0.5, 1 - self.volatility)  # Higher volatility means lower amount
+        growth_factor = 1 + (self.growth_rate / 10)  # Higher growth means slightly higher amount
         
-        # Calculate the stock amount
-        amount = baseline_net_worth * random_factor * volatility_factor * growth_factor
-        logging.warning(f"starting amount {amount}")
+        # Calculate the stock amount, adjusting for stock's current value
+        amount = (baseline_net_worth / self.current_value) * random_factor * volatility_factor * growth_factor
+        logging.warning(f"Starting amount: {amount} (based on current value: {self.current_value})")
+        
         return int(amount)
+
 
     def update(self):
         # Check for ruination (complete crash)
