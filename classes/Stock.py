@@ -47,7 +47,7 @@ class Stock(Base):
             self.type_of = type_of
             self.amount = self.determine_stock_amount(volatility, growth_rate)
 
-    def determine_stock_amount(volatility, growth_rate, baseline_net_worth=2622406):
+    def determine_stock_amount(self, volatility, growth_rate, baseline_net_worth=2622406):
         # Random factor between 0.8 and 1.2
         random_factor = random.uniform(0.8, 1.2)
         
