@@ -72,14 +72,19 @@ class Stocks(commands.Cog):
             if not stock.type_of == "stock":
                 await ctx.send("You cannot purchase this.")
                 return
-
-            # Calculate the amount of shares to buy based on user's balance
+            
+            if stock.amount <= 0:
+                await ctx.send("There is none of this stock up for purchase.")
+                return
+            
+            stock_amount = stock.amount
+            # Handle "all" or "half" amount purchases
             if amount.lower() == "all":
-                amount = user.balance // int(stock.current_value)
+                amount = min(user.balance // int(stock.current_value), stock_amount)
             elif amount.lower() == "half":
-                amount = (user.balance // 2) // int(stock.current_value)
+                amount = min((user.balance // 2) // int(stock.current_value), stock_amount // 2)
             else:
-                amount = int(amount)
+                amount = min(int(amount), stock_amount)
 
             total_cost = int(stock.current_value) * amount
 
@@ -98,6 +103,9 @@ class Stocks(commands.Cog):
             portfolio[stock.name] = portfolio.get(stock.name, 0) + amount
             user.portfolio = json.dumps(portfolio)
 
+            # Reduce the amount of stock left
+            stock.amount -= amount
+
             # Adjust stock based on growth direction
             if stock.growth_direction == 1:
                 stock.growth_rate += self.stock_multi * total_cost
@@ -113,7 +121,7 @@ class Stocks(commands.Cog):
             # Commit the transaction
             session.commit()
 
-            await ctx.send(f"You have purchased {amount} shares of {stock.name} for {total_cost} discoins.")
+            await ctx.send(f"You have purchased {amount} shares of {stock.name} for {total_cost} discoins. There are {stock.amount} shares remaining.")
 
         except Exception as e:
             await ctx.send("An error occurred while processing your purchase.")
@@ -121,6 +129,7 @@ class Stocks(commands.Cog):
 
         finally:
             session.close()
+
 
     @commands.hybrid_command(aliases=['ld'])
     async def liquidate(self, ctx, amount: str, *, name: str = None):
@@ -170,6 +179,8 @@ class Stocks(commands.Cog):
 
                 if portfolio[stock.name] == 0:
                     del portfolio[stock.name]
+                
+                stock.amount += liquidation_amount
 
                 # Adjust stock properties based on growth direction
                 if stock.growth_direction == 1:
@@ -268,7 +279,7 @@ class Stocks(commands.Cog):
                 percent_change = stock.get_percentage_change()
                 embed.add_field(
                     name=f"{stock.name} | {shareholder_info}",
-                    value=f"Value: {stock.current_value} discoins\nPercent Change: {percent_change:.2f}%",
+                    value=f"Value: {stock.current_value} discoins\nPercent Change: {percent_change:.2f}%\nTotal Left: {stock.amount}",
                     inline=False
                 )
 
@@ -328,6 +339,7 @@ class Stocks(commands.Cog):
             # Create embed with all information
             embed = discord.Embed(title=f"Details for {stock.name}", color=discord.Color.green())
             embed.add_field(name="Full Name", value=stock.full_name, inline=False)
+            embed.add_field(name="Amount in Circulation", value=stock.amount, inline=False)
             embed.add_field(name="Current Value", value=f"{stock.current_value:.2f} discoins", inline=False)
             embed.add_field(name="Record Low", value=f"{stock.record_low:.2f} discoins", inline=False)
             embed.add_field(name="Record High", value=f"{stock.record_high:.2f} discoins", inline=False)

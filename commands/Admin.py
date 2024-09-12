@@ -192,6 +192,26 @@ class Admin(commands.Cog):
         finally:
             session.close()
 
+    @app_commands.command()
+    @allowed()
+    async def set_stock_amount(self, interaction: discord.Interaction):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try: 
+            stocks = session.query(Stock.Stock).all()
+            if not stocks:
+                await interaction.response.send_message("No stocks available at the moment.")
+                return
+
+            for i, stock in enumerate(stocks, start=1):
+                amount = stock.determine_stock_amount(stock.volatility, stock.growth_rate)
+                stock.amount = amount
+            session.commit()
+            await interaction.response.send_message("Success")
+        finally:
+            session.close()
+
     def weigh_jobs(self, jobs):
         if len(jobs) <= 0:
             return {}

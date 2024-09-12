@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from sqlalchemy.ext.mutable import MutableList
 import base64
 import io
+import logging
 
 Base = declarative_base()
 
@@ -27,6 +28,7 @@ class Stock(Base):
     crashed = Column("crashed", Boolean)
     history = Column("history", MutableList.as_mutable(JSON))
     type_of = Column("type_of", String(80))
+    amount = Column("amount", Integer)
 
     def __init__(self, name, full_name, growth_rate, start_value, volatility, swap_chance, ruination, type_of):
             self.name = name
@@ -43,7 +45,21 @@ class Stock(Base):
             self.crashed = False
             self.history = [self.current_value]
             self.type_of = type_of
-            
+            self.amount = self.determine_stock_amount(volatility, growth_rate)
+
+    def determine_stock_amount(volatility, growth_rate, baseline_net_worth=2622406):
+        # Random factor between 0.8 and 1.2
+        random_factor = random.uniform(0.8, 1.2)
+        
+        # Adjust for volatility and growth rate
+        volatility_factor = max(0.5, 1 - volatility)  # Higher volatility means lower amount
+        growth_factor = 1 + (growth_rate / 10)  # Higher growth means slightly higher amount
+        
+        # Calculate the stock amount
+        amount = baseline_net_worth * random_factor * volatility_factor * growth_factor
+        logging.warning(f"starting amount {amount}")
+        return int(amount)
+
     def update(self):
         # Check for ruination (complete crash)
         if random.random() < self.ruination and not self.crashed:
