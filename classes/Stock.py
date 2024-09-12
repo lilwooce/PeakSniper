@@ -56,7 +56,7 @@ class Stock(Base):
         growth_factor = 1 + (self.growth_rate / 10)  # Higher growth means slightly higher amount
         
         # Calculate the stock amount, adjusting for stock's current value
-        amount = (baseline_net_worth / self.current_value) * random_factor * volatility_factor * growth_factor
+        amount = (baseline_net_worth) * random_factor * volatility_factor * growth_factor
         logging.warning(f"Starting amount: {amount} (based on current value: {self.current_value})")
         
         return int(amount)
