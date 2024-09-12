@@ -212,6 +212,8 @@ class Stocks(commands.Cog):
                         if portfolio[stock_name] == 0:
                             del portfolio[stock_name]
 
+                        stock.amount += liquidation_amount
+
                         # Adjust stock properties based on growth direction
                         if stock.growth_direction == 1:
                             stock.growth_rate -= self.stock_multi * value
