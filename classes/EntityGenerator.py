@@ -65,7 +65,7 @@ class EntityGenerator:
     def generate_businesses(self):
         try:
             response = self.client.chat.completions.create(
-                model="text-davinci-003",
+                model="gpt-3.5-turbo",
                 temperature=0.5,
                 max_tokens=4000,
                 top_p=1.0,
@@ -92,7 +92,7 @@ class EntityGenerator:
     def generate_freelancers(self):
         try:
             response = self.client.chat.completions.create(
-                model="text-davinci-003",
+                model="gpt-3.5-turbo",
                 temperature=0.5,
                 max_tokens=4000,
                 top_p=1.0,
@@ -121,7 +121,7 @@ class EntityGenerator:
     def generate_houses(self):
         try:
             response = self.client.chat.completions.create(
-                model="text-davinci-003",
+                model="gpt-3.5-turbo",
                 temperature=0.5,
                 max_tokens=4000,
                 top_p=1.0,
@@ -147,7 +147,7 @@ class EntityGenerator:
     def generate_assets(self):
         try:
             response = self.client.chat.completions.create(
-                model="text-davinci-003",
+                model="gpt-3.5-turbo",
                 temperature=0.5,
                 max_tokens=4000,
                 top_p=1.0,
@@ -175,7 +175,7 @@ class EntityGenerator:
     def generate_jobs(self):
         try:
             response = self.client.chat.completions.create(
-                model="text-davinci-003",
+                model="gpt-3.5-turbo",
                 temperature=0.5,
                 max_tokens=4000,
                 top_p=1.0,
@@ -202,7 +202,7 @@ class EntityGenerator:
     def generate_stocks(self):
         try:
             response = self.client.chat.completions.create(
-                model="text-davinci-003",
+                model="gpt-3.5-turbo",
                 temperature=0.5,
                 max_tokens=4000,
                 top_p=1.0,
