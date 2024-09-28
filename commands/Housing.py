@@ -260,7 +260,7 @@ class Housing(commands.Cog):
 
             # Prepare the embed with the house details
             embed = discord.Embed(title=f"Details for {house.name}", color=discord.Color.green())
-            embed.add_field(name="Owner", value=house.owner if house.owner != 0 else "None", inline=False)
+            embed.add_field(name="Owner", value=self.bot.get_user(house.owner).name if house.owner != 0 else "None", inline=False)
             embed.add_field(name="Type", value=house.type_of, inline=False)
 
             if house.in_market:
