@@ -3,46 +3,32 @@ from sqlalchemy.orm import sessionmaker
 from classes import Businesses, Freelancers, Houses, Assets, Jobs, Stock, database
 import json
 import os
-import traceback
 from packaging import version
+import logging
 
 required_version = version.parse("1.1.1")
 current_version = version.parse(openai.__version__)
 
 if current_version < required_version:
-    raise ValueError(f"Error: OpenAI version {openai.__version__} is less than the required version 1.1.1")
+    raise ValueError(f"Error: OpenAI version {openai.__version__}"
+                     " is less than the required version 1.1.1")
 else:
     print("OpenAI version is compatible.")
+
+from openai import OpenAI
+
+
 
 class EntityGenerator:
     def __init__(self):
         openAIKey = os.getenv("OPENAI_API_KEY")
-        openai.api_key = openAIKey  # Set API key for OpenAI
+        self.client = OpenAI(api_key=openAIKey)
         # Setup DB session
         self.Session = sessionmaker(bind=database.engine)
 
-    async def answer(self, ctx, *, p):
-        print('answer command starting')
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful chatbot assistant designed to give the best response to any given question. You excel at explaining complex concepts in simple language so that they can be understood by the general public. Use natural language and phrasing that a real person would use in everyday conversations. No more than 10 percent of your responses should be in passive voice."},
-                    {"role": "user", "content": p}
-                ],
-                temperature=0.5,
-                max_tokens=4000,
-                top_p=1.0,
-                frequency_penalty=0.0,
-                presence_penalty=0.0,
-            )
-            await ctx.channel.send(response.choices[0].message['content'])
-        except Exception as e:
-            traceback.print_exc()
-            await ctx.channel.send("There was an error while processing your request.")
-
     def generate_and_add_entities(self):
         session = self.Session()
+
         try:
             # Generate 10 new businesses, freelancers, houses, assets, jobs, and stocks
             generated_data = self.generate_data()
@@ -57,6 +43,7 @@ class EntityGenerator:
 
             session.commit()
             return "Successfully added 10 new businesses, freelancers, houses, assets, jobs, and stocks to the database."
+
         finally:
             session.close()
 
@@ -76,125 +63,174 @@ class EntityGenerator:
         return generated_data
 
     def generate_businesses(self):
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": '''Generate 10 new businesses as a JSON array with each object having the following attributes:
-                {
-                    "name": "string",
-                    "purchase_value": "int",
-                    "type_of": "string",
-                    "daily_expense": "int",
-                    "daily_revenue": "int"
-                }.
-                Ensure the output is valid JSON.'''}
-            ],
-            temperature=0.5,
-            max_tokens=500
-        )
-        businesses_data = response.choices[0].message['content']
+        try:
+            response = self.client.chat.completions.create(
+                model="text-davinci-003",
+                temperature=0.5,
+                max_tokens=4000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                messages=[
+    				{"role": "system", "content": "You are a helpful chatbot assistant designed to give great responses in proper json format to any question asked."},
+    				{"role": "user", "content": '''Generate 10 new businesses as a JSON array with each object having the following attributes:
+            {
+                "name": "string",
+                "purchase_value": "int",
+                "type_of": "string",
+                "daily_expense": "int",
+                "daily_revenue": "int"
+            }.
+            Ensure the output is valid JSON.'''}
+                ]
+            )
+        except Exception as e:
+            logging.warning(e)
+        
+        businesses_data = response.choices[0].message.content
         return self.validate_and_parse_json(businesses_data, ['name', 'purchase_value', 'type_of', 'daily_expense', 'daily_revenue'])
 
     def generate_freelancers(self):
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": '''Generate 10 new freelancers as a JSON array with each object having the following attributes:
-                {
-                    "name": "string",
-                    "job_title": "string",
-                    "initial_cost": "int",
-                    "daily_expense": "int",
-                    "type_of": "string",
-                    "poach_minimum": "int",
-                    "boost_amount": "float"
-                }.
-                Ensure the output is valid JSON.'''}
-            ],
-            temperature=0.5,
-            max_tokens=500
-        )
-        freelancers_data = response.choices[0].message['content']
+        try:
+            response = self.client.chat.completions.create(
+                model="text-davinci-003",
+                temperature=0.5,
+                max_tokens=4000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                messages=[
+                    {"role": "system", "content": "You are a helpful chatbot assistant designed to give great responses in proper json format to any question asked."},
+                    {"role": "user", "content": '''Generate 10 new freelancers as a JSON array with each object having the following attributes:
+                    {
+                        "name": "string",
+                        "job_title": "string",
+                        "initial_cost": "int",
+                        "daily_expense": "int",
+                        "type_of": "string",
+                        "poach_minimum": "int",
+                        "boost_amount": "float"
+                    }.
+                    Ensure the output is valid JSON.'''}
+                ]
+            )
+        except Exception as e:
+            logging.warning(e)
+        
+        freelancers_data = response.choices[0].message.content
         return self.validate_and_parse_json(freelancers_data, ['name', 'job_title', 'initial_cost', 'daily_expense', 'type_of', 'poach_minimum', 'boost_amount'])
 
     def generate_houses(self):
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": '''Generate 10 new houses as a JSON array with each object having the following attributes:
-                {
-                    "name": "string",
-                    "purchase_value": "int",
-                    "type_of": "string",
-                    "daily_expense": "int"
-                }.
-                Ensure the output is valid JSON.'''}
-            ],
-            temperature=0.5,
-            max_tokens=500
-        )
-        houses_data = response.choices[0].message['content']
+        try:
+            response = self.client.chat.completions.create(
+                model="text-davinci-003",
+                temperature=0.5,
+                max_tokens=4000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                messages=[
+                    {"role": "system", "content": "You are a helpful chatbot assistant designed to give great responses in proper json format to any question asked."},
+                    {"role": "user", "content": '''Generate 10 new houses as a JSON array with each object having the following attributes:
+                    {
+                        "name": "string",
+                        "purchase_value": "int",
+                        "type_of": "string",
+                        "daily_expense": "int"
+                    }.
+                    Ensure the output is valid JSON.'''}
+                ]
+            )
+        except Exception as e:
+            logging.warning(e)
+
+        houses_data = response.choices[0].message.content
         return self.validate_and_parse_json(houses_data, ['name', 'purchase_value', 'type_of', 'daily_expense'])
 
     def generate_assets(self):
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": '''Generate 10 new assets as a JSON array with each object having the following attributes:
-                {
-                    "name": "string",
-                    "material": "string",
-                    "purchase_value": "int",
-                    "type_of": "string"
-                }.
-                Ensure the output is valid JSON.'''}
-            ],
-            temperature=0.5,
-            max_tokens=500
-        )
-        assets_data = response.choices[0].message['content']
+        try:
+            response = self.client.chat.completions.create(
+                model="text-davinci-003",
+                temperature=0.5,
+                max_tokens=4000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                messages=[
+                    {"role": "system", "content": "You are a helpful chatbot assistant designed to give great responses in proper json format to any question asked."},
+                    {"role": "user", "content": '''Generate 10 new assets as a JSON array with each object having the following attributes:
+                    {
+                        "name": "string",
+                        "material": "string",
+                        "purchase_value": "int",
+                        "type_of": "string"
+                    }.
+                    Ensure the output is valid JSON.'''}
+                ]
+            )
+        except Exception as e:
+            logging.warning(e)
+
+        assets_data = response.choices[0].message.content
         return self.validate_and_parse_json(assets_data, ['name', 'material', 'purchase_value', 'type_of'])
 
     def generate_jobs(self):
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": '''Generate 10 new jobs as a JSON array with each object having the following attributes:
-                {
-                    "name": "string",
-                    "salary": "int",
-                    "chance": "float"
-                }.
-                Ensure the output is valid JSON.'''}
-            ],
-            temperature=0.5,
-            max_tokens=500
-        )
-        jobs_data = response.choices[0].message['content']
+        try:
+            response = self.client.chat.completions.create(
+                model="text-davinci-003",
+                temperature=0.5,
+                max_tokens=4000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                messages=[
+                    {"role": "system", "content": "You are a helpful chatbot assistant designed to give great responses in proper json format to any question asked."},
+                    {"role": "user", "content": '''Generate 10 new jobs as a JSON array with each object having the following attributes:
+                    {
+                        "name": "string",
+                        "salary": "int",
+                        "chance": "float"
+                    }.
+                    Ensure the output is valid JSON.'''}
+                ]
+            )
+        except Exception as e:
+            logging.warning(e)
+
+        jobs_data = response.choices[0].message.content
         return self.validate_and_parse_json(jobs_data, ['name', 'salary', 'chance'])
 
     def generate_stocks(self):
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "user", "content": '''Generate 10 new stocks as a JSON array with each object having the following attributes:
-                {
-                    "name": "string",
-                    "full_name": "string",
-                    "growth_rate": "float",
-                    "start_value": "int",
-                    "volatility": "float",
-                    "swap_chance": "float",
-                    "ruination": "float",
-                    "type_of": "string"
-                }.
-                Ensure the output is valid JSON.'''}
-            ],
-            temperature=0.5,
-            max_tokens=500
-        )
-        stocks_data = response.choices[0].message['content']
+        try:
+            response = self.client.chat.completions.create(
+                model="text-davinci-003",
+                temperature=0.5,
+                max_tokens=4000,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+                messages=[
+                    {"role": "system", "content": "You are a helpful chatbot assistant designed to give great responses in proper json format to any question asked."},
+                    {"role": "user", "content": '''Generate 10 new stocks as a JSON array with each object having the following attributes:
+                    {
+                        "name": "string",
+                        "full_name": "string",
+                        "growth_rate": "float",
+                        "start_value": "int",
+                        "volatility": "float",
+                        "swap_chance": "float",
+                        "ruination": "float",
+                        "type_of": "string"
+                    }.
+                    Ensure the output is valid JSON.'''}
+                ]
+            )
+        except Exception as e:
+            logging.warning(e)
+
+        stocks_data = response.choices[0].message.content
         return self.validate_and_parse_json(stocks_data, ['name', 'full_name', 'growth_rate', 'start_value', 'volatility', 'swap_chance', 'ruination', 'type_of'])
+
 
     def validate_and_parse_json(self, data, required_fields):
         try:
@@ -213,7 +249,8 @@ class EntityGenerator:
             return []
 
     def process_businesses(self, businesses_data, session):
-        for business in businesses_data:
+        businesses = businesses_data
+        for business in businesses:
             new_business = Businesses.Business(
                 name=business['name'],
                 purchase_value=business['purchase_value'],
@@ -224,7 +261,8 @@ class EntityGenerator:
             session.add(new_business)
 
     def process_freelancers(self, freelancers_data, session):
-        for freelancer in freelancers_data:
+        freelancers = freelancers_data
+        for freelancer in freelancers:
             new_freelancer = Freelancers.Freelancer(
                 name=freelancer['name'],
                 job_title=freelancer['job_title'],
@@ -237,7 +275,8 @@ class EntityGenerator:
             session.add(new_freelancer)
 
     def process_houses(self, houses_data, session):
-        for house in houses_data:
+        houses = houses_data
+        for house in houses:
             new_house = Houses.House(
                 name=house['name'],
                 purchase_value=house['purchase_value'],
@@ -247,7 +286,8 @@ class EntityGenerator:
             session.add(new_house)
 
     def process_assets(self, assets_data, session):
-        for asset in assets_data:
+        assets = assets_data
+        for asset in assets:
             new_asset = Assets.Asset(
                 name=asset['name'],
                 material=asset['material'],
@@ -257,8 +297,9 @@ class EntityGenerator:
             session.add(new_asset)
 
     def process_jobs(self, jobs_data, session):
-        for job in jobs_data:
-            new_job = Jobs.Job(
+        jobs = jobs_data
+        for job in jobs:
+            new_job = Jobs.Jobs(
                 name=job['name'],
                 salary=job['salary'],
                 chance=job['chance']
@@ -266,7 +307,8 @@ class EntityGenerator:
             session.add(new_job)
 
     def process_stocks(self, stocks_data, session):
-        for stock in stocks_data:
+        stocks = stocks_data
+        for stock in stocks:
             new_stock = Stock.Stock(
                 name=stock['name'],
                 full_name=stock['full_name'],
