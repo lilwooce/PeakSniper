@@ -33,7 +33,7 @@ class BusinessCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="acquire")
-    async def acquire(self, ctx, business_name: str):
+    async def acquire(self, ctx, *, business_name: str):
         """Purchase a business if available."""
         try:
             business = self.session.query(Businesses.Business).filter_by(name=business_name, owner=0).one()
@@ -62,7 +62,7 @@ class BusinessCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention}, you do not own {business_name} or it is not available.")
 
     @commands.hybrid_command(name="details")
-    async def details(self, ctx, business_name: str):
+    async def details(self, ctx, *, business_name: str):
         """See detailed information about a business."""
         try:
             business = self.session.query(Businesses.Business).filter_by(name=business_name).one()

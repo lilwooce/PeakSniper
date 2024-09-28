@@ -82,7 +82,7 @@ class FreelancerCog(commands.Cog):
 
 
     @commands.hybrid_command()
-    async def hire(self, ctx, name: str):
+    async def hire(self, ctx, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         """Hire a freelancer if available."""
@@ -115,7 +115,7 @@ class FreelancerCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention}, {name} is not available or doesn't exist.")
     
     @commands.hybrid_command()
-    async def fire(self, ctx, freelancer_name: str):
+    async def fire(self, ctx, *, freelancer_name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         """Fire a freelancer you currently employ."""
@@ -130,7 +130,7 @@ class FreelancerCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention}, you do not have a freelancer named {freelancer_name}.")
 
     @commands.hybrid_command()
-    async def poach(self, ctx, freelancer_name: str):
+    async def poach(self, ctx, *, freelancer_name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         """Poach a freelancer from another user."""
@@ -151,7 +151,7 @@ class FreelancerCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention}, {freelancer_name} is not available for poaching.")
 
     @commands.hybrid_command()
-    async def info(self, ctx, freelancer_name: str):
+    async def info(self, ctx, *, freelancer_name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
         """See detailed information about a specific freelancer."""
