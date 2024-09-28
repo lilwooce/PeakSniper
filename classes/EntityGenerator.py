@@ -26,7 +26,7 @@ class EntityGenerator:
         # Setup DB session
         self.Session = sessionmaker(bind=database.engine)
 
-    def generate_and_add_entities(self):
+    async def generate_and_add_entities(self):
         session = self.Session()
 
         try:
