@@ -84,11 +84,10 @@ class EntityGenerator:
             Ensure the output is valid JSON.'''}
                 ]
             )
+            businesses_data = response.choices[0].message.content
+            return self.validate_and_parse_json(businesses_data, ['name', 'purchase_value', 'type_of', 'daily_expense', 'daily_revenue'])
         except Exception as e:
             logging.warning(e)
-        
-        businesses_data = response.choices[0].message.content
-        return self.validate_and_parse_json(businesses_data, ['name', 'purchase_value', 'type_of', 'daily_expense', 'daily_revenue'])
 
     def generate_freelancers(self):
         try:
@@ -114,11 +113,10 @@ class EntityGenerator:
                     Ensure the output is valid JSON.'''}
                 ]
             )
+            freelancers_data = response.choices[0].message.content
+            return self.validate_and_parse_json(freelancers_data, ['name', 'job_title', 'initial_cost', 'daily_expense', 'type_of', 'poach_minimum', 'boost_amount'])
         except Exception as e:
             logging.warning(e)
-        
-        freelancers_data = response.choices[0].message.content
-        return self.validate_and_parse_json(freelancers_data, ['name', 'job_title', 'initial_cost', 'daily_expense', 'type_of', 'poach_minimum', 'boost_amount'])
 
     def generate_houses(self):
         try:
@@ -141,11 +139,10 @@ class EntityGenerator:
                     Ensure the output is valid JSON.'''}
                 ]
             )
+            houses_data = response.choices[0].message.content
+            return self.validate_and_parse_json(houses_data, ['name', 'purchase_value', 'type_of', 'daily_expense'])
         except Exception as e:
             logging.warning(e)
-
-        houses_data = response.choices[0].message.content
-        return self.validate_and_parse_json(houses_data, ['name', 'purchase_value', 'type_of', 'daily_expense'])
 
     def generate_assets(self):
         try:
@@ -168,11 +165,12 @@ class EntityGenerator:
                     Ensure the output is valid JSON.'''}
                 ]
             )
+            assets_data = response.choices[0].message.content
+            return self.validate_and_parse_json(assets_data, ['name', 'material', 'purchase_value', 'type_of'])
         except Exception as e:
             logging.warning(e)
 
-        assets_data = response.choices[0].message.content
-        return self.validate_and_parse_json(assets_data, ['name', 'material', 'purchase_value', 'type_of'])
+        
 
     def generate_jobs(self):
         try:
@@ -194,11 +192,12 @@ class EntityGenerator:
                     Ensure the output is valid JSON.'''}
                 ]
             )
+            jobs_data = response.choices[0].message.content
+            return self.validate_and_parse_json(jobs_data, ['name', 'salary', 'chance'])
         except Exception as e:
             logging.warning(e)
 
-        jobs_data = response.choices[0].message.content
-        return self.validate_and_parse_json(jobs_data, ['name', 'salary', 'chance'])
+        
 
     def generate_stocks(self):
         try:
