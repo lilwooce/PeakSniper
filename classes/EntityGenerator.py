@@ -1,6 +1,6 @@
 import openai
 from sqlalchemy.orm import sessionmaker
-from classes import Business, Freelancer, House, Asset, Job, Stock, database
+from classes import Businesses, Freelancers, Houses, Assets, Jobs, Stock, database
 import json
 import os
 
@@ -168,7 +168,7 @@ class EntityGenerator:
     def process_businesses(self, businesses_data, session):
         businesses = businesses_data
         for business in businesses:
-            new_business = Business(
+            new_business = Businesses.Business(
                 name=business['name'],
                 purchase_value=business['purchase_value'],
                 type_of=business['type_of'],
@@ -180,7 +180,7 @@ class EntityGenerator:
     def process_freelancers(self, freelancers_data, session):
         freelancers = freelancers_data
         for freelancer in freelancers:
-            new_freelancer = Freelancer(
+            new_freelancer = Freelancers.Freelancer(
                 name=freelancer['name'],
                 job_title=freelancer['job_title'],
                 initial_cost=freelancer['initial_cost'],
@@ -194,7 +194,7 @@ class EntityGenerator:
     def process_houses(self, houses_data, session):
         houses = houses_data
         for house in houses:
-            new_house = House(
+            new_house = Houses.House(
                 name=house['name'],
                 purchase_value=house['purchase_value'],
                 type_of=house['type_of'],
@@ -205,7 +205,7 @@ class EntityGenerator:
     def process_assets(self, assets_data, session):
         assets = assets_data
         for asset in assets:
-            new_asset = Asset(
+            new_asset = Assets.Asset(
                 name=asset['name'],
                 material=asset['material'],
                 purchase_value=asset['purchase_value'],
@@ -216,7 +216,7 @@ class EntityGenerator:
     def process_jobs(self, jobs_data, session):
         jobs = jobs_data
         for job in jobs:
-            new_job = Job(
+            new_job = Jobs.Jobs(
                 name=job['name'],
                 salary=job['salary'],
                 chance=job['chance']
@@ -226,7 +226,7 @@ class EntityGenerator:
     def process_stocks(self, stocks_data, session):
         stocks = stocks_data
         for stock in stocks:
-            new_stock = Stock(
+            new_stock = Stock.Stock(
                 name=stock['name'],
                 full_name=stock['full_name'],
                 growth_rate=stock['growth_rate'],
