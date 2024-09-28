@@ -47,7 +47,7 @@ class Housing(commands.Cog):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     @commands.hybrid_command()
-    async def buyout(self, ctx, amount: str, *, name: str):
+    async def buyout(self, ctx, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -55,6 +55,7 @@ class Housing(commands.Cog):
             # Fetch the user and house from the database
             user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
             house = session.query(Houses.House).filter_by(name=name).first()
+            amount = house.current_value
 
             if not user:
                 await ctx.send("User not found in the database.")
@@ -91,17 +92,25 @@ class Housing(commands.Cog):
             # if amount <= 0:
             #     await ctx.send("Bid more than one discoinn, please!")
             #     return
+            
+            if owner != 0:
+                owner = session.query(User.User).filter_by(user_id=house.owner).first()
 
-            owner = session.query(User.User).filter_by(user_id=house.owner).first()
+                # Deduct the bid amount from user's balance
+                user.balance -= amount
+                owner.balance += amount
 
-            # Deduct the bid amount from user's balance
-            user.balance -= amount
-            owner.balance += amount
+                house.in_market = False
+                house.owner = ctx.author.id
+                house.last_expense_paid = datetime.now()
+                house.expenses = 0
+            else:
+                user.balance -= amount
 
-            house.in_market = False
-            house.owner = ctx.author.id
-            house.last_expense_paid = datetime.now()
-            house.expenses = 0
+                house.in_market = False
+                house.owner = ctx.author.id
+                house.last_expense_paid = datetime.now()
+                house.expenses = 0
 
             # # Update bid history for the house
             # bid_history = json.loads(house.bid_history) if house.bid_history else {}
@@ -121,7 +130,7 @@ class Housing(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def list(self, ctx, amount: str, *, name: str = None):
+    async def list(self, ctx, *, name: str = None):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -153,7 +162,7 @@ class Housing(commands.Cog):
             # Commit the changes
             session.commit()
 
-            await ctx.send(f"The house '{house.name}' has been listed on the market for {amount} hours.")
+            await ctx.send(f"The house '{house.name}' has been listed on the market.")
 
         except Exception as e:
             await ctx.send("An error occurred while processing your listing.")
