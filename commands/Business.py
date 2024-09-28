@@ -204,12 +204,9 @@ class Business(commands.Cog):
 
                     embed.add_field(
                         name=business.name,
-                        value=f"Type: {business.type_of}\n{price_info}",
+                        value=f"Type: {business.type_of}\n{price_info}\nDaily Expenses: {business.daily_expense}\nDaily Revenue: {business.daily_revenue}",
                         inline=False
                     )
-                    embed.add_field(name="Type", value=business.type_of, inline=False)
-                    embed.add_field(name="Daily Expenses", value=business.daily_expense, inline=False)
-                    embed.add_field(name="Daily Revenue", value=business.daily_revenue, inline=False)
 
                 embeds.append(embed)
 
@@ -343,11 +340,9 @@ class Business(commands.Cog):
 
                     embed.add_field(
                         name=business.name,
-                        value=f"Type: {business.type_of}\n{price_info}",
+                        value=f"Type: {business.type_of}\n{price_info}\nDaily Expenses: {business.daily_expense}\nDaily Revenue: {business.daily_revenue}",
                         inline=False
                     )
-                    embed.add_field(name="Daily Expenses", value=business.daily_expense, inline=False)
-                    embed.add_field(name="Daily Revenue", value=business.daily_revenue, inline=False)
 
                 embeds.append(embed)
 
