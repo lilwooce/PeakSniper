@@ -75,8 +75,8 @@ class Business(commands.Cog):
             
             if len(user.freelancers) > 0:
                 for freelancer in user.freelancers:
-                    f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
-                    if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
+                    f = session.query(Freelancers.Freelancer).filter_by(name == freelancer).first()
+                    if f and f.type_of.lower() in "agent" and f.job_title.lower() in "business":
                         logging.warning("found Business Agent")
                     else:
                         await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
@@ -152,8 +152,9 @@ class Business(commands.Cog):
 
             if len(user.freelancers) > 0:
                 for freelancer in user.freelancers:
-                    f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
-                    if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
+                    logging.warning(freelancer)
+                    f = session.query(Freelancers.Freelancer).filter_by(name == freelancer).first()
+                    if f and f.type_of.lower() in "agent" and f.job_title.lower() in "business":
                         logging.warning("found Business Agent")
                     else:
                         await ctx.send("You cannot list your business unless you have a *Business Agent*.")
