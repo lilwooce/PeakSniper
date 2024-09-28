@@ -12,7 +12,7 @@ import json
 from zoneinfo import ZoneInfo
 import logging
 import math
-from classes import Servers, User, database, Jobs, Global, Stock, Assets, Freelancers, Businesses, Houses
+from classes import Servers, User, database, Jobs, Global, Stock, Assets, Freelancers, Businesses, Houses, EntityGenerator
 eastern = ZoneInfo("America/New_York")
 time_am = time(hour=8, tzinfo=eastern)  # 8:00 AM Eastern
 time_pm = time(hour=20, tzinfo=eastern)  # 8:00 PM Eastern
@@ -75,6 +75,7 @@ class Config(commands.Cog, name="Configuration"):
             "asset": update_asset_value,
             "business": update_business_value,
         }
+        self.daily_generator.start()
         self.randomize_jobs.start()
         self.daily_tax.start()
         self.daily_revenue.start()
@@ -85,6 +86,7 @@ class Config(commands.Cog, name="Configuration"):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
     
     def cog_unload(self):
+        self.daily_generator
         self.randomize_jobs()
         self.daily_tax()
         self.daily_revenue()
@@ -167,6 +169,12 @@ class Config(commands.Cog, name="Configuration"):
         user = self.bot.get_user(id)
         if user:
             await user.send(message)
+
+    @tasks.loop(time=[time_pm])
+    async def daily_generator(self):
+        entity_generator = EntityGenerator()
+        result_message = entity_generator.generate_and_add_entities()
+        print(result_message)  # Or handle it however you prefer
 
     @tasks.loop(time=[time_pm])
     async def daily_tax(self):

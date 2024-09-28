@@ -111,5 +111,47 @@ class Shop(commands.Cog):
                 print(f"Error in buy command: {e}")
                 await interaction.response.send_message("An error occurred while processing your purchase.")
 
+    @app_commands.command()
+    async def sell(self, interaction: discord.Interaction, amount: int, name: str):
+        Session = sessionmaker(bind=database.engine)
+        
+        with Session() as session:
+            try:
+                item = session.query(ShopItem.ShopItem).filter_by(name=name).first()
+                if not item:
+                    await interaction.response.send_message(f"{name} was not found in shop.")
+                    return
+
+                u = session.query(User.User).filter_by(user_id=interaction.user.id).first()
+
+                if not u:
+                    await interaction.response.send_message("User not found.")
+                    return
+
+                # Check if the user has the item in their inventory
+                inven = json.loads(u.inventory) if u.inventory else {}
+                if name not in inven or inven[name] < amount:
+                    await interaction.response.send_message(f"You do not have enough {name}(s) to sell.")
+                    return
+
+                # Calculate the sell price (70% of the original price)
+                sell_price = int(item.price * 0.7 * amount)
+
+                # Remove the sold items from inventory
+                inven[name] -= amount
+                if inven[name] == 0:
+                    del inven[name]  # Remove the item completely if the amount is 0
+                u.inventory = json.dumps(inven)
+
+                # Add the sell price to the user's balance
+                u.balance += sell_price
+
+                session.commit()
+                await interaction.response.send_message(f"You have sold {amount} {name}(s) for {sell_price} discoins.")
+            except Exception as e:
+                print(f"Error in sell command: {e}")
+                await interaction.response.send_message("An error occurred while processing your sale.")
+
+
 async def setup(bot):
     await bot.add_cog(Shop(bot))

@@ -108,12 +108,12 @@ class Admin(commands.Cog):
     
     @app_commands.command()
     @admins_only()
-    async def add_house(self, interaction: discord.Interaction, name: str, purchase_value: float, type_of: str, owner: str, daily_expense: float, growth_rate: float, volatility: float, swap_chance: float, ruination: float):
+    async def add_house(self, interaction: discord.Interaction, name: str, purchase_value: float, type_of: str, daily_expense: float, growth_rate: float, volatility: float, swap_chance: float, ruination: float):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
         try: 
-            h = Houses.House(name, purchase_value, type_of, owner, daily_expense)
+            h = Houses.House(name, purchase_value, type_of, daily_expense)
             s = Stock.Stock(name, name, growth_rate, purchase_value, volatility, swap_chance, ruination)
             session.add(s)
             session.add(h)

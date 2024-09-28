@@ -466,9 +466,12 @@ class UserCommands(commands.Cog):
                 u.used_items = json.dumps(used_items)
                 session.commit()
                 # Optionally notify the user
-                user = self.bot.get_user(user_id)
-                if user:
-                    await user.send(f"The effect of {item_name} has expired.")
+                try:
+                    user = self.bot.get_user(user_id)
+                    if user:
+                        await user.send(f"The effect of {item_name} has expired.")
+                except Exception as e:
+                    logging.warning(e)
         except Exception as e:
             logging.warning(f"Error: {e}")
         finally:
@@ -605,9 +608,12 @@ class UserCommands(commands.Cog):
                     if "draco" in v_used_items:
                         del v_used_items["draco"]
                         v.used_items = json.dumps(v_used_items)
-                        # Optionally notify the user
-                        if victim:
-                            await victim.send(f"{t.name} has tried to steal from you, you used ur drac and turned them into swiss cheese.")
+                        try:
+                            # Optionally notify the user
+                            if victim:
+                                await victim.send(f"{t.name} has tried to steal from you, you used ur drac and turned them into swiss cheese.")
+                        except Exception as e:
+                            logging.warning(e)
                     session.commit()
                     return
 

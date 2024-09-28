@@ -124,12 +124,12 @@ class Housing(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            # Check if the user has a Real Estate Agent type freelancer
-            agent = session.query(Freelancers.Freelancer).filter_by(boss=user.user_id, job_title="Real Estate Agent").first()
-
-            if not agent:
-                await ctx.send("You need to hire a Real Estate Agent to list a house on the market.")
-                return
+            for freelancer in self.freelancers:
+                if freelancer["job_type"].lower() == "agent" and "estate" in freelancer["job_name"].lower():
+                    logging.warning("found real estate agent")
+                else:
+                    await ctx.send("You cannot list your house unless you have a *Real Esate Agent*.")
+                    return
 
             # Find the house by name and ensure the user owns it
             house = session.query(Houses.House).filter_by(owner=user.user_id, name=name).first()
@@ -141,8 +141,6 @@ class Housing(commands.Cog):
             # Set the house to be on the market
             house.in_market = True
             house.bid_history = {}
-            house.last_expense_paid = datetime.datetime.now()  # Set last expense paid to now
-            house.expenses = 0  # Set expenses to 0
 
             # Commit the changes
             session.commit()

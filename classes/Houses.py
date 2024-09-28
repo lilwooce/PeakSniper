@@ -19,12 +19,12 @@ class House(Base):
     in_market = Column("in_market", Boolean)
     rob_chance = Column("rob_chance", FLOAT)
 
-    def __init__(self, name, purchase_value, type_of, owner, daily_expense):
+    def __init__(self, name, purchase_value, type_of, daily_expense):
         self.name = name
         self.purchase_value = purchase_value
         self.current_value = purchase_value
         self.type_of = type_of
-        self.owner = owner
+        self.owner = 0
         self.daily_expense = daily_expense
         self.last_expense_paid = ""
         self.expenses = 0
