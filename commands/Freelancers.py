@@ -194,28 +194,29 @@ class FreelancerCog(commands.Cog):
                 return
 
             # Retrieve the user's portfolio (freelancers)
-            freelancers = session.query(Freelancers.Freelancer).filter_by(boss=user.id).all()
+            freelancers = session.query(Freelancers.Freelancer).filter_by(boss=u.user_id).all()
             if not freelancers:
-                await ctx.send(f"{user.name} does not employ any freelancers.")
+                await ctx.send(f"{user.name} does not own any freelancers.")
                 return
 
             # Prepare to paginate
             embeds = []
-            per_page = 3
-            total_pages = (len(freelancers) + per_page - 1) // per_page
+            freelancers_per_page = 3
+            total_pages = (len(freelancers) + freelancers_per_page - 1) // freelancers_per_page
 
             for page in range(total_pages):
-                embed = discord.Embed(title=f"{user.name}'s Workers (Page {page + 1}/{total_pages})", color=discord.Color.gold())
-                start = page * per_page
-                end = start + per_page
+                embed = discord.Embed(title=f"{user.name}'s Freelancers (Page {page + 1}/{total_pages})", color=discord.Color.gold())
+                start = page * freelancers_per_page
+                end = start + freelancers_per_page
 
-                for freelancer in freelancers:
-                    embed = discord.Embed(
-                        title=f"Freelancer: {freelancer.name}",
-                        description=f"Job Title: {freelancer.job_title}\n"
-                                    f"Daily Expense: {freelancer.daily_expense}\n"
-                                    f"Type: {freelancer.type_of}\n"
-                                    f"Boost Amount: {freelancer.boost_amount}"
+                for freelancer in freelancers[start:end]:
+                    embed.add_field(
+                        name=f"{freelancer.name}",
+                        value=f"Job Title: {freelancer.job_title}\n"
+                                        f"Daily Expense: {freelancer.daily_expense}\n"
+                                        f"Type: {freelancer.type_of}\n"
+                                        f"Boost Amount: {freelancer.boost_amount}",
+                        inline=False
                     )
 
                 embeds.append(embed)
