@@ -3,10 +3,25 @@ from sqlalchemy.orm import sessionmaker
 from classes import Businesses, Freelancers, Houses, Assets, Jobs, Stock, database
 import json
 import os
+from packaging import version
+
+required_version = version.parse("1.1.1")
+current_version = version.parse(openai.__version__)
+
+if current_version < required_version:
+    raise ValueError(f"Error: OpenAI version {openai.__version__}"
+                     " is less than the required version 1.1.1")
+else:
+    print("OpenAI version is compatible.")
+
+from openai import OpenAI
+
+
 
 class EntityGenerator:
     def __init__(self):
-        openai.api_key = os.getenv("OPENAI_API_KEY")
+        openAIKey = os.getenv("OPENAI_API_KEY")
+        self.client = OpenAI(api_key=openAIKey)
         # Setup DB session
         self.Session = sessionmaker(bind=database.engine)
 
@@ -47,7 +62,7 @@ class EntityGenerator:
         return generated_data
 
     def generate_businesses(self):
-        response = openai.Completion.create(
+        response = self.client.chat.completions.create(
             engine="text-davinci-003",
             prompt='''Generate 10 new businesses as a JSON array with each object having the following attributes:
             {
@@ -64,7 +79,7 @@ class EntityGenerator:
         return self.validate_and_parse_json(businesses_data, ['name', 'purchase_value', 'type_of', 'daily_expense', 'daily_revenue'])
 
     def generate_freelancers(self):
-        response = openai.Completion.create(
+        response = self.client.chat.completions.create(
             engine="text-davinci-003",
             prompt='''Generate 10 new freelancers as a JSON array with each object having the following attributes:
             {
@@ -83,7 +98,7 @@ class EntityGenerator:
         return self.validate_and_parse_json(freelancers_data, ['name', 'job_title', 'initial_cost', 'daily_expense', 'type_of', 'poach_minimum', 'boost_amount'])
 
     def generate_houses(self):
-        response = openai.Completion.create(
+        response = self.client.chat.completions.create(
             engine="text-davinci-003",
             prompt='''Generate 10 new houses as a JSON array with each object having the following attributes:
             {
@@ -99,7 +114,7 @@ class EntityGenerator:
         return self.validate_and_parse_json(houses_data, ['name', 'purchase_value', 'type_of', 'daily_expense'])
 
     def generate_assets(self):
-        response = openai.Completion.create(
+        response = self.client.chat.completions.create(
             engine="text-davinci-003",
             prompt='''Generate 10 new assets as a JSON array with each object having the following attributes:
             {
@@ -115,7 +130,7 @@ class EntityGenerator:
         return self.validate_and_parse_json(assets_data, ['name', 'material', 'purchase_value', 'type_of'])
 
     def generate_jobs(self):
-        response = openai.Completion.create(
+        response = self.client.chat.completions.create(
             engine="text-davinci-003",
             prompt='''Generate 10 new jobs as a JSON array with each object having the following attributes:
             {
@@ -130,7 +145,7 @@ class EntityGenerator:
         return self.validate_and_parse_json(jobs_data, ['name', 'salary', 'chance'])
 
     def generate_stocks(self):
-        response = openai.Completion.create(
+        response = self.client.chat.completions.create(
             engine="text-davinci-003",
             prompt='''Generate 10 new stocks as a JSON array with each object having the following attributes:
             {
