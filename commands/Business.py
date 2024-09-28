@@ -73,10 +73,12 @@ class Business(commands.Cog):
                 await ctx.send(f"The business '{name}' is not currently available for purchase.")
                 return
             
-            if len(user.freelancers) > 0:
-                for freelancer in user.freelancers:
-                    f = session.query(Freelancers.Freelancer).filter_by(name == freelancer).first()
-                    if f and f.type_of.lower() in "agent" and f.job_title.lower() in "business":
+            freelancers = json.loads(user.freelancers)
+            if len(freelancers) > 0:
+                for freelancer in freelancers:
+                    logging.warning(freelancer)
+                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
+                    if f and f.type_of.lower() in "agent" and "business" in f.job_title.lower():
                         logging.warning("found Business Agent")
                     else:
                         await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
@@ -155,10 +157,10 @@ class Business(commands.Cog):
                 for freelancer in freelancers:
                     logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and f.type_of.lower() in "agent" and f.job_title.lower() in "business":
+                    if f and f.type_of.lower() in "agent" and "business" in f.job_title.lower():
                         logging.warning("found Business Agent")
                     else:
-                        await ctx.send("You cannot list your business unless you have a *Business Agent*.")
+                        await ctx.send("You cannot list a business unless you have a *Business Agent*.")
                         return
 
             # Find the business by name and ensure the user owns it
