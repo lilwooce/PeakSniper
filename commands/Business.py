@@ -45,6 +45,17 @@ class Business(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
+    
+    def check_agent(self, user, session):
+        freelancers = json.loads(user.freelancers)
+        if len(freelancers) > 0:
+            for freelancer in freelancers:
+                logging.warning(freelancer)
+                f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
+                if f and "business" in f.type_of.lower() and "agent" in f.job_title.lower():
+                    logging.warning("found Business Agent")
+                    return True
+        return False
 
     @commands.hybrid_command()
     async def acquire(self, ctx, *, name: str):
@@ -73,16 +84,9 @@ class Business(commands.Cog):
                 await ctx.send(f"The business '{name}' is not currently available for purchase.")
                 return
             
-            freelancers = json.loads(user.freelancers)
-            if len(freelancers) > 0:
-                for freelancer in freelancers:
-                    logging.warning(freelancer)
-                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and "business" in f.type_of.lower() and "agent" in f.job_title.lower():
-                        logging.warning("found Business Agent")
-                    else:
-                        await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
-                        return
+            if not self.check_agent(user, session):
+                await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
+                return
 
             # # Determine the amount to bid
             # if amount.lower() == "all":
@@ -152,16 +156,9 @@ class Business(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
             
-            freelancers = json.loads(user.freelancers)
-            if len(freelancers) > 0:
-                for freelancer in freelancers:
-                    logging.warning(freelancer)
-                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and "business" in f.type_of.lower() and "agent" in f.job_title.lower():
-                        logging.warning("found Business Agent")
-                    else:
-                        await ctx.send("You cannot list a business unless you have a *Business Agent*.")
-                        return
+            if not self.check_agent(user, session):
+                await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
+                return
 
             # Find the business by name and ensure the user owns it
             business = session.query(Businesses.Business).filter(Businesses.Business.owner == user.user_id,Businesses.Business.name.ilike(f"%{name}%")).first()

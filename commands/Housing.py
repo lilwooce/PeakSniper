@@ -45,6 +45,17 @@ class Housing(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
+    
+    def check_agent(self, user, session):
+        freelancers = json.loads(user.freelancers)
+        if len(freelancers) > 0:
+            for freelancer in freelancers:
+                logging.warning(freelancer)
+                f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
+                if f and "estate" in f.type_of.lower() and "agent" in f.job_title.lower():
+                    logging.warning("found Real Estate Agent")
+                    return True
+        return False
 
     @commands.hybrid_command()
     async def buyout(self, ctx, *, name: str):
@@ -73,16 +84,10 @@ class Housing(commands.Cog):
                 await ctx.send(f"The house '{name}' is not currently available for purchase.")
                 return
 
-            freelancers = json.loads(user.freelancers)
-            if len(freelancers) > 0:
-                for freelancer in freelancers:
-                    logging.warning(freelancer)
-                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and "estate" in f.type_of.lower() and "agent" in f.job_title.lower():
-                        logging.warning("found Real Estate Agent")
-                    else:
-                        await ctx.send("You cannot buy a house unless you have a *Real Estate Agent*.")
-                        return
+            if not self.check_agent(user, session):
+                await ctx.send("You cannot buy a house unless you have a *Real Estate Agent*.")
+                return
+                
 
             # # Determine the amount to bid
             # if amount.lower() == "all":
