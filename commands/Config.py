@@ -172,7 +172,7 @@ class Config(commands.Cog, name="Configuration"):
 
     @tasks.loop(time=[time_pm])
     async def daily_generator(self):
-        entity_generator = EntityGenerator()
+        entity_generator = EntityGenerator.EntityGenerator()
         result_message = entity_generator.generate_and_add_entities()
         print(result_message)  # Or handle it however you prefer
 
