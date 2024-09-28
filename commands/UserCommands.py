@@ -907,6 +907,229 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
+    @commands.hybrid_command(aliases=['cd'])
+    async def cooldowns(self, ctx):
+        # Retrieve the user data from the database
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not u:
+                await ctx.send("User not found in the database.")
+                return
+
+            # Helper function to format time
+            def format_time(end_time):
+                now = datetime.now()
+                if not end_time:
+                    return "Not Set"
+                if end_time < now:
+                    return "Ready"
+                
+                delta = end_time - now
+                days, seconds = divmod(delta.total_seconds(), 86400)
+                hours, remainder = divmod(seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+
+                # Build the time string based on the components that are necessary
+                time_components = []
+                if days > 0:
+                    time_components.append(f"{int(days)} day(s)")
+                if hours > 0:
+                    time_components.append(f"{int(hours)} hour(s)")
+                if minutes > 0:
+                    time_components.append(f"{int(minutes)} minute(s)")
+                if seconds > 0:
+                    time_components.append(f"{int(seconds)} second(s)")
+
+                return ", ".join(time_components)
+
+            # Create a dictionary of cooldowns
+            cooldowns = {
+                "Steal Cooldown": u.steal_cooldown,
+                "Injury": u.injury,
+                "Heist Cooldown": u.heist_cooldown,
+                "Interest Cooldown": u.interest_cooldown
+            }
+
+            embed = discord.Embed(title="Cooldowns", color=discord.Color.blue())
+
+            # Add each cooldown to the embed
+            for name, end_time in cooldowns.items():
+                remaining = format_time(end_time)
+                embed.add_field(name=name, value=remaining, inline=False)
+
+            await ctx.send(embed=embed)
+        finally:
+            session.close()
+
+    async def interest(self, ctx):
+        user = user or ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not user:
+                await ctx.send("User not found in the database.")
+                return
+
+            now = datetime.now()
+
+            # Ensure the user has a `interest_cooldown` attribute
+            if not hasattr(user, 'interest_cooldown'):
+                user.interest_cooldown = None
+
+            # Check if the user is eligible for interest
+            if user.interest_cooldown and now - user.interest_cooldown < timedelta(days=1):
+                remaining_time = timedelta(days=1) - (now - user.interest_cooldown)
+                hours, remainder = divmod(remaining_time.seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                await ctx.send(f"You can collect interest again in {hours} hours, {minutes} minutes, and {seconds} seconds.")
+                return
+
+            # Calculate interest (e.g., 2% of the current bank balance)
+            interest_rate = 0.01
+            interest_amount = int(user.bank * interest_rate)
+
+            if interest_amount <= 0:
+                await ctx.send("You do not have enough funds in your bank to earn interest.")
+            u = session.query(User.User).filter_by(user_id=user.id).first()
+            if not u:
+                await ctx.send("No account found.")
+                return
+
+            # Update the user's bank balance and the interest_cooldown time
+            user.bank += interest_amount
+            user.interest_cooldown = now
+            session.commit()
+
+            await ctx.send(f"You have received {interest_amount} discoins as interest! Your new bank balance is {user.bank} discoins.")
+
+        except Exception as e:
+            await ctx.send("An error occurred while processing your interest.")
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+    
+    @commands.hybrid_command()
+    async def bills(self, ctx):
+        user = ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        
+        try:
+            # Fetch user data
+            user = session.query(User.User).filter_by(user_id=user.id).first()
+            if not user:
+                await ctx.send("User not found in the database.", ephemeral=True)
+
+            bills = json.loads(user.bills) if user.bills else {}
+            if bills == {}:
+                await ctx.send("You have no bills to pay.")
+
+            # Divide bills items into pages with a max of 5 items per page
+            items = list(bills.items())
+            pages = [items[i:i + 5] for i in range(0, len(items), 5)]
+            current_page = 0
+
+            # Function to create an embed for a given page
+            def create_embed(page):
+                embed = discord.Embed(title=f"{ctx.author.name}'s Bills", description=f"Page {page + 1}/{len(pages)}", color=discord.Color.green())
+                for item_name, amount in pages[page]:
+                    embed.add_field(name=item_name.title(), value=f"Balance: {amount}", inline=False)
+                return embed
+
+            # Send the first embed
+            message = await ctx.send(embed=create_embed(current_page))
+
+            # Add reactions if there are multiple pages
+            if len(pages) > 1:
+                await message.add_reaction("⬅️")
+                await message.add_reaction("➡️")
+
+                # Check for reaction events
+                def check(reaction, user):
+                    return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
+
+                while True:
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+                        if str(reaction.emoji) == "➡️":
+                            if current_page < len(pages) - 1:
+                                current_page += 1
+                                await message.edit(embed=create_embed(current_page))
+                        elif str(reaction.emoji) == "⬅️":
+                            if current_page > 0:
+                                current_page -= 1
+                                await message.edit(embed=create_embed(current_page))
+
+                        await message.remove_reaction(reaction, user)
+
+                    except asyncio.TimeoutError:
+                        break
+
+                # Clear reactions after the timeout
+                await message.clear_reactions()
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving your bills.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+        finally:
+            session.close()
+    
+    @commands.hybrid_command()
+    async def pay(self, ctx, name: str, amount: str = "all"):
+        name = name.lower()
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            bills = json.loads(u.bills) if u.bills else {}
+
+            if name not in bills or bills[name] <= 0:
+                await ctx.send(f"You don't have a bill named {name}.", ephemeral=True)
+                return
+
+            if type(amount) == str and amount.lower() in "all":
+                amount = bills[name]
+            elif type(amount) == str and amount.lower() in "half":
+                amount = bills[name] / 2
+            else:
+                amount = int(amount)
+            
+            if u.balance < amount:
+                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                return
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            u.balance -= bills[name]
+            bills[name] -= amount
+            if bills[name] == 0:
+                del bills[name]
+            
+            u.bills = json.dumps(bills)
+
+            session.commit()
+
+            await ctx.send(f"You paid {amount} towards your {name} bill.", ephemeral=True)
+
+        except Exception as e:
+            await ctx.send("An error occurred while using the item.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
 
 
 async def setup(bot):
