@@ -124,10 +124,10 @@ class Admin(commands.Cog):
 
     @app_commands.command()
     @allowed()
-    async def daily_generator(self):
+    async def daily_generator(self, interaction: discord.Interaction):
         entity_generator = EntityGenerator()
         result_message = entity_generator.generate_and_add_entities()
-        print(result_message)  # Or handle it however you prefer
+        await interaction.response.send_message(result_message)
 
 
     @app_commands.command()
