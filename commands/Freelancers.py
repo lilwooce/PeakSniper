@@ -209,7 +209,7 @@ class FreelancerCog(commands.Cog):
                 start = page * per_page
                 end = start + per_page
 
-                for freelancer in freelancers[start:end]:
+                for freelancer in freelancers:
                     embed = discord.Embed(
                         title=f"Freelancer: {freelancer.name}",
                         description=f"Job Title: {freelancer.job_title}\n"
