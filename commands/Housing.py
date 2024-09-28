@@ -93,7 +93,7 @@ class Housing(commands.Cog):
             #     await ctx.send("Bid more than one discoinn, please!")
             #     return
             
-            if owner != 0:
+            if house.owner != 0:
                 owner = session.query(User.User).filter_by(user_id=house.owner).first()
 
                 # Deduct the bid amount from user's balance
