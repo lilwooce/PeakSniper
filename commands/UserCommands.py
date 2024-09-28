@@ -122,17 +122,14 @@ class UserCommands(commands.Cog):
                 await ctx.send("No profile available.")
                 return
 
-            user_jobs = json.loads(u.jobs)
-            job_name = user_jobs[f'{ctx.guild.id}']
-            if job_name is None:
-                j = session.query(Jobs.Jobs).filter_by(name="beggar").first()
-            else:
-                j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
+            user_job = u.job
+            if user_job is None:
+                user_job = "Beggar"
                 
             embed.set_author(name=user.name, icon_url=user.display_avatar)
             embed.add_field(name="Snipe Message", value=f"**{u.snipe_message}**", inline=False)
             embed.add_field(name="Poll Gamba", value=f"**{u.poll_gamba}** discoins", inline=False)
-            embed.add_field(name="Current Job", value=f"**{j.name}**", inline=False)
+            embed.add_field(name="Current Job", value=f"**{str.capitalize(user_job)}**", inline=False)
             if u.in_jail:
                 embed.add_field(name="Bail", value=f"**{u.bail}**", inline=False)
 
@@ -154,7 +151,7 @@ class UserCommands(commands.Cog):
                 await ctx.send("No account found.")
                 return
 
-            await ctx.send(f"**{user.name}** has `{u.balance}` discoins in their wallet\n**{user.name}** has `{u.bank}` discoins in their bank.")
+            await ctx.send(f"**{user.name}** has `{u.balance:,}` discoins in their wallet\n**{user.name}** has `{u.bank:,}` discoins in their bank.")
         finally:
             session.close()
 
