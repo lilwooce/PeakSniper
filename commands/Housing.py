@@ -262,6 +262,7 @@ class Housing(commands.Cog):
             embed = discord.Embed(title=f"Details for {house.name}", color=discord.Color.green())
             embed.add_field(name="Owner", value=self.bot.get_user(house.owner).name if house.owner != 0 else "None", inline=False)
             embed.add_field(name="Type", value=house.type_of, inline=False)
+            embed.add_field(name="Daily Expenses", value=house.daily_expense, inline=False)
 
             if house.in_market:
                 embed.add_field(name="Current Price", value=f"{house.current_value} discoins", inline=False)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, BigInteger, DATETIME
+from sqlalchemy import Column, String, Integer, BigInteger, DATETIME, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -17,6 +17,7 @@ class Business(Base):
     last_expense_paid = Column("last_expense_paid", DATETIME)
     revenue = Column("revenue", BigInteger)
     expenses = Column("expenses", BigInteger)
+    in_market = Column("in_market", Boolean)
 
     def __init__(self, name, purchase_value, type_of, daily_expense, daily_revenue):
         self.name = name
@@ -29,3 +30,4 @@ class Business(Base):
         self.last_expense_paid = ""
         self.revenue = 0
         self.expenses = 0
+        self.in_market = True
