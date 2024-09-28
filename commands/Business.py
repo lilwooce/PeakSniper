@@ -149,9 +149,10 @@ class Business(commands.Cog):
             if not user:
                 await ctx.send("User not found in the database.")
                 return
-
-            if len(user.freelancers) > 0:
-                for freelancer in user.freelancers:
+            
+            freelancers = json.loads(user.freelancers)
+            if len(freelancers) > 0:
+                for freelancer in freelancers:
                     logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name == freelancer).first()
                     if f and f.type_of.lower() in "agent" and f.job_title.lower() in "business":
