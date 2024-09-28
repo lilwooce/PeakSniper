@@ -13,7 +13,7 @@ import random
 import json
 import logging
 
-from classes import Servers, User, database, Jobs, ShopItem, Stock, Global, Houses, Freelancers, Businesses, Assets
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Global, Houses, Freelancers, Businesses, Assets, EntityGenerator
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -121,6 +121,13 @@ class Admin(commands.Cog):
             await interaction.response.send_message(f"Successfully added a house: name {name}, growth_rate {growth_rate}, start_value {purchase_value}, volatility {volatility}, swap_chance {swap_chance} ruination {ruination}")
         finally:
             session.close()
+
+    @app_commands.command()
+    @allowed()
+    async def daily_generator(self):
+        entity_generator = EntityGenerator()
+        result_message = entity_generator.generate_and_add_entities()
+        print(result_message)  # Or handle it however you prefer
 
 
     @app_commands.command()
