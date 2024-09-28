@@ -135,7 +135,7 @@ class Shop(commands.Cog):
         except:
             return
             
-    @app_commands.command(aliases=['pb'])
+    @app_commands.command()
     async def premiumbuy(self, interaction: discord.Interaction, amount: int, name: str):
         Session = sessionmaker(bind=database.engine)
         
