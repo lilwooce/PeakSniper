@@ -78,7 +78,7 @@ class Business(commands.Cog):
                 for freelancer in freelancers:
                     logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and f.type_of.lower() in "agent" and "business" in f.job_title.lower():
+                    if f and "business" in f.type_of.lower() and "agent" in f.job_title.lower():
                         logging.warning("found Business Agent")
                     else:
                         await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
@@ -157,7 +157,7 @@ class Business(commands.Cog):
                 for freelancer in freelancers:
                     logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and f.type_of.lower() in "agent" and "business" in f.job_title.lower():
+                    if f and "business" in f.type_of.lower() and "agent" in f.job_title.lower():
                         logging.warning("found Business Agent")
                     else:
                         await ctx.send("You cannot list a business unless you have a *Business Agent*.")

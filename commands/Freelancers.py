@@ -194,7 +194,7 @@ class FreelancerCog(commands.Cog):
                 return
 
             # Retrieve the user's portfolio (freelancers)
-            freelancers = session.query(Freelancers.Freelancer).filter_by(boss=u.user_id).all()
+            freelancers = session.query(Freelancers.Freelancer).filter_by(boss=user.id).all()
             if not freelancers:
                 await ctx.send(f"{user.name} does not employ any freelancers.")
                 return

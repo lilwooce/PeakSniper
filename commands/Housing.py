@@ -78,7 +78,7 @@ class Housing(commands.Cog):
                 for freelancer in freelancers:
                     logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
+                    if f and "estate" in f.type_of.lower() and "agent" in f.job_title.lower():
                         logging.warning("found Real Estate Agent")
                     else:
                         await ctx.send("You cannot buy a house unless you have a *Real Estate Agent*.")
@@ -157,7 +157,7 @@ class Housing(commands.Cog):
                 for freelancer in freelancers:
                     logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f and f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
+                    if f and "estate" in f.type_of.lower() and "agent" in f.job_title.lower():
                         logging.warning("found Real Estate Agent")
                     else:
                         await ctx.send("You cannot list a house unless you have a *Real Estate Agent*.")
