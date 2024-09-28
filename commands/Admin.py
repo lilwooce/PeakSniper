@@ -397,6 +397,117 @@ class Admin(commands.Cog):
             except Exception as e:
                 print(f"Error in give items command: {e}")
                 await ctx.send("An error occurred while giving the items.")
+        
+    async def daily_revenue(self):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            users = session.query(User.User).all()
+            for u in users:
+                # Load the user's businesses and revenue (if any)
+                businesses = json.loads(u.businesses) if u.businesses else {}
+                revenue_data = json.loads(u.revenue) if u.revenue else {}
+
+                total_revenue = 0
+                total_boost = 0
+
+                # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
+                freelancers = json.loads(u.freelancers) if u.freelancers else []
+                for freelancer in freelancers:
+                    freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
+                    if freelancer.type_of in "assistant" and (
+                        "wealth" in freelancer.job_title.lower() or "business" in freelancer.job_title.lower()
+                    ):
+                        total_boost += freelancer.boost_amount
+
+                # Calculate the revenue for each business
+                for business in businesses:
+                    logging.warning(business)
+                    b = session.query(Businesses.Business).filter_by(name=business).first()
+                    daily_revenue = b.daily_revenue
+
+                    # Apply the boost to the revenue
+                    boosted_revenue = daily_revenue * (1 + total_boost)
+
+                    # Add the boosted revenue to the total
+                    total_revenue += boosted_revenue
+
+                # Update the user's revenue in the JSON variable
+                revenue_data["daily"] = revenue_data.get("daily", 0) + total_revenue
+                u.revenue = json.dumps(revenue_data)
+
+                # Commit the changes
+                session.commit()
+
+        finally:
+            session.close()
+    
+    async def daily_expenses(self):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        try:
+            users = session.query(User.User).all()
+            for u in users:
+                # Load the user's businesses and revenue (if any)
+                businesses = json.loads(u.businesses) if u.businesses else {}
+                freelancers = json.loads(u.freelancers) if u.freelancers else {}
+                houses = session.query(Houses.House).filter_by(owner=u.user_id).all()
+                bills = json.loads(u.bills) if u.bills else {}
+                # total_boost = 0
+
+                # # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
+                # freelancers = json.loads(u.freelancers) if u.freelancers else []
+                # for freelancer in freelancers:
+                #     freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
+                #     if freelancer.type_of in "assistant" and (
+                #         "wealth" in freelancer.job_title.lower() or "business" in freelancer.job_title.lower()
+                #     ):
+                #         total_boost += freelancer.boost_amount
+
+                # Calculate the revenue for each business
+                for business in businesses:
+                    logging.warning(business)
+                    b = session.query(Businesses.Business).filter_by(name=business).first()
+                    daily_expense = b.daily_expense
+                    if bills and b.name in bills:
+                        bills[b.name] += daily_expense
+                    else:
+                        bills[b.name] = daily_expense
+                
+                for freelancer in freelancers:
+                    logging.warning(business)
+                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
+                    daily_expense = f.daily_expense
+                    if bills and f.name in bills:
+                        bills[f.name] += daily_expense
+                    else:
+                        bills[f.name] = daily_expense
+                
+                if houses:
+                    for house in houses:
+                        logging.warning(house.name)
+                        daily_expense = house.daily_expense
+                        if bills and house.name in bills:
+                            bills[house.name] += daily_expense
+                        else:
+                            bills[house.name] = daily_expense
+
+                u.bills = json.dumps(bills)
+                # Commit the changes
+                session.commit()
+
+        finally:
+            session.close()
+
+    @commands.hybrid_command()
+    @allowed
+    async def daily_rev_exp(self, interaction: discord.Interaction):
+        try:
+            self.daily_expenses()
+            self.daily_revenue()
+            await interaction.response.send_message("Success!")
+        except Exception as e:
+            await interaction.response.send_message(f"Error: {e}")
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))

@@ -179,6 +179,81 @@ class FreelancerCog(commands.Cog):
             await ctx.send(embed=embed)
         except NoResultFound:
             await ctx.send(f"{ctx.author.mention}, no freelancer named {freelancer_name} found.")
+    
+    @commands.hybrid_command(aliases=['mw'])
+    async def myworkers(self, ctx, user: discord.Member = None):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            user = user or ctx.author
+            u = session.query(User.User).filter_by(user_id=user.id).first()
+
+            if not u:
+                await ctx.send("User not found in the database.")
+                return
+
+            # Retrieve the user's portfolio (freelancers)
+            freelancers = session.query(Freelancers.Freelancer).filter_by(owner=u.user_id).all()
+            if not freelancers:
+                await ctx.send(f"{user.name} does not employ any freelancers.")
+                return
+
+            # Prepare to paginate
+            embeds = []
+            per_page = 3
+            total_pages = (len(freelancers) + per_page - 1) // per_page
+
+            for page in range(total_pages):
+                embed = discord.Embed(title=f"{user.name}'s Workers (Page {page + 1}/{total_pages})", color=discord.Color.gold())
+                start = page * per_page
+                end = start + per_page
+
+                for freelancer in freelancers[start:end]:
+                    embed = discord.Embed(
+                        title=f"Freelancer: {freelancer.name}",
+                        description=f"Job Title: {freelancer.job_title}\n"
+                                    f"Daily Expense: {freelancer.daily_expense}\n"
+                                    f"Type: {freelancer.type_of}\n"
+                                    f"Boost Amount: {freelancer.boost_amount}"
+                    )
+
+                embeds.append(embed)
+
+            # Send the embeds with pagination
+            if embeds:
+                message = await ctx.send(embed=embeds[0])
+                page = 0
+
+                if len(embeds) > 1:
+                    await message.add_reaction("◀️")
+                    await message.add_reaction("▶️")
+
+                def check(reaction, user):
+                    return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"] and reaction.message.id == message.id
+
+                session.close()
+                while True:
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+                        if str(reaction.emoji) == "▶️" and page < len(embeds) - 1:
+                            page += 1
+                            await message.edit(embed=embeds[page])
+                        elif str(reaction.emoji) == "◀️" and page > 0:
+                            page -= 1
+                            await message.edit(embed=embeds[page])
+
+                        await message.remove_reaction(reaction, user)
+                    except asyncio.TimeoutError:
+                        await message.clear_reactions()
+                        break
+            else:
+                session.close()
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving the freelancers.")
+            logging.warning(f"Error: {e}")
 
 async def setup(bot):
     await bot.add_cog(FreelancerCog(bot))

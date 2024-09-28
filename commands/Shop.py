@@ -138,8 +138,9 @@ class Shop(commands.Cog):
     @app_commands.command()
     async def premiumbuy(self, interaction: discord.Interaction, amount: int, name: str):
         Session = sessionmaker(bind=database.engine)
+        session = Session()
         
-        with Session() as session:
+        with session as session:
             try:
                 item = session.query(PremiumShopItem.PremiumShopItem).filter_by(name=name).first()
                 if not item:
