@@ -17,6 +17,7 @@ class Freelancer(Base):
     expense = Column("expense", BigInteger)
     is_free = Column("is_free", Boolean)
     last_paid = Column("last_paid", DATETIME)
+    boost_amount = Column("boost_amount", FLOAT)
 
     def __init__(self, name, job_title, initial_cost, daily_expense, type_of, poach_minimum, boost_amount):
         self.name = name
