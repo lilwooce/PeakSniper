@@ -47,7 +47,7 @@ class Housing(commands.Cog):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     @commands.hybrid_command()
-    async def bid(self, ctx, amount: str, *, name: str):
+    async def buyout(self, ctx, amount: str, *, name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -61,7 +61,7 @@ class Housing(commands.Cog):
                 return
 
             if user.in_jail:
-                await ctx.send("You cannot bid on houses while in jail.")
+                await ctx.send("You cannot buy houses while in jail.")
                 return
 
             if not house:
@@ -69,44 +69,52 @@ class Housing(commands.Cog):
                 return
 
             if not house.in_market:
-                await ctx.send(f"The house '{name}' is not currently available for bidding.")
+                await ctx.send(f"The house '{name}' is not currently available for purchase.")
                 return
 
-            # Determine the amount to bid
-            if amount.lower() == "all":
-                amount = user.balance
-            elif amount.lower() == "half":
-                amount = user.balance // 2
-            else:
-                try:
-                    amount = int(amount)
-                except ValueError:
-                    await ctx.send("Invalid amount. Please specify a valid number or use 'all' or 'half'.")
-                    return
+            # # Determine the amount to bid
+            # if amount.lower() == "all":
+            #     amount = user.balance
+            # elif amount.lower() == "half":
+            #     amount = user.balance // 2
+            # else:
+            #     try:
+            #         amount = int(amount)
+            #     except ValueError:
+            #         await ctx.send("Invalid amount. Please specify a valid number or use 'all' or 'half'.")
+            #         return
 
             if user.balance < amount:
-                await ctx.send("You cannot afford this bid.")
+                await ctx.send("You cannot afford to buy this house.")
                 return
 
-            if amount <= 0:
-                await ctx.send("Bid more than one discoinn, please!")
-                return
+            # if amount <= 0:
+            #     await ctx.send("Bid more than one discoinn, please!")
+            #     return
+
+            owner = session.query(User.User).filter_by(user_id=house.owner).first()
 
             # Deduct the bid amount from user's balance
             user.balance -= amount
+            owner.balance += amount
 
-            # Update bid history for the house
-            bid_history = json.loads(house.bid_history) if house.bid_history else {}
-            bid_history[str(ctx.author.id)] = bid_history.get(str(ctx.author.id), 0) + amount
-            house.bid_history = json.dumps(bid_history)
+            house.in_market = False
+            house.owner = ctx.author.id
+            house.last_expense_paid = datetime.now()
+            house.expenses = 0
+
+            # # Update bid history for the house
+            # bid_history = json.loads(house.bid_history) if house.bid_history else {}
+            # bid_history[str(ctx.author.id)] = bid_history.get(str(ctx.author.id), 0) + amount
+            # house.bid_history = json.dumps(bid_history)
 
             # Commit the transaction
             session.commit()
 
-            await ctx.send(f"You have bid {amount} on {house.name}.")
+            await ctx.send(f"You have purchased {house.name} for {amount} discoins.")
 
         except Exception as e:
-            await ctx.send("An error occurred while processing your bid.")
+            await ctx.send("An error occurred while processing your purchase.")
             logging.warning(f"Error: {e}")
 
         finally:
@@ -124,7 +132,7 @@ class Housing(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            for freelancer in self.freelancers:
+            for freelancer in user.freelancers:
                 if freelancer["type_of"].lower() == "agent" and "estate" in freelancer["job_title"].lower():
                     logging.warning("found real estate agent")
                 else:
@@ -178,11 +186,12 @@ class Housing(commands.Cog):
 
                 for house in houses[start:end]:
                     # Check if there are bids and format the price information accordingly
-                    if house.bid_history:
-                        highest_bid = max(json.loads(house.bid_history).values(), default="No bids yet")
-                        price_info = f"Highest Bid: {highest_bid} discoins"
+                    if house.current_value:
+                        cv = house.current_value
+                        price_info = f"Current Value: {cv} discoins"
                     else:
-                        price_info = "No bids yet"
+                        house.current_value = 100000
+                        price_info = "Current Value: 100000 discoins"
 
                     embed.add_field(
                         name=house.name,
@@ -245,14 +254,16 @@ class Housing(commands.Cog):
             embed.add_field(name="Type", value=house.type_of, inline=False)
 
             if house.in_market:
-                # Load bid_history as a dictionary
-                bid_history = json.loads(house.bid_history) if house.bid_history else {}
+                embed.add_field(name="Current Price", value=f"{house.current_value} discoins", inline=False)
+                # # Load bid_history as a dictionary
+                # bid_history = json.loads(house.bid_history) if house.bid_history else {}
 
-                if bid_history:
-                    highest_bid = max(bid_history.values())
-                    embed.add_field(name="Highest Bid", value=f"{highest_bid} discoins", inline=False)
-                else:
-                    embed.add_field(name="Highest Bid", value="No bids yet", inline=False)
+                # if bid_history:
+                #     highest_bid = max(bid_history.values())
+                #     embed.add_field(name="Highest Bid", value=f"{highest_bid} discoins", inline=False)
+                # else:
+                #     embed.add_field(name="Highest Bid", value="No bids yet", inline=False)
+
             else:
                 embed.add_field(name="Purchase Price", value=f"{house.purchase_value} discoins", inline=False)
 
@@ -312,7 +323,8 @@ class Housing(commands.Cog):
 
                 for house in houses[start:end]:
                     if house.in_market:
-                        price_info = f"Highest Bid: {max(json.loads(house.bid_history).values(), default='No bids yet')} discoins" if house.bid_history else "No bids yet"
+                        #price_info = f"Highest Bid: {max(json.loads(house.bid_history).values(), default='No bids yet')} discoins" if house.bid_history else "No bids yet"
+                        price_info = f"Current Value: {house.current_value} discoins."
                     else:
                         price_info = f"Purchase Price: {house.purchase_value} discoins"
 

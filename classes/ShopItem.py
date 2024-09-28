@@ -17,9 +17,10 @@ class ShopItem(Base):
     duration = Column("duration", Integer)
     type_of = Column("type_of", String(80))
     boost_amount = Column("boost_amount", FLOAT)
+    description = Column("description", String(200))
 
 
-    def __init__(self, name, price, uses, command, item_type, duration, type_of, boost_amount):
+    def __init__(self, name, price, uses, command, item_type, duration, type_of, boost_amount, description):
         self.name = name
         self.price = price
         self.uses = uses
@@ -28,3 +29,4 @@ class ShopItem(Base):
         self.duration = duration
         self.type_of = type_of
         self.boost_amount = boost_amount
+        self.description = description

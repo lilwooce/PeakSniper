@@ -39,7 +39,7 @@ class Shop(commands.Cog):
             def create_embed(page):
                 embed = discord.Embed(title="Shop", description=f"Page {page + 1}/{len(pages)}")
                 for item in pages[page]:
-                    embed.add_field(name=item.name.title(), value=f"Price: {item.price}\nUses: {item.uses}\nCommand: {item.command}", inline=False)
+                    embed.add_field(name=item.name.title(), value=f"Price: {item.price}\nDescription: {item.description}\nCommand: {item.command}", inline=False)
                 return embed
 
             # Send the first embed

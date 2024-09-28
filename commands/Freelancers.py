@@ -6,6 +6,7 @@ from classes import Servers, User, database, Jobs, Global, Freelancers
 import json
 from sqlalchemy.sql.expression import func
 import random
+import asyncio
 
 class FreelancerCog(commands.Cog):
     def __init__(self, bot):
@@ -17,26 +18,68 @@ class FreelancerCog(commands.Cog):
     async def freelancers(self, ctx):
         Session = sessionmaker(bind=database.engine)
         session = Session()
+        
         """Lists all currently available freelancers."""
-        freelancers = session.query(Freelancers.Freelancer).filter_by(is_free=True).order_by(func.rand()).limit(random.randint(self.min_num, self.max_num)).all()
-
+        freelancers = session.query(Freelancers.Freelancer).filter_by(is_free=True).order_by(func.rand()).all()
+        
         if not freelancers:
             await ctx.send("No freelancers are available at the moment.")
             return
         
-        embed = discord.Embed(title="Available Freelancers")
-        for freelancer in freelancers:
-            embed.add_field(
-                name=freelancer.name, 
-                value=f"Job: {freelancer.job_title}\n"
-                      f"Initial Cost: {freelancer.initial_cost}\n"
-                      f"Daily Expense: {freelancer.daily_expense}\n"
-                      f"Poach Minimum: {freelancer.poach_minimum}\n"
-                      f"Type: {freelancer.type_of}", 
-                inline=False
-            )
-        
-        await ctx.send(embed=embed)
+        # Prepare to paginate
+        embeds = []
+        freelancers_per_page = 5
+        total_pages = (len(freelancers) + freelancers_per_page - 1) // freelancers_per_page
+
+        for page in range(total_pages):
+            embed = discord.Embed(title=f"Available Freelancers (Page {page + 1}/{total_pages})", color=discord.Color.blue())
+            start = page * freelancers_per_page
+            end = start + freelancers_per_page
+
+            for freelancer in freelancers[start:end]:
+                embed.add_field(
+                    name=freelancer.name, 
+                    value=f"Job: {freelancer.job_title}\n"
+                        f"Initial Cost: {freelancer.initial_cost}\n"
+                        f"Daily Expense: {freelancer.daily_expense}\n"
+                        f"Poach Minimum: {freelancer.poach_minimum}\n"
+                        f"Type: {freelancer.type_of}", 
+                    inline=False
+                )
+            
+            embeds.append(embed)
+
+        # Send the embeds with pagination
+        if embeds:
+            message = await ctx.send(embed=embeds[0])
+            page = 0
+
+            if len(embeds) > 1:
+                await message.add_reaction("◀️")
+                await message.add_reaction("▶️")
+
+            def check(reaction, user):
+                return user == ctx.author and str(reaction.emoji) in ["◀️", "▶️"] and reaction.message.id == message.id
+            
+            session.close()
+            while True:
+                try:
+                    reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+                    if str(reaction.emoji) == "▶️" and page < len(embeds) - 1:
+                        page += 1
+                        await message.edit(embed=embeds[page])
+                    elif str(reaction.emoji) == "◀️" and page > 0:
+                        page -= 1
+                        await message.edit(embed=embeds[page])
+
+                    await message.remove_reaction(reaction, user)
+                except asyncio.TimeoutError:
+                    await message.clear_reactions()
+                    break
+        else:
+            session.close()
+
 
     @commands.hybrid_command()
     async def hire(self, ctx, name: str):

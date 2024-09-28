@@ -45,6 +45,7 @@ class User(Base):
     freelancers = Column("freelancers", JSON)
     businesses = Column("businesses", JSON)
     revenue = Column("revenue", JSON)
+    bail = Column("bail", Integer)
 
     def __init__(self, user):
         self.name = user.name
@@ -80,6 +81,7 @@ class User(Base):
         self.revenue = {}
         self.freelancers = {}
         self.reminders = False
+        self.bail = 0
 
     def get_base_multiplier(self, items):
         multiplier = 0
