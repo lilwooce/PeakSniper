@@ -154,7 +154,7 @@ class Business(commands.Cog):
             if len(freelancers) > 0:
                 for freelancer in freelancers:
                     logging.warning(freelancer)
-                    f = session.query(Freelancers.Freelancer).filter_by(name == freelancer).first()
+                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
                     if f and f.type_of.lower() in "agent" and f.job_title.lower() in "business":
                         logging.warning("found Business Agent")
                     else:
