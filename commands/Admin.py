@@ -126,11 +126,13 @@ class Admin(commands.Cog):
     @allowed()
     async def daily_generator(self, interaction: discord.Interaction):
         entity_generator = EntityGenerator.EntityGenerator()
+        await interaction.response.send_message("Generating things")
         
         # Await the result of the asynchronous entity generation
         result_message = await entity_generator.generate_and_add_entities()  
+        await interaction.response.defer()
         
-        await interaction.response.send_message(result_message)
+        await interaction.response.edit_message(result_message)
 
 
 
