@@ -7,6 +7,7 @@ import json
 from sqlalchemy.sql.expression import func
 import random
 import asyncio
+import logging
 
 class FreelancerCog(commands.Cog):
     def __init__(self, bot):
@@ -90,7 +91,7 @@ class FreelancerCog(commands.Cog):
             freelancer = session.query(Freelancers.Freelancer).filter_by(name=name, is_free=True).first()
 
             if not freelancer:
-                await ctx.send(f"{name} was not found in shop.")
+                await ctx.send(f"{name} is not available for hire.")
                 return
 
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
@@ -121,13 +122,15 @@ class FreelancerCog(commands.Cog):
         """Fire a freelancer you currently employ."""
         try:
             freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer_name, boss=ctx.author.id).first()
-
-            freelancer.boss = None
-            freelancer.is_free = True
-            session.commit()
-            await ctx.send(f"{freelancer_name} has been fired.")
-        except NoResultFound:
-            await ctx.send(f"{ctx.author.mention}, you do not have a freelancer named {freelancer_name}.")
+            if freelancer:
+                freelancer.boss = None
+                freelancer.is_free = True
+                session.commit()
+                await ctx.send(f"{freelancer_name} has been fired.")
+            else:
+                await ctx.send(f"{ctx.author.mention}, you do not have a freelancer named {freelancer_name}.")
+        except Exception as e:
+            logging.warning(e)
 
     @commands.hybrid_command()
     async def poach(self, ctx, *, freelancer_name: str):
