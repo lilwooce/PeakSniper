@@ -73,6 +73,14 @@ class Business(commands.Cog):
                 await ctx.send(f"The business '{name}' is not currently available for purchase.")
                 return
 
+            for freelancer in user.freelancers:
+                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
+                    logging.warning("found Business Agent")
+                else:
+                    await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
+                    return
+
             # # Determine the amount to bid
             # if amount.lower() == "all":
             #     amount = user.balance
@@ -142,7 +150,8 @@ class Business(commands.Cog):
                 return
 
             for freelancer in user.freelancers:
-                if freelancer["type_of"].lower() == "agent" and "business" in freelancer["job_title"].lower():
+                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
                     logging.warning("found Business Agent")
                 else:
                     await ctx.send("You cannot list your business unless you have a *Business Agent*.")

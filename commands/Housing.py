@@ -73,6 +73,14 @@ class Housing(commands.Cog):
                 await ctx.send(f"The house '{name}' is not currently available for purchase.")
                 return
 
+            for freelancer in user.freelancers:
+                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                if f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
+                    logging.warning("found Real Estate Agent")
+                else:
+                    await ctx.send("You cannot buy a house unless you have a *Real Esate Agent*.")
+                    return
+
             # # Determine the amount to bid
             # if amount.lower() == "all":
             #     amount = user.balance
@@ -142,8 +150,9 @@ class Housing(commands.Cog):
                 return
 
             for freelancer in user.freelancers:
-                if freelancer["type_of"].lower() == "agent" and "estate" in freelancer["job_title"].lower():
-                    logging.warning("found real estate agent")
+                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                if f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
+                    logging.warning("found Real Estate Agent")
                 else:
                     await ctx.send("You cannot list your house unless you have a *Real Esate Agent*.")
                     return
