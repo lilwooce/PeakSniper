@@ -73,13 +73,14 @@ class Housing(commands.Cog):
                 await ctx.send(f"The house '{name}' is not currently available for purchase.")
                 return
 
-            for freelancer in user.freelancers:
-                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
-                if f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
-                    logging.warning("found Real Estate Agent")
-                else:
-                    await ctx.send("You cannot buy a house unless you have a *Real Esate Agent*.")
-                    return
+            if len(user.freelancers) > 0:
+                for freelancer in user.freelancers:
+                    f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                    if f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
+                        logging.warning("found Real Estate Agent")
+                    else:
+                        await ctx.send("You cannot buy a house unless you have a *Real Esate Agent*.")
+                        return
 
             # # Determine the amount to bid
             # if amount.lower() == "all":
@@ -149,13 +150,14 @@ class Housing(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            for freelancer in user.freelancers:
-                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
-                if f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
-                    logging.warning("found Real Estate Agent")
-                else:
-                    await ctx.send("You cannot list your house unless you have a *Real Esate Agent*.")
-                    return
+            if len(user.freelancers) > 0:
+                for freelancer in user.freelancers:
+                    f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                    if f.type_of.lower() in "agent" and "estate" in f.job_title.lower():
+                        logging.warning("found Real Estate Agent")
+                    else:
+                        await ctx.send("You cannot list your house unless you have a *Real Esate Agent*.")
+                        return
 
             # Find the house by name and ensure the user owns it
             house = session.query(Houses.House).filter_by(owner=user.user_id, name=name).first()

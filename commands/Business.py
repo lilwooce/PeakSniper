@@ -72,14 +72,15 @@ class Business(commands.Cog):
             if not business.in_market:
                 await ctx.send(f"The business '{name}' is not currently available for purchase.")
                 return
-
-            for freelancer in user.freelancers:
-                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
-                if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
-                    logging.warning("found Business Agent")
-                else:
-                    await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
-                    return
+            
+            if len(user.freelancers) > 0:
+                for freelancer in user.freelancers:
+                    f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                    if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
+                        logging.warning("found Business Agent")
+                    else:
+                        await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
+                        return
 
             # # Determine the amount to bid
             # if amount.lower() == "all":
@@ -149,13 +150,14 @@ class Business(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            for freelancer in user.freelancers:
-                f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
-                if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
-                    logging.warning("found Business Agent")
-                else:
-                    await ctx.send("You cannot list your business unless you have a *Business Agent*.")
-                    return
+            if len(user.freelancers) > 0:
+                for freelancer in user.freelancers:
+                    f = session.query(Freelancers.Freelancer).filter(Freelancers.Freelancer.name.ilike(f"%{freelancer}%")).first()
+                    if f.type_of.lower() in "agent" and f.job_title.lower() in "business":
+                        logging.warning("found Business Agent")
+                    else:
+                        await ctx.send("You cannot list your business unless you have a *Business Agent*.")
+                        return
 
             # Find the business by name and ensure the user owns it
             business = session.query(Businesses.Business).filter(Businesses.Business.owner == user.user_id,Businesses.Business.name.ilike(f"%{name}%")).first()
