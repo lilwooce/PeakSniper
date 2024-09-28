@@ -2,10 +2,11 @@ import openai
 from sqlalchemy.orm import sessionmaker
 from classes import Business, Freelancer, House, Asset, Job, Stock, database
 import json
+import os
 
 class EntityGenerator:
     def __init__(self):
-        openai.api_key = 'YOUR_OPENAI_API_KEY'
+        openai.api_key = os.getenv("OPENAI_API_KEY")
         # Setup DB session
         self.Session = sessionmaker(bind=database.engine)
 
@@ -46,62 +47,126 @@ class EntityGenerator:
         return generated_data
 
     def generate_businesses(self):
-        # Generate 10 new businesses
         response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt="Generate 10 new business names with the following attributes: name, purchase_value (int), type_of (string), daily_expense (int), daily_revenue (int)",
+            prompt='''Generate 10 new businesses as a JSON array with each object having the following attributes:
+            {
+                "name": "string",
+                "purchase_value": "int",
+                "type_of": "string",
+                "daily_expense": "int",
+                "daily_revenue": "int"
+            }.
+            Ensure the output is valid JSON.''',
             max_tokens=500
         )
-        return response.choices[0].text
+        businesses_data = response.choices[0].text
+        return self.validate_and_parse_json(businesses_data, ['name', 'purchase_value', 'type_of', 'daily_expense', 'daily_revenue'])
 
     def generate_freelancers(self):
-        # Generate 10 new freelancers
         response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt="Generate 10 new freelancers with the following attributes: name, job_title (Agent, Assistant, Consultant, Negotiator, Broker, Accountant), initial_cost (int), daily_expense (int), type_of (wealth, work, stock, gamba), poach_minimum (int), boost_amount (float)",
+            prompt='''Generate 10 new freelancers as a JSON array with each object having the following attributes:
+            {
+                "name": "string",
+                "job_title": "string",
+                "initial_cost": "int",
+                "daily_expense": "int",
+                "type_of": "string",
+                "poach_minimum": "int",
+                "boost_amount": "float"
+            }.
+            Ensure the output is valid JSON.''',
             max_tokens=500
         )
-        return response.choices[0].text
+        freelancers_data = response.choices[0].text
+        return self.validate_and_parse_json(freelancers_data, ['name', 'job_title', 'initial_cost', 'daily_expense', 'type_of', 'poach_minimum', 'boost_amount'])
 
     def generate_houses(self):
-        # Generate 10 new houses
         response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt="Generate 10 new houses with the following attributes: name, purchase_value (int), type_of (string), daily_expense (int)",
+            prompt='''Generate 10 new houses as a JSON array with each object having the following attributes:
+            {
+                "name": "string",
+                "purchase_value": "int",
+                "type_of": "string",
+                "daily_expense": "int"
+            }.
+            Ensure the output is valid JSON.''',
             max_tokens=500
         )
-        return response.choices[0].text
+        houses_data = response.choices[0].text
+        return self.validate_and_parse_json(houses_data, ['name', 'purchase_value', 'type_of', 'daily_expense'])
 
     def generate_assets(self):
-        # Generate 10 new assets
         response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt="Generate 10 new assets with the following attributes: name, material (string), purchase_value (int), type_of (string)",
+            prompt='''Generate 10 new assets as a JSON array with each object having the following attributes:
+            {
+                "name": "string",
+                "material": "string",
+                "purchase_value": "int",
+                "type_of": "string"
+            }.
+            Ensure the output is valid JSON.''',
             max_tokens=500
         )
-        return response.choices[0].text
+        assets_data = response.choices[0].text
+        return self.validate_and_parse_json(assets_data, ['name', 'material', 'purchase_value', 'type_of'])
 
     def generate_jobs(self):
-        # Generate 10 new jobs
         response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt="Generate 10 new jobs with the following attributes: name, salary (int), chance (float)",
+            prompt='''Generate 10 new jobs as a JSON array with each object having the following attributes:
+            {
+                "name": "string",
+                "salary": "int",
+                "chance": "float"
+            }.
+            Ensure the output is valid JSON.''',
             max_tokens=500
         )
-        return response.choices[0].text
+        jobs_data = response.choices[0].text
+        return self.validate_and_parse_json(jobs_data, ['name', 'salary', 'chance'])
 
     def generate_stocks(self):
-        # Generate 10 new stocks
         response = openai.Completion.create(
             engine="text-davinci-003",
-            prompt="Generate 10 new stocks with the following attributes: name, full_name, growth_rate (float), start_value (int), volatility (float), swap_chance (float), ruination (float), type_of (string)",
+            prompt='''Generate 10 new stocks as a JSON array with each object having the following attributes:
+            {
+                "name": "string",
+                "full_name": "string",
+                "growth_rate": "float",
+                "start_value": "int",
+                "volatility": "float",
+                "swap_chance": "float",
+                "ruination": "float",
+                "type_of": "string"
+            }.
+            Ensure the output is valid JSON.''',
             max_tokens=500
         )
-        return response.choices[0].text
+        stocks_data = response.choices[0].text
+        return self.validate_and_parse_json(stocks_data, ['name', 'full_name', 'growth_rate', 'start_value', 'volatility', 'swap_chance', 'ruination', 'type_of'])
+
+    def validate_and_parse_json(self, data, required_fields):
+        try:
+            parsed_data = json.loads(data)
+            if isinstance(parsed_data, list) and all(isinstance(item, dict) for item in parsed_data):
+                # Further validation (check required fields and types)
+                for item in parsed_data:
+                    for field in required_fields:
+                        if field not in item:
+                            raise ValueError(f"Missing field '{field}' in one of the generated items.")
+                return parsed_data
+            else:
+                raise ValueError("Generated response is not a valid JSON list.")
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"Error in parsing or validating generated data: {e}")
+            return []
 
     def process_businesses(self, businesses_data, session):
-        # Add businesses to the database
-        businesses = json.loads(businesses_data)
+        businesses = businesses_data
         for business in businesses:
             new_business = Business(
                 name=business['name'],
@@ -113,8 +178,7 @@ class EntityGenerator:
             session.add(new_business)
 
     def process_freelancers(self, freelancers_data, session):
-        # Add freelancers to the database
-        freelancers = json.loads(freelancers_data)
+        freelancers = freelancers_data
         for freelancer in freelancers:
             new_freelancer = Freelancer(
                 name=freelancer['name'],
@@ -128,8 +192,7 @@ class EntityGenerator:
             session.add(new_freelancer)
 
     def process_houses(self, houses_data, session):
-        # Add houses to the database
-        houses = json.loads(houses_data)
+        houses = houses_data
         for house in houses:
             new_house = House(
                 name=house['name'],
@@ -140,8 +203,7 @@ class EntityGenerator:
             session.add(new_house)
 
     def process_assets(self, assets_data, session):
-        # Add assets to the database
-        assets = json.loads(assets_data)
+        assets = assets_data
         for asset in assets:
             new_asset = Asset(
                 name=asset['name'],
@@ -152,8 +214,7 @@ class EntityGenerator:
             session.add(new_asset)
 
     def process_jobs(self, jobs_data, session):
-        # Add jobs to the database
-        jobs = json.loads(jobs_data)
+        jobs = jobs_data
         for job in jobs:
             new_job = Job(
                 name=job['name'],
@@ -163,8 +224,7 @@ class EntityGenerator:
             session.add(new_job)
 
     def process_stocks(self, stocks_data, session):
-        # Add stocks to the database
-        stocks = json.loads(stocks_data)
+        stocks = stocks_data
         for stock in stocks:
             new_stock = Stock(
                 name=stock['name'],
@@ -177,4 +237,3 @@ class EntityGenerator:
                 type_of=stock['type_of']
             )
             session.add(new_stock)
-
