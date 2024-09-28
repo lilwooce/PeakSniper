@@ -91,9 +91,9 @@ class User(Base):
                 multiplier += item.boost_amount
 
         try:
-            # Check if user has a freelancer with job_type "assistant" and "wealth" in job_name
+            # Check if user has a freelancer with type_of "assistant" and "wealth" in job_title
             for freelancer in self.freelancers:
-                if freelancer["job_type"].lower() == "assistant" and "wealth" in freelancer["job_name"].lower():
+                if freelancer["type_of"].lower() == "assistant" and "wealth" in freelancer["job_title"].lower():
                     multiplier += freelancer.get("boost_amount", 0)
         except:
             logging.warning("user has no freelancers")
@@ -111,9 +111,9 @@ class User(Base):
 
         
         try:
-            # Check if user has a freelancer with job_type "assistant" and "wealth" in job_name
+            # Check if user has a freelancer with type_of "assistant" and "wealth" in job_title
             for freelancer in self.freelancers:
-                if freelancer["job_type"].lower() == "assistant" and type_of in freelancer["job_name"].lower():
+                if freelancer["type_of"].lower() == "assistant" and type_of in freelancer["job_title"].lower():
                     multi += freelancer.get("boost_amount", 0)
         except:
             logging.warning("user has no freelancers")

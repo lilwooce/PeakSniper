@@ -125,7 +125,7 @@ class Housing(commands.Cog):
                 return
 
             for freelancer in self.freelancers:
-                if freelancer["job_type"].lower() == "agent" and "estate" in freelancer["job_name"].lower():
+                if freelancer["type_of"].lower() == "agent" and "estate" in freelancer["job_title"].lower():
                     logging.warning("found real estate agent")
                 else:
                     await ctx.send("You cannot list your house unless you have a *Real Esate Agent*.")
