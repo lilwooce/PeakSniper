@@ -500,7 +500,7 @@ class Admin(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    @allowed
+    @allowed()
     async def daily_rev_exp(self, interaction: discord.Interaction):
         try:
             self.daily_expenses()
