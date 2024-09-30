@@ -225,7 +225,7 @@ class UserCommands(commands.Cog):
 
         try:
             # Get the server entry
-            s = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
+            g = session.query(Global.Global).first()
             u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
 
             if not u:
@@ -239,16 +239,12 @@ class UserCommands(commands.Cog):
                 await ctx.send("You cannot apply for a job without a *Resume*. Try purchasing one from the Shop.")
                 return
 
-            if not s:
-                await ctx.send("Server not found.")
+            if not g:
+                await ctx.send("Data not found.")
                 return
 
             # s.jobs is now a JSON column, which is automatically handled as a Python list
-            jobs = []
-            for job_name in s.jobs:
-                j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
-                if j:
-                    jobs.append((job_name, j.chance))
+            jobs = json.loads(g.jobs) if g.jobs else {}
 
             if not jobs:
                 await ctx.send("No jobs available.")
@@ -259,13 +255,9 @@ class UserCommands(commands.Cog):
             selected_job = js.choose_job()
 
             # Update or add the new job for the given server_id in user's jobs
-            current_jobs = json.loads(u.jobs) if u.jobs else {}
-            current_jobs[str(guild.id)] = selected_job
+            u.job = selected_job
             del used_items['resume']
             u.used_items = json.dumps(used_items)
-
-            # Convert the dictionary back to JSON and update the jobs column
-            u.jobs = json.dumps(current_jobs)
 
             # Commit the changes to the database
             session.commit()
@@ -292,19 +284,16 @@ class UserCommands(commands.Cog):
         session = Session()
 
         try:
-            server = session.query(Servers.Servers).filter_by(server_id=guild.id).first()
-            if not server:
-                await ctx.send("Server not found in the database.", ephemeral=True)
-                return
+            g = session.query(Global.Global).first()
 
-            jobs = server.jobs if isinstance(server.jobs, list) else []
+            jobs = json.loads(g.jobs) if g.jobs else {}
 
             embed = discord.Embed(title=f"Jobs in {guild.name}", color=discord.Color.blue())
             if jobs:
-                for job_name in jobs:
+                for job_name, weight in jobs.items():  # Use .items() to correctly unpack key-value pairs
                     j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
-                    # If you store salary information separately, retrieve and display it here
-                    embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {j.chance}%", inline=False)
+                    if j:
+                        embed.add_field(name=job_name, value=f"Salary: {j.salary} | Acceptance Chance: {weight:.2f}%", inline=False)
             else:
                 embed.description = "No jobs found for this server."
 
@@ -1240,3 +1229,477 @@ class UserCommands(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
+
+
+from discord.ext import commands, tasks
+import discord
+from discord import app_commands
+from dotenv import load_dotenv
+import os
+from sqlalchemy.orm import sessionmaker
+from classes import Servers, User, database, Jobs, JobSelector, ShopItem, Global
+from .Config import hasAccount
+from datetime import datetime, timedelta
+import logging
+import random
+import json
+import asyncio
+
+class UserCommands(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        print(f"{self.__class__.__name__} Cog has been loaded\n----")
+    
+    @commands.hybrid_command(aliases=['loan', 'lend'], description="Simple function that allows users to give discoins to other users")
+    @commands.check(hasAccount)
+    async def give(self, ctx, user: discord.User, amount: int):
+        author = ctx.author
+        if amount == 0:
+            await ctx.send("Why are you trying to give someone nothing? What is wrong with you?")
+            return
+        if amount < 0:
+            await ctx.send("You can't give someone negative discoins. Are you dumb?")
+            return
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=author.id).first()
+
+            if not u or u.balance < amount:
+                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                return
+
+            if author.id == user.id:
+                await ctx.send("Are you that lonely that you have to give yourself money? Sad.")
+                return
+
+            g = session.query(User.User).filter_by(user_id=user.id).first()
+            if not g:
+                await ctx.send("The recipient does not have an account.")
+                return
+
+            u.balance -= amount
+            u.total_gifted += amount
+            g.balance += amount
+
+            session.commit()
+
+            await ctx.send(f"**{ctx.author.name}#{ctx.author.discriminator}** just gave **{amount}** discoin(s) to **{user.name}#{user.discriminator}**")
+        finally:
+            session.close()
+
+    @commands.command(description="This function allows the user to see various stats about their activities on the server.")
+    @commands.check(hasAccount)
+    async def stats(self, ctx, user: discord.User = None):
+        user = user or ctx.author
+        embed = discord.Embed(title="User Stats", description=f"Showing {user.name}'s stats")
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=user.id).first()
+            if not u:
+                await ctx.send("No stats available.")
+                return
+
+            embed.add_field(name="Total Earned", value=f"**{u.total_earned}** discoins earned", inline=False)
+            embed.add_field(name="Total Lost", value=f"**{u.total_lost}** discoins lost", inline=False)
+            embed.add_field(name="Total Given", value=f"**{u.total_gifted}** discoins given to other players", inline=False)
+            embed.add_field(name="Bets Made", value=f"**{u.total_bets}** gambles attempted", inline=False)
+            embed.add_field(name="Messages Sniped", value=f"**{u.total_snipes}** unique messages sniped", inline=False)
+
+            await ctx.channel.send(embed=embed)
+        finally:
+            session.close()
+
+    @commands.hybrid_command(name="setsnipe", hidden=True, with_app_command=True)
+    async def set_snipe(self, ctx, *, msg: str):
+        user = ctx.author
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=user.id).first()
+            if not u:
+                await ctx.send("No account found.")
+                return
+
+            u.snipe_message = msg
+            session.commit()
+
+            await ctx.send(f"You changed your snipe message to [{u.snipe_message}]")
+        finally:
+            session.close()
+
+    @commands.hybrid_command(aliases=['p'], description="Display the user's profile.")
+    @commands.check(hasAccount)
+    async def profile(self, ctx, user: discord.User = None):
+        user = user or ctx.author
+        embed = discord.Embed(title="User Profile", description=f"Showing {user.name}'s Profile", color=discord.Color.green())
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=user.id).first()
+            if not u:
+                await ctx.send("No profile available.")
+                return
+            
+            job_name = u.job
+            if job_name is None:
+                await ctx.send("Job not found for this server. Please apply first before working.")
+                return
+            j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
+
+            embed.set_author(name=user.name, icon_url=user.display_avatar)
+            embed.add_field(name="Snipe Message", value=f"**{u.snipe_message}**", inline=False)
+            embed.add_field(name="Balance", value=f"**{u.balance}** discoins", inline=False)
+            embed.add_field(name="Poll Gamba", value=f"**{u.poll_gamba}** discoins", inline=False)
+            embed.add_field(name="Current Job", value=f"**{j.name}**", inline=False)
+
+            await ctx.send(embed=embed)
+        finally:
+            session.close()
+
+    @commands.hybrid_command(description="Check the user's balance.")
+    @commands.check(hasAccount)
+    async def bal(self, ctx, user: discord.User = None):
+        user = user or ctx.author
+
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=user.id).first()
+            if not u:
+                await ctx.send("No account found.")
+                return
+
+            await ctx.send(f"**{user.name}** has `{u.balance}` discoins in their wallet\n**{user.name}** has `{u.bank}` discoins in their bank.")
+        finally:
+            session.close()
+
+    
+
+
+    @commands.hybrid_command(aliases=['inv'])
+    async def inventory(self, ctx):
+        user = ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        
+        try:
+            # Fetch user data
+            user = session.query(User.User).filter_by(user_id=user.id).first()
+            if not user:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            inventory = json.loads(user.inventory) if user.inventory else {}
+            if inventory == {}:
+                await ctx.send("Your inventory is empty")
+                return
+
+            # Divide inventory items into pages with a max of 5 items per page
+            items = list(inventory.items())
+            pages = [items[i:i + 5] for i in range(0, len(items), 5)]
+            current_page = 0
+
+            # Function to create an embed for a given page
+            def create_embed(page):
+                embed = discord.Embed(title=f"{ctx.author.name}'s Inventory", description=f"Page {page + 1}/{len(pages)}", color=discord.Color.green())
+                for item_name, quantity in pages[page]:
+                    embed.add_field(name=item_name.title(), value=f"Quantity: {quantity}", inline=False)
+                return embed
+
+            # Send the first embed
+            message = await ctx.send(embed=create_embed(current_page))
+
+            # Add reactions if there are multiple pages
+            if len(pages) > 1:
+                await message.add_reaction("⬅️")
+                await message.add_reaction("➡️")
+
+                # Check for reaction events
+                def check(reaction, user):
+                    return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
+
+                while True:
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+                        if str(reaction.emoji) == "➡️":
+                            if current_page < len(pages) - 1:
+                                current_page += 1
+                                await message.edit(embed=create_embed(current_page))
+                        elif str(reaction.emoji) == "⬅️":
+                            if current_page > 0:
+                                current_page -= 1
+                                await message.edit(embed=create_embed(current_page))
+
+                        await message.remove_reaction(reaction, user)
+
+                    except asyncio.TimeoutError:
+                        break
+
+                # Clear reactions after the timeout
+                await message.clear_reactions()
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving your inventory.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
+    def format_time_remaining(self, expiration_time):
+        now = datetime.now()
+        time_remaining = expiration_time - now
+
+        if time_remaining < timedelta(0):
+            return "Expired"
+
+        days = time_remaining.days
+        hours, remainder = divmod(time_remaining.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        parts = []
+        if days > 0:
+            parts.append(f"{days} day{'s' if days > 1 else ''}")
+        if hours > 0:
+            parts.append(f"{hours} hour{'s' if hours > 1 else ''}")
+        if minutes > 0:
+            parts.append(f"{minutes} minute{'s' if minutes > 1 else ''}")
+        if seconds > 0:
+            parts.append(f"{seconds} second{'s' if seconds > 1 else ''}")
+
+        return ", ".join(parts)
+
+    @commands.hybrid_command(aliases=['ce'])
+    async def current_effects(self, ctx):
+        user = ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            # Fetch user data
+            u = session.query(User.User).filter_by(user_id=user.id).first()
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            # Load used items
+            used_items = json.loads(u.used_items) if u.used_items else {}
+            if not used_items:
+                await ctx.send("You have no currently applied effects")
+                return
+
+            embed = discord.Embed(title="Current Active Effects", color=discord.Color.green())
+            for item_name, effect in used_items.items():
+                # Check if 'expires_at' key exists in the effect dictionary
+                expires_at = effect.get('expires_at', None)
+                if expires_at:
+                    datetime_format = "%Y-%m-%d %H:%M:%S.%f"
+                    expires_at = datetime.strptime(expires_at, datetime_format)
+                    time_remaining = self.format_time_remaining(expires_at)
+                    embed.add_field(name=item_name, value=f"Effect: {effect['description']}\nExpires in: {time_remaining}", inline=False)
+                else:
+                    embed.add_field(name=item_name, value=f"Effect: {effect['description']}", inline=False)
+
+            if not used_items:
+                embed.description = "No active effects found."
+
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving active effects.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
+    @commands.hybrid_command()
+    async def use(self, ctx, *, item_name: str):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            inventory = json.loads(u.inventory) if u.inventory else {}
+            used_items = json.loads(u.used_items) if u.used_items else {}
+
+            if item_name not in inventory or inventory[item_name] <= 0:
+                await ctx.send(f"You don't have {item_name} in your inventory.", ephemeral=True)
+                return
+
+            # Fetch the item details from the ShopItem table
+            item = session.query(ShopItem.ShopItem).filter_by(name=item_name).first()
+            if not item:
+                await ctx.send(f"{item_name} not found in the shop.", ephemeral=True)
+                return
+
+            to_send = ""
+            # Apply the effect of the item
+            if item.item_type == "boost":
+                effect = {"description": f"{item_name} effect active", "expires_at": str(datetime.now() + timedelta(minutes=item.duration))}
+                used_items[item_name] = effect
+                to_send = f"You have used {item_name}. Effect is now active for {item.duration} minutes!"
+                await self.schedule_effect_removal(ctx.author.id, item_name, datetime.now() + timedelta(minutes=item.duration))
+            elif item.item_type == "consumable":
+                effect = {"description": f"{item_name} effect active"}
+                used_items[item_name] = effect
+                to_send = f"You have used {item_name}. Effect is now active!"
+
+            # Update the user's inventory and used_items
+            inventory[item_name] -= 1
+            if inventory[item_name] == 0:
+                del inventory[item_name]
+            
+            u.inventory = json.dumps(inventory)
+            u.used_items = json.dumps(used_items)
+
+            session.commit()
+
+            await ctx.send(to_send, ephemeral=True)
+
+        except Exception as e:
+            await ctx.send("An error occurred while using the item.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
+    async def schedule_effect_removal(self, user_id, item_name, expiration_time):
+        async def remove_after_delay():
+            # Calculate the delay in seconds until expiration
+            logging.warning("Scheduling effect removal")
+            delay = (expiration_time - datetime.now()).total_seconds()
+            if delay > 0:
+                await asyncio.sleep(delay)
+                # Remove effect after the delay
+                await self.remove_effect(user_id, item_name)
+        
+        # Create a background task for effect removal
+        asyncio.create_task(remove_after_delay())
+
+
+    async def remove_effect(self, user_id, item_name):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=user_id).first()
+            if not u:
+                return
+
+            used_items = json.loads(u.used_items) if u.used_items else {}
+            if item_name in used_items:
+                del used_items[item_name]
+                u.used_items = json.dumps(used_items)
+                session.commit()
+                # Optionally notify the user
+                try:
+                    user = self.bot.get_user(user_id)
+                    if user:
+                        await user.send(f"The effect of {item_name} has expired.")
+                except Exception as e:
+                    logging.warning(e)
+        except Exception as e:
+            logging.warning(f"Error: {e}")
+        finally:
+            session.close()
+
+    def deduct_money(user, total_cost):
+        """
+        Deducts the specified total cost from the user's balance first, 
+        then from the bank if necessary.
+
+        Parameters:
+            user (User): The user whose money will be deducted.
+            total_cost (int): The total amount to deduct.
+
+        Returns:
+            bool: True if the deduction was successful, False if not enough money.
+        """
+        if user.balance >= total_cost:
+            user.balance -= total_cost
+            return True
+        elif user.balance + user.bank >= total_cost:
+            amount_from_balance = user.balance
+            amount_from_bank = total_cost - amount_from_balance
+            user.balance = 0
+            user.bank -= amount_from_bank
+            return True
+        return False
+
+    @commands.hybrid_command(aliases=['cd'])
+    async def cooldowns(self, ctx):
+        # Retrieve the user data from the database
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            if not u:
+                await ctx.send("User not found in the database.")
+                return
+
+            # Helper function to format time
+            def format_time(end_time):
+                now = datetime.now()
+                if not end_time:
+                    return "Not Set"
+                if end_time < now:
+                    return "Ready"
+                
+                delta = end_time - now
+                days, seconds = divmod(delta.total_seconds(), 86400)
+                hours, remainder = divmod(seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+
+                # Build the time string based on the components that are necessary
+                time_components = []
+                if days > 0:
+                    time_components.append(f"{int(days)} day(s)")
+                if hours > 0:
+                    time_components.append(f"{int(hours)} hour(s)")
+                if minutes > 0:
+                    time_components.append(f"{int(minutes)} minute(s)")
+                if seconds > 0:
+                    time_components.append(f"{int(seconds)} second(s)")
+
+                return ", ".join(time_components)
+
+            # Create a dictionary of cooldowns
+            cooldowns = {
+                "Steal Cooldown": u.steal_cooldown,
+                "Injury": u.injury,
+                "Heist Cooldown": u.heist_cooldown,
+                "Interest Cooldown": u.interest_cooldown
+            }
+
+            embed = discord.Embed(title="Cooldowns", color=discord.Color.blue())
+
+            # Add each cooldown to the embed
+            for name, end_time in cooldowns.items():
+                remaining = format_time(end_time)
+                embed.add_field(name=name, value=remaining, inline=False)
+
+            await ctx.send(embed=embed)
+        finally:
+            session.close()
