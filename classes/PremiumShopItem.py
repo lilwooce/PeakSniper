@@ -19,7 +19,6 @@ class PremiumShopItem(Base):
     boost_amount = Column("boost_amount", FLOAT)
     description = Column("description", String(200))
 
-
     def __init__(self, name, price, uses, command, item_type, duration, type_of, boost_amount, description):
         self.name = name
         self.price = price
