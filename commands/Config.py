@@ -185,7 +185,7 @@ class Config(commands.Cog, name="Configuration"):
         try:
             users = session.query(User.User).all()
             for u in users:
-                if u.balance == 0 and u.in_jail == True:
+                if u.balance <= 0 and u.in_jail == True:
                     # Don't tax
                     continue
         
