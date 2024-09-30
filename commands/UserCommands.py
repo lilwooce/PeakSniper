@@ -1125,7 +1125,113 @@ class UserCommands(commands.Cog):
             await ctx.send(f"You paid {amount} towards your {name} bill.", ephemeral=True)
 
         except Exception as e:
-            await ctx.send("An error occurred while using the item.", ephemeral=True)
+            await ctx.send("An error occurred while paying this bill.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+
+        finally:
+            session.close()
+
+    @commands.hybrid_command()
+    async def revenue(self, ctx):
+        user = ctx.author
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        
+        try:
+            # Fetch user data
+            user = session.query(User.User).filter_by(user_id=user.id).first()
+            if not user:
+                await ctx.send("User not found in the database.", ephemeral=True)
+
+            revenue = json.loads(user.revenue) if user.revenue else {}
+            if revenue == {}:
+                await ctx.send("You have no revenue to claim.")
+
+            # Divide revenue items into pages with a max of 5 items per page
+            items = list(revenue.items())
+            pages = [items[i:i + 5] for i in range(0, len(items), 5)]
+            current_page = 0
+
+            # Function to create an embed for a given page
+            def create_embed(page):
+                embed = discord.Embed(title=f"{ctx.author.name}'s Claimable Revenue", description=f"Page {page + 1}/{len(pages)}", color=discord.Color.green())
+                for item_name, amount in pages[page]:
+                    embed.add_field(name=item_name.title(), value=f"Balance: {amount}", inline=False)
+                return embed
+
+            # Send the first embed
+            message = await ctx.send(embed=create_embed(current_page))
+
+            # Add reactions if there are multiple pages
+            if len(pages) > 1:
+                await message.add_reaction("⬅️")
+                await message.add_reaction("➡️")
+
+                # Check for reaction events
+                def check(reaction, user):
+                    return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
+
+                while True:
+                    try:
+                        reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
+
+                        if str(reaction.emoji) == "➡️":
+                            if current_page < len(pages) - 1:
+                                current_page += 1
+                                await message.edit(embed=create_embed(current_page))
+                        elif str(reaction.emoji) == "⬅️":
+                            if current_page > 0:
+                                current_page -= 1
+                                await message.edit(embed=create_embed(current_page))
+
+                        await message.remove_reaction(reaction, user)
+
+                    except asyncio.TimeoutError:
+                        break
+
+                # Clear reactions after the timeout
+                await message.clear_reactions()
+
+        except Exception as e:
+            await ctx.send("An error occurred while retrieving your claimable revenue.", ephemeral=True)
+            logging.warning(f"Error: {e}")
+        finally:
+            session.close()
+    
+    @commands.hybrid_command()
+    async def claim(self, ctx, name: str):
+        name = name.lower()
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+
+        try:
+            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+
+            revenue = json.loads(u.revenue) if u.revenue else {}
+
+            if name not in revenue or revenue[name] <= 0:
+                await ctx.send(f"You don't have any revenue named {name}.", ephemeral=True)
+                return
+
+            amount = revenue[name]
+
+            if not u:
+                await ctx.send("User not found in the database.", ephemeral=True)
+                return
+
+            u.balance += amount
+            revenue[name] -= amount
+            if revenue[name] == 0:
+                del revenue[name]
+            
+            u.bills = json.dumps(revenue)
+
+            session.commit()
+
+            await ctx.send(f"You claimed {amount} from your {name} revenue.", ephemeral=True)
+
+        except Exception as e:
+            await ctx.send("An error occurred while claiming your revenue.", ephemeral=True)
             logging.warning(f"Error: {e}")
 
         finally:
