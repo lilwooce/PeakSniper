@@ -1227,6 +1227,23 @@ class UserCommands(commands.Cog):
             # Create a temporary dictionary with lowercase keys for case-insensitive lookup
             revenue_lower = {key.lower(): value for key, value in revenue.items()}
 
+            if name == "all":
+                total_claimed = sum(revenue.values())
+                if total_claimed <= 0:
+                    await ctx.send("You don't have any revenue to claim.", ephemeral=True)
+                    return
+                
+                # Update user's balance
+                u.balance += total_claimed
+                
+                # Clear the revenue dictionary
+                revenue.clear()
+                u.revenue = json.dumps(revenue)
+
+                await ctx.send(f"You claimed a total of {total_claimed} from all your revenues.", ephemeral=True)
+                session.commit()
+                return
+
             if name not in revenue_lower or revenue_lower[name] <= 0:
                 await ctx.send(f"You don't have any revenue named {name}.", ephemeral=True)
                 return
@@ -1259,6 +1276,7 @@ class UserCommands(commands.Cog):
 
         finally:
             session.close()
+
 
 
 async def setup(bot):
