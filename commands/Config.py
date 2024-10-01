@@ -306,7 +306,7 @@ class Config(commands.Cog, name="Configuration"):
                         bills[b.name] = daily_expense
                 
                 for freelancer in freelancers:
-                    logging.warning(business)
+                    logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
                     if f:
                         daily_expense = f.daily_expense
