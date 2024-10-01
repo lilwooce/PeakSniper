@@ -21,6 +21,32 @@ class UserCommands(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
+
+    # Helper function to format time
+    def format_time(end_time):
+        now = datetime.now()
+        if not end_time:
+            return "Not Set"
+        if end_time < now:
+            return "Ready"
+        
+        delta = end_time - now
+        days, seconds = divmod(delta.total_seconds(), 86400)
+        hours, remainder = divmod(seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        # Build the time string based on the components that are necessary
+        time_components = []
+        if days > 0:
+            time_components.append(f"{int(days)} day(s)")
+        if hours > 0:
+            time_components.append(f"{int(hours)} hour(s)")
+        if minutes > 0:
+            time_components.append(f"{int(minutes)} minute(s)")
+        if seconds > 0:
+            time_components.append(f"{int(seconds)} second(s)")
+
+        return ", ".join(time_components)
     
     @commands.hybrid_command(aliases=['loan', 'lend'], description="Simple function that allows users to give discoins to other users")
     @commands.check(hasAccount)
@@ -909,32 +935,6 @@ class UserCommands(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            # Helper function to format time
-            def format_time(end_time):
-                now = datetime.now()
-                if not end_time:
-                    return "Not Set"
-                if end_time < now:
-                    return "Ready"
-                
-                delta = end_time - now
-                days, seconds = divmod(delta.total_seconds(), 86400)
-                hours, remainder = divmod(seconds, 3600)
-                minutes, seconds = divmod(remainder, 60)
-
-                # Build the time string based on the components that are necessary
-                time_components = []
-                if days > 0:
-                    time_components.append(f"{int(days)} day(s)")
-                if hours > 0:
-                    time_components.append(f"{int(hours)} hour(s)")
-                if minutes > 0:
-                    time_components.append(f"{int(minutes)} minute(s)")
-                if seconds > 0:
-                    time_components.append(f"{int(seconds)} second(s)")
-
-                return ", ".join(time_components)
-
             # Create a dictionary of cooldowns
             cooldowns = {
                 "Steal Cooldown": u.steal_cooldown,
@@ -947,7 +947,7 @@ class UserCommands(commands.Cog):
 
             # Add each cooldown to the embed
             for name, end_time in cooldowns.items():
-                remaining = format_time(end_time)
+                remaining = self.format_time(end_time)
                 embed.add_field(name=name, value=remaining, inline=False)
 
             await ctx.send(embed=embed)
@@ -973,12 +973,9 @@ class UserCommands(commands.Cog):
             if not hasattr(user, 'interest_cooldown'):
                 user.interest_cooldown = None
 
-            # Check if the user is eligible for interest
-            if user.interest_cooldown and user.interest_cooldown - now < timedelta(days=1):
-                remaining_time = timedelta(days=1) - (user.interest_cooldown - now)
-                hours, remainder = divmod(remaining_time.seconds, 3600)
-                minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"You can collect interest again in {hours} hours, {minutes} minutes, and {seconds} seconds.")
+            if user.interest_cooldown and now < user.interest_cooldown:
+                remaining_time = self.format_time(user.interest_cooldown)
+                await ctx.send(f"You are on cooldown! Please wait {remaining_time} before attempting to collect more interest.")
                 return
 
             # Calculate interest (e.g., 2% of the current bank balance)
