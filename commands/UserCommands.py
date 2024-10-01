@@ -1074,17 +1074,17 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
     
-    @commands.hybrid_command()
-    async def pay(self, ctx, *, name: str = None, amount: str = "all"):
+    @app_commands.command()
+    async def pay(self, interaction: discord.Interaction, name: str = None, amount: str = "all"):
         if not name:
-            await ctx.send("You must provide a bill name.", ephemeral=True)
+            await interaction.response.send_message("You must provide a bill name.", ephemeral=True)
             return
         name = name.lower()  # Normalize the input to lowercase
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
         try:
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            u = session.query(User.User).filter_by(user_id=interaction.user.id).first()
 
             bills = json.loads(u.bills) if u.bills else {}
 
@@ -1092,7 +1092,7 @@ class UserCommands(commands.Cog):
             bills_lower = {key.lower(): value for key, value in bills.items()}
 
             if name not in bills_lower or bills_lower[name] <= 0:
-                await ctx.send(f"You don't have a bill named {name}.", ephemeral=True)
+                await interaction.response.send_message(f"You don't have a bill named {name}.", ephemeral=True)
                 return
 
             # Determine the amount to pay
@@ -1105,11 +1105,11 @@ class UserCommands(commands.Cog):
 
             # Check if the user has enough balance
             if u.balance < amount:
-                await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
+                await interaction.response.send_message("You don't have enough money. Next time don't bite off more than you can chew.")
                 return
 
             if not u:
-                await ctx.send("User not found in the database.", ephemeral=True)
+                await interaction.response.send_message("User not found in the database.", ephemeral=True)
                 return
 
             # Find the original case-sensitive key for updating the original dictionary
@@ -1125,10 +1125,10 @@ class UserCommands(commands.Cog):
 
             session.commit()
 
-            await ctx.send(f"You paid {amount} towards your {original_name} bill.", ephemeral=True)
+            await interaction.response.send_message(f"You paid {amount} towards your {original_name} bill.", ephemeral=True)
 
         except Exception as e:
-            await ctx.send("An error occurred while paying this bill.", ephemeral=True)
+            await interaction.response.send_message("An error occurred while paying this bill.", ephemeral=True)
             logging.warning(f"Error: {e}")
 
         finally:
