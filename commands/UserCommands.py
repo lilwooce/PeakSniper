@@ -181,67 +181,67 @@ class UserCommands(commands.Cog):
         finally:
             session.close()
 
-    @commands.hybrid_command()
-    async def daily(self, ctx):
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
+    # @commands.hybrid_command()
+    # async def daily(self, ctx):
+    #     Session = sessionmaker(bind=database.engine)
+    #     session = Session()
 
-        try:
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            logging.warning(u.daily_cooldown)
-            dailyCD = u.daily_cooldown
-            now = datetime.now()
+    #     try:
+    #         u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+    #         logging.warning(u.daily_cooldown)
+    #         dailyCD = u.daily_cooldown
+    #         now = datetime.now()
             
-            if (now - dailyCD).days >= 1:
-                u.balance += self.dailyFunds
-                u.total_earned += self.dailyFunds
-                u.daily_cooldown = now
-                session.commit()  # Commit the changes to the database
-                await ctx.send(f"You have earned {self.dailyFunds} discoins")
-            else:
-                # Calculate the remaining time
-                time_left = timedelta(days=1) - (now - dailyCD)
-                hours, remainder = divmod(time_left.total_seconds(), 3600)
-                minutes, _ = divmod(remainder, 60)
+    #         if (now - dailyCD).days >= 1:
+    #             u.balance += self.dailyFunds
+    #             u.total_earned += self.dailyFunds
+    #             u.daily_cooldown = now
+    #             session.commit()  # Commit the changes to the database
+    #             await ctx.send(f"You have earned {self.dailyFunds} discoins")
+    #         else:
+    #             # Calculate the remaining time
+    #             time_left = timedelta(days=1) - (now - dailyCD)
+    #             hours, remainder = divmod(time_left.total_seconds(), 3600)
+    #             minutes, _ = divmod(remainder, 60)
 
-                if hours >= 1:
-                    await ctx.send(f"Your daily reward will be available in {int(hours)} hour(s) and {int(minutes)} minute(s).")
-                else:
-                    await ctx.send(f"Your daily reward will be available in {int(minutes)} minute(s).")
-        finally:
-            session.close()
+    #             if hours >= 1:
+    #                 await ctx.send(f"Your daily reward will be available in {int(hours)} hour(s) and {int(minutes)} minute(s).")
+    #             else:
+    #                 await ctx.send(f"Your daily reward will be available in {int(minutes)} minute(s).")
+    #     finally:
+    #         session.close()
 
-    @commands.hybrid_command()
-    async def weekly(self, ctx):
-        Session = sessionmaker(bind=database.engine)
-        session = Session()
+    # @commands.hybrid_command()
+    # async def weekly(self, ctx):
+    #     Session = sessionmaker(bind=database.engine)
+    #     session = Session()
 
-        try:
-            u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
-            weeklyCD = u.weekly_cooldown
-            now = datetime.now()
+    #     try:
+    #         u = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+    #         weeklyCD = u.weekly_cooldown
+    #         now = datetime.now()
             
-            if (now - weeklyCD).days >= 7:
-                u.balance += self.weeklyFunds
-                u.total_earned += self.weeklyFunds
-                u.weekly_cooldown = now
-                session.commit()  # Commit the changes to the database
-                await ctx.send(f"You have earned {self.weeklyFunds} discoins")
-            else:
-                # Calculate the remaining time
-                time_left = timedelta(days=7) - (now - weeklyCD)
-                days, remainder = divmod(time_left.total_seconds(), 86400)  # 86400 seconds in a day
-                hours, remainder = divmod(remainder, 3600)
-                minutes, _ = divmod(remainder, 60)
+    #         if (now - weeklyCD).days >= 7:
+    #             u.balance += self.weeklyFunds
+    #             u.total_earned += self.weeklyFunds
+    #             u.weekly_cooldown = now
+    #             session.commit()  # Commit the changes to the database
+    #             await ctx.send(f"You have earned {self.weeklyFunds} discoins")
+    #         else:
+    #             # Calculate the remaining time
+    #             time_left = timedelta(days=7) - (now - weeklyCD)
+    #             days, remainder = divmod(time_left.total_seconds(), 86400)  # 86400 seconds in a day
+    #             hours, remainder = divmod(remainder, 3600)
+    #             minutes, _ = divmod(remainder, 60)
 
-                if days >= 1:
-                    await ctx.send(f"Your weekly reward will be available in {int(days)} day(s), {int(hours)} hour(s), and {int(minutes)} minute(s).")
-                elif hours >= 1:
-                    await ctx.send(f"Your weekly reward will be available in {int(hours)} hour(s) and {int(minutes)} minute(s).")
-                else:
-                    await ctx.send(f"Your weekly reward will be available in {int(minutes)} minute(s).")
-        finally:
-            session.close()
+    #             if days >= 1:
+    #                 await ctx.send(f"Your weekly reward will be available in {int(days)} day(s), {int(hours)} hour(s), and {int(minutes)} minute(s).")
+    #             elif hours >= 1:
+    #                 await ctx.send(f"Your weekly reward will be available in {int(hours)} hour(s) and {int(minutes)} minute(s).")
+    #             else:
+    #                 await ctx.send(f"Your weekly reward will be available in {int(minutes)} minute(s).")
+    #     finally:
+    #         session.close()
 
     @commands.hybrid_command()
     async def apply(self, ctx):
