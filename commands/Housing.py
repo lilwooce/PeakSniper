@@ -73,7 +73,7 @@ class Housing(commands.Cog):
                 await ctx.send(f"The house '{name}' is not currently available for purchase.")
                 return
 
-            if not Utils.Utils.check_agent(user.user_id, session, "agent"):
+            if not Utils.Utils.check_agent(user.user_id, session, "estate"):
                 await ctx.send("You cannot buy a house unless you have a *Real Estate Agent*.")
                 return
                 
