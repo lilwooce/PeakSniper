@@ -8,7 +8,7 @@ class Utils:
         highest_freelancer = (
             session.query(Freelancers.Freelancer)
             .filter(
-                Freelancers.Freelancer.boss_id == user_id,  # Match the user_id directly
+                Freelancers.Freelancer.boss == user_id,  # Match the user_id directly
                 (
                     Freelancers.Freelancer.type_of.ilike(f"%{type_of}%")  # Case-insensitive match for the specified type_of
                     | Freelancers.Freelancer.type_of.ilike("wealth")  # Include wealth type assistants
@@ -32,7 +32,7 @@ class Utils:
             highest_boost = (
                 session.query(Freelancers.Freelancer)
                 .filter(
-                    Freelancers.Freelancer.boss_id == user_id,
+                    Freelancers.Freelancer.boss == user_id,
                     Freelancers.Freelancer.type_of.ilike("wealth"),  # Negotiator's type_of is 'wealth'
                     Freelancers.Freelancer.job_title.ilike("negotiator")
                 )
@@ -45,7 +45,7 @@ class Utils:
             highest_boost = (
                 session.query(Freelancers.Freelancer)
                 .filter(
-                    Freelancers.Freelancer.boss_id == user_id,
+                    Freelancers.Freelancer.boss == user_id,
                     Freelancers.Freelancer.type_of.ilike("stock"),  # Broker's type_of is 'stock'
                     Freelancers.Freelancer.job_title.ilike("broker")
                 )
@@ -58,7 +58,7 @@ class Utils:
             highest_boost = (
                 session.query(Freelancers.Freelancer)
                 .filter(
-                    Freelancers.Freelancer.boss_id == user_id,
+                    Freelancers.Freelancer.boss == user_id,
                     Freelancers.Freelancer.type_of.ilike("tax"),  # Consultant's type_of is 'tax'
                     Freelancers.Freelancer.job_title.ilike("consultant")
                 )
@@ -79,7 +79,7 @@ class Utils:
         agent_exists = (
             session.query(Freelancers.Freelancer)
             .filter(
-                Freelancers.Freelancer.boss_id == user_id,  # Match the user ID directly
+                Freelancers.Freelancer.boss == user_id,  # Match the user ID directly
                 Freelancers.Freelancer.job_title.ilike("agent"),  # Check for job title "Agent"
                 Freelancers.Freelancer.type_of.ilike(type_of)  # Match the specified type
             )
