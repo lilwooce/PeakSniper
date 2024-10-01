@@ -987,9 +987,6 @@ class UserCommands(commands.Cog):
 
             if interest_amount <= 0:
                 await ctx.send("You do not have enough funds in your bank to earn interest.")
-            u = session.query(User.User).filter_by(user_id=user.id).first()
-            if not u:
-                await ctx.send("No account found.")
                 return
 
             # Update the user's bank balance and the interest_cooldown time
