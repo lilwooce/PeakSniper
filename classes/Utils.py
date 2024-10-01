@@ -3,7 +3,7 @@ from classes import Businesses, Freelancers, Houses, Assets, Jobs, Stock, databa
 
 class Utils:
     @staticmethod
-    def get_boost(self, user_id, session, type_of, title):
+    def get_boost(user_id, session, type_of, title):
         # Query freelancers where the boss is the user_id and matching the given type_of and title, or "wealth" type
         highest_freelancer = (
             session.query(Freelancers.Freelancer)
@@ -22,7 +22,7 @@ class Utils:
         # Return the highest boost_amount if found, otherwise return 0 or another default
         return 1 + highest_freelancer.boost_amount if highest_freelancer else 1
 
-    def get_price(self, user_id, session, price, type_of):
+    def get_price(user_id, session, price, type_of):
         # Initialize the boost to 0
         highest_boost = 0
 
@@ -74,7 +74,7 @@ class Utils:
 
         return adjusted_price
     
-    def check_agent(self, user_id, session, type_of):
+    def check_agent(user_id, session, type_of):
         # Query to check if the user has an agent freelancer of the specified type
         agent_exists = (
             session.query(Freelancers.Freelancer)
