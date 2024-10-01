@@ -444,6 +444,7 @@ class Admin(commands.Cog):
             session.close()
     
     async def daily_expenses(self):
+        logging.warning("daily expense")
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
@@ -467,6 +468,7 @@ class Admin(commands.Cog):
 
                 # Calculate the revenue for each business
                 if businesses:
+                    logging.warning('businesses expenses')
                     for b in businesses:
                         logging.warning(b.name)
                         daily_expense = b.daily_expense
@@ -475,6 +477,7 @@ class Admin(commands.Cog):
                         else:
                             bills[b.name] = daily_expense
                 
+                logging.warning('freelancers expenses')
                 for freelancer in freelancers:
                     logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
@@ -485,6 +488,7 @@ class Admin(commands.Cog):
                         bills[f.name] = daily_expense
                 
                 if houses:
+                    logging.warning('houses expenses')
                     for house in houses:
                         logging.warning(house.name)
                         daily_expense = house.daily_expense
