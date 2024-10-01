@@ -1223,7 +1223,9 @@ class UserCommands(commands.Cog):
             u.balance += amount
             # Update the original dictionary
             original_name = next((key for key in revenue if key.lower() == name), None)
+            logging.warning(f"{original_name} | {revenue[original_name]}")
             revenue[original_name] -= amount
+            logging.warning(f"{original_name} | {revenue[original_name]}")
             if revenue[original_name] == 0:
                 del revenue[original_name]
 
