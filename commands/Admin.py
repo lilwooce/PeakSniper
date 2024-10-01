@@ -475,7 +475,7 @@ class Admin(commands.Cog):
                         bills[b.name] = daily_expense
                 
                 for freelancer in freelancers:
-                    logging.warning(business)
+                    logging.warning(freelancer)
                     f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
                     daily_expense = f.daily_expense
                     if bills and f.name in bills:
@@ -505,9 +505,9 @@ class Admin(commands.Cog):
         try:
             await self.daily_expenses()
             await self.daily_revenue()
-            await ctx.send_message("Success!")
+            await ctx.send("Success!")
         except Exception as e:
-            await ctx.send_message(f"Error: {e}")
+            await ctx.send(f"Error: {e}")
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))
