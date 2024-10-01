@@ -1073,8 +1073,10 @@ class UserCommands(commands.Cog):
             session.close()
     
     @commands.hybrid_command()
-    async def pay(self, ctx, amount: str = "all", *, name: str):
-        amount = "all"
+    async def pay(self, ctx, amount: str = "all", *, name: str = None):
+        if not name:
+            await ctx.send("You must provide a bill name.", ephemeral=True)
+            return
         name = name.lower()  # Normalize the input to lowercase
         Session = sessionmaker(bind=database.engine)
         session = Session()
@@ -1141,10 +1143,12 @@ class UserCommands(commands.Cog):
             user = session.query(User.User).filter_by(user_id=user.id).first()
             if not user:
                 await ctx.send("User not found in the database.", ephemeral=True)
+                return
 
             revenue = json.loads(user.revenue) if user.revenue else {}
             if revenue == {}:
                 await ctx.send("You have no revenue to claim.")
+                return
 
             # Divide revenue items into pages with a max of 5 items per page
             items = list(revenue.items())
