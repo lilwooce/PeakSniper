@@ -41,7 +41,8 @@ class Admin(commands.Cog):
     async def on_ready(self):
         logging.warning(f"{self.__class__.__name__} Cog has been loaded\n----")
 
-    async def send_reminder(self, user_id, message: str):
+    async def send_reminder(self, user, message: str):
+        user_id = user.user_id
         try:
             # Fetch the user object from the user ID using the client
             user = await self.bot.fetch_user(user_id)
