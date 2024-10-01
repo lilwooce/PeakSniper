@@ -125,23 +125,6 @@ class Client(commands.Bot):
 client = Client()
 
 @client.event
-async def on_raw_reaction_add(payload):
-    karuta = await client.fetch_channel('736411674277576835')
-    pogDrops = await client.fetch_channel('799452182051160064')
-    message = await karuta.fetch_message(payload.message_id)
-    reaction = payload.emoji
-
-    if (str(message.author.id) == '646937666251915264' and str(reaction) == "⭐" and message.channel.id == 736411674277576835):
-        jumpUrl = message.jump_url
-        embed = discord.Embed(
-            title=message.author.name,
-            description = f"{message.content} \n \n Click to jump to message.({jumpUrl})"
-        )
-        drop = message.attachments[0].url
-        embed.set_image(url=drop)
-        await pogDrops.send(embed=embed)
-
-@client.event
 async def on_guild_join(guild):
     # Add server to database
     return
@@ -151,7 +134,6 @@ async def on_guild_remove(guild):
     # Remove "currentlyUsingBot"
     return
             
-
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -163,7 +145,6 @@ async def on_message(message):
             channel=client.get_channel(1191170489280901120)
             await channel.send(embed=embed)
     await client.process_commands(message)
-
 
 @client.event
 async def on_message_delete(message):
