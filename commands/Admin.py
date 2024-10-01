@@ -405,10 +405,11 @@ class Admin(commands.Cog):
             users = session.query(User.User).all()
             for u in users:
                 # Load the user's businesses and revenue (if any)
-                businesses = json.loads(u.businesses) if u.businesses else {}
+                businesses = session.query(Businesses.Business).filter_by(owner=u.user_id).all()
                 revenue_data = json.loads(u.revenue) if u.revenue else {}
 
                 total_revenue = 0
+                business_rev = 0
                 total_boost = 0
 
                 # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
@@ -421,19 +422,18 @@ class Admin(commands.Cog):
                         total_boost += freelancer.boost_amount
 
                 # Calculate the revenue for each business
-                for business in businesses:
-                    logging.warning(business)
-                    b = session.query(Businesses.Business).filter_by(name=business).first()
+                for b in businesses:
+                    logging.warning(b.name)
                     daily_revenue = b.daily_revenue
 
                     # Apply the boost to the revenue
                     boosted_revenue = daily_revenue * (1 + total_boost)
 
                     # Add the boosted revenue to the total
-                    total_revenue += boosted_revenue
+                    business_rev += boosted_revenue
 
                 # Update the user's revenue in the JSON variable
-                revenue_data["daily"] = revenue_data.get("daily", 0) + total_revenue
+                revenue_data["Business"] = revenue_data.get("Business", 0) + business_rev
                 u.revenue = json.dumps(revenue_data)
 
                 # Commit the changes
