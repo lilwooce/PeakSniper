@@ -956,7 +956,7 @@ class UserCommands(commands.Cog):
 
     @commands.hybrid_command()
     async def interest(self, ctx):
-        user = user or ctx.author
+        user = ctx.author
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
