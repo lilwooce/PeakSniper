@@ -14,7 +14,7 @@ import random
 import logging
 import json
 from zoneinfo import ZoneInfo
-from classes import Servers, User, database, Jobs, ShopItem, Stock, Businesses, Freelancers, Utils
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Businesses, Freelancers, Utils, Houses
 import asyncio
 import matplotlib.pyplot as plt
 
@@ -134,43 +134,48 @@ class Business(commands.Cog):
             session.close()
 
     @commands.hybrid_command()
-    async def auction(self, ctx, *, name: str = None):
+    async def cancel(self, ctx, *, name: str = None):
+        if not name:
+            await ctx.send("You must provide a name for the house or business to cancel.", ephemeral=True)
+            return
+
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
         try:
-            user = session.query(User.User).filter_by(user_id=ctx.author.id).first()
+            # Check for houses owned by the user
+            house = session.query(Houses.House).filter_by(owner=ctx.author.id, name=name).first()
 
-            if not user:
-                await ctx.send("User not found in the database.")
+            if house:
+                if house.in_market:
+                    house.in_market = False
+                    session.commit()
+                    await ctx.send(f"You have successfully removed the house '{name}' from the market.", ephemeral=True)
+                else:
+                    await ctx.send(f"The house '{name}' is not currently on the market.", ephemeral=True)
                 return
             
-            if not Utils.Utils.check_agent(user, session):
-                await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
+            # Check for businesses owned by the user
+            business = session.query(Businesses.Business).filter_by(owner=ctx.author.id, name=name).first()
+
+            if business:
+                if business.in_market:
+                    business.in_market = False
+                    session.commit()
+                    await ctx.send(f"You have successfully removed the business '{name}' from the market.", ephemeral=True)
+                else:
+                    await ctx.send(f"The business '{name}' is not currently on the market.", ephemeral=True)
                 return
 
-            # Find the business by name and ensure the user owns it
-            business = session.query(Businesses.Business).filter(Businesses.Business.owner == user.user_id,Businesses.Business.name.ilike(f"%{name}%")).first()
-
-            if not business:
-                await ctx.send(f"Business '{name}' not found or you do not own it.")
-                return
-
-            # Set the business to be on the market
-            business.in_market = True
-            #business.bid_history = {}
-
-            # Commit the changes
-            session.commit()
-
-            await ctx.send(f"The business '{business.name}' has been listed on the market.")
+            await ctx.send(f"You do not own a house or business named '{name}'.", ephemeral=True)
 
         except Exception as e:
-            await ctx.send("An error occurred while processing your listing.")
+            await ctx.send("An error occurred while trying to cancel the listing.", ephemeral=True)
             logging.warning(f"Error: {e}")
 
         finally:
             session.close()
+
 
     @commands.hybrid_command(aliases=['bs'])
     async def businesses(self, ctx):

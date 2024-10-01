@@ -14,7 +14,7 @@ import random
 import logging
 import json
 from zoneinfo import ZoneInfo
-from classes import Servers, User, database, Jobs, ShopItem, Stock, Houses, Freelancers, Utils
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Houses, Freelancers, Utils, Businesses
 import asyncio
 import matplotlib.pyplot as plt
 
@@ -136,6 +136,10 @@ class Housing(commands.Cog):
 
     @commands.hybrid_command()
     async def list(self, ctx, *, name: str = None):
+        if not name:
+            await ctx.send("You must provide a name for the house or business to list.", ephemeral=True)
+            return
+        
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -146,32 +150,42 @@ class Housing(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            freelancers = json.loads(user.freelancers)
-            if len(freelancers) > 0:
-                for freelancer in freelancers:
-                    logging.warning(freelancer)
-                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if Utils.Utils.check_agent:
-                        logging.warning("found Real Estate Agent")
-                    else:
-                        await ctx.send("You cannot list a house unless you have a *Real Estate Agent*.")
-                        return
-
-            # Find the house by name and ensure the user owns it
+            # First check if the user owns the house
             house = session.query(Houses.House).filter_by(owner=user.user_id, name=name).first()
+            
+            if house:
+                # Ensure the user has a Real Estate Agent
+                if not Utils.Utils.check_agent(user, session, job_title="Real Estate Agent"):
+                    await ctx.send("You cannot list a house unless you have a *Real Estate Agent*.")
+                    return
 
-            if not house:
-                await ctx.send(f"House '{name}' not found or you do not own it.")
+                # Set the house to be on the market
+                house.in_market = True
+                house.bid_history = {}
+                session.commit()
+
+                await ctx.send(f"The house '{house.name}' has been listed on the market.")
                 return
 
-            # Set the house to be on the market
-            house.in_market = True
-            house.bid_history = {}
+            # If not found in houses, check if the user owns the business
+            business = session.query(Businesses.Business).filter(Businesses.Business.owner == user.user_id,
+                                                                Businesses.Business.name.ilike(f"%{name}%")).first()
 
-            # Commit the changes
-            session.commit()
+            if business:
+                # Ensure the user has a Business Agent
+                if not Utils.Utils.check_agent(user, session, job_title="Business Agent"):
+                    await ctx.send("You cannot list a business unless you have a *Business Agent*.")
+                    return
 
-            await ctx.send(f"The house '{house.name}' has been listed on the market.")
+                # Set the business to be on the market
+                business.in_market = True
+                session.commit()
+
+                await ctx.send(f"The business '{business.name}' has been listed on the market.")
+                return
+
+            # If neither house nor business is found
+            await ctx.send(f"Neither house nor business named '{name}' found or you do not own it.")
 
         except Exception as e:
             await ctx.send("An error occurred while processing your listing.")
@@ -179,6 +193,7 @@ class Housing(commands.Cog):
 
         finally:
             session.close()
+
 
     @commands.hybrid_command(aliases=['hm'])
     async def housing_market(self, ctx):
