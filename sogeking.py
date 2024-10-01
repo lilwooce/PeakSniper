@@ -109,7 +109,10 @@ class Client(commands.Bot):
                                 user.used_items = json.dumps(used_items)
                                 self.session.commit()
                             if discord_user:
-                                await discord_user.send(f"The effect of {item_name} has expired.")
+                                try:
+                                    await discord_user.send(f"The effect of {item_name} has expired.")
+                                except Exception as e:
+                                    logging.warning(e)
         except Exception as e:
             logging.warning(f"Error on bot startup: {e}")
         finally:
@@ -120,7 +123,6 @@ class Client(commands.Bot):
         await self.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.playing , name=f"Fiend Catching Simulator in {self.server_count} servers"))
 
 client = Client()
-client.run(os.getenv("DISCORD_TOKEN"))
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -224,3 +226,5 @@ class MyHelpCommand(commands.MinimalHelpCommand):
         await destination.send(embed=e)
 
 client.help_command = MyHelpCommand()
+
+client.run(os.getenv("DISCORD_TOKEN"))
