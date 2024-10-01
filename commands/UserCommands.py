@@ -1042,6 +1042,7 @@ class UserCommands(commands.Cog):
                 def check(reaction, user):
                     return user == ctx.author and reaction.message.id == message.id and str(reaction.emoji) in ["⬅️", "➡️"]
 
+                session.close()
                 while True:
                     try:
                         reaction, user = await self.bot.wait_for("reaction_add", timeout=60.0, check=check)
