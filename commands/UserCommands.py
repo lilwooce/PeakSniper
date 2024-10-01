@@ -1016,10 +1016,12 @@ class UserCommands(commands.Cog):
             user = session.query(User.User).filter_by(user_id=user.id).first()
             if not user:
                 await ctx.send("User not found in the database.", ephemeral=True)
+                return
 
             bills = json.loads(user.bills) if user.bills else {}
             if bills == {}:
                 await ctx.send("You have no bills to pay.")
+                return
 
             # Divide bills items into pages with a max of 5 items per page
             items = list(bills.items())
