@@ -39,7 +39,7 @@ class Admin(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        print(f"{self.__class__.__name__} Cog has been loaded\n----")
+        logging.warning(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     async def send_reminder(self, user_id, message: str):
         try:
@@ -48,19 +48,19 @@ class Admin(commands.Cog):
             
             # Send a private/direct message to the user
             await user.send(message)
-            print(f"Reminder sent to {user.name}.")
+            logging.warning(f"Reminder sent to {user.name}.")
             
         except discord.Forbidden:
             # If the bot cannot send a message to the user (e.g., DMs are disabled)
-            print(f"Cannot send a message to user ID {user_id}. They might have DMs disabled.")
+            logging.warning(f"Cannot send a message to user ID {user_id}. They might have DMs disabled.")
         
         except discord.HTTPException as e:
             # Handle any other exceptions that might occur during the message send
-            print(f"Failed to send a reminder to user ID {user_id} due to an error: {e}")
+            logging.warning(f"Failed to send a reminder to user ID {user_id} due to an error: {e}")
         
         except discord.NotFound:
             # If the user ID does not correspond to any user
-            print(f"User with ID {user_id} not found.")
+            logging.warning(f"User with ID {user_id} not found.")
 
 
     @commands.hybrid_command(name="addmoney", aliases=["am"], hidden=True, with_app_command=True)
