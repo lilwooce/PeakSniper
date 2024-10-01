@@ -5,7 +5,7 @@ import random
 from dotenv import load_dotenv
 from sqlalchemy.orm import sessionmaker
 from classes import User, database
-from classes import Servers, User, database, Jobs, Global, ShopItem
+from classes import Servers, User, database, Jobs, Global, ShopItem, Utils
 import json
 from datetime import datetime
 
@@ -63,8 +63,10 @@ class Gamba(commands.Cog, name="Gamba"):
                         # Add the queried ShopItem object to the used_items_objects array
                         used_items_objects.append(shop_item)
 
+                free_boost = Utils.Utils.get_boost(u.user_id, session, "gamba", "assistant")
+                item_boost = u.get_multiplier("gamba")
+                multi = free_boost + item_boost
 
-                multi = u.get_multiplier(used_items_objects, "gamba")
                 won = int(won * multi)
                 u.total_earned += won
                 u.balance += won
@@ -124,7 +126,10 @@ class Gamba(commands.Cog, name="Gamba"):
                         used_items_objects.append(shop_item)
 
 
-                multi = u.get_multiplier(used_items_objects, "gamba")
+                free_boost = Utils.Utils.get_boost(u.user_id, session, "gamba", "assistant")
+                item_boost = u.get_multiplier("gamba")
+                multi = free_boost + item_boost
+
                 won = int(won * multi)
                 u.balance += won
                 u.total_earned += won
@@ -290,7 +295,10 @@ class Gamba(commands.Cog, name="Gamba"):
                     used_items_objects.append(shop_item)
 
 
-            multi = u.get_multiplier(used_items_objects, "work")
+            free_boost = Utils.Utils.get_boost(u.user_id, session, "work", "assistant")
+            item_boost = u.get_multiplier("work")
+            multi = free_boost + item_boost
+
             am = int(am * multi)
             u.balance += am
             u.total_earned += am

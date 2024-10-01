@@ -13,7 +13,7 @@ import asyncio
 import random
 import json
 
-from classes import Servers, User, database, Jobs, ShopItem, PremiumShopItem
+from classes import Servers, User, database, Jobs, ShopItem, PremiumShopItem, Utils
 
 class Shop(commands.Cog):
     def __init__(self, bot):
@@ -78,6 +78,53 @@ class Shop(commands.Cog):
 
         except:
             return
+        
+    @app_commands.command()
+    async def buy(self, interaction: discord.Interaction, amount: int, name: str):
+        Session = sessionmaker(bind=database.engine)
+        session = Session()
+        
+        with session as session:
+            try:
+                item = session.query(ShopItem.ShopItem).filter_by(name=name).first()
+                if not item:
+                    await interaction.response.send_message(f"{name} was not found in the Shop.")
+                    return
+
+                u = session.query(User.User).filter_by(user_id=interaction.user.id).first()
+
+                if not u:
+                    await interaction.response.send_message("User not found.")
+                    return
+
+                # Get the actual price using the get_price function
+                original_price = item.price
+                price = Utils.Utils.get_price(u.user_id, session, item.price, "shop")
+
+                price_message = ""
+                if price < original_price:
+                    price_message = f"Your negotiator has decreased the shop item price from {original_price} to {price}!\n"
+
+                # Calculate total cost
+                total_cost = price * amount
+
+                if u.balance < total_cost:
+                    await interaction.response.send_message("You cannot afford this item.")
+                    return
+
+                # Update user balance and inventory
+                u.balance -= total_cost
+                inven = json.loads(u.inventory) if u.inventory else {}
+                inven[item.name] = inven.get(item.name, 0) + amount
+                u.inventory = json.dumps(inven)
+
+                session.commit()
+
+                # Check if the price was lower due to the negotiator
+                await interaction.response.send_message(f"{price_message}You have bought {amount} {name}(s) for {price * amount} discoins.")
+            except Exception as e:
+                print(f"Error in buy command: {e}")
+                await interaction.response.send_message("An error occurred while processing your purchase.")
     
     @commands.hybrid_command(aliases=['ps'])
     async def premiumshop(self, ctx):
@@ -163,7 +210,7 @@ class Shop(commands.Cog):
                 u.inventory = json.dumps(inven)
 
                 session.commit()
-                await interaction.response.send_message(f"You have bought {amount} {name}(s) for {item.price * amount} discoins.")
+                await interaction.response.send_message(f"You have bought {amount} {name}(s) for {item.price * amount} disgems.")
             except Exception as e:
                 print(f"Error in buy command: {e}")
                 await interaction.response.send_message("An error occurred while processing your purchase.")

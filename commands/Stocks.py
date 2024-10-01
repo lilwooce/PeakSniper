@@ -14,7 +14,7 @@ import random
 import logging
 import json
 from zoneinfo import ZoneInfo
-from classes import Servers, User, database, Jobs, ShopItem, Stock
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Utils
 import asyncio
 import matplotlib.pyplot as plt
 
@@ -69,24 +69,34 @@ class Stocks(commands.Cog):
                 await ctx.send(f"Stock '{name}' not found.")
                 return
 
-            if not stock.type_of == "stock":
+            if stock.type_of != "stock":
                 await ctx.send("You cannot purchase this.")
                 return
             
             if stock.amount <= 0:
                 await ctx.send("There is none of this stock up for purchase.")
                 return
+            # Get the original price of the stock
+            original_price = stock.current_value
+
+            # Get the actual price using the get_price function
+            price = Utils.Utils.get_price(user.user_id, session, stock.current_value, "stock")
+
+            price_message = ""
+            if price < original_price:
+                price_message = f"Your stock broker has decreased the price of {stock.name} from {original_price} to {price}.\n"
             
             stock_amount = stock.amount
+            
             # Handle "all" or "half" amount purchases
             if amount.lower() == "all":
-                amount = min(user.balance // int(stock.current_value), stock_amount)
+                amount = min(user.balance // int(price), stock_amount)
             elif amount.lower() == "half":
-                amount = min((user.balance // 2) // int(stock.current_value), stock_amount // 2)
+                amount = min((user.balance // 2) // int(price), stock_amount // 2)
             else:
                 amount = min(int(amount), stock_amount)
 
-            total_cost = int(stock.current_value) * amount
+            total_cost = int(price) * amount
 
             if user.balance < total_cost:
                 await ctx.send("You cannot afford this purchase.")
@@ -121,7 +131,7 @@ class Stocks(commands.Cog):
             # Commit the transaction
             session.commit()
 
-            await ctx.send(f"You have purchased {amount} shares of {stock.name} for {total_cost} discoins. There are {stock.amount} shares remaining.")
+            await ctx.send(f"{price_message}You have purchased {amount} shares of {stock.name} for {total_cost} discoins. There are {stock.amount} shares remaining.")
 
         except Exception as e:
             await ctx.send("An error occurred while processing your purchase.")
@@ -129,6 +139,7 @@ class Stocks(commands.Cog):
 
         finally:
             session.close()
+
 
 
     @commands.hybrid_command(aliases=['ld'])

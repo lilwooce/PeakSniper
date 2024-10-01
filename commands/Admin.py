@@ -9,11 +9,11 @@ import requests
 import os 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql.expression import func
+from sqlalchemy import desc
 import random
 import json
 import logging
-
-from classes import Servers, User, database, Jobs, ShopItem, Stock, Global, Houses, Freelancers, Businesses, Assets, EntityGenerator
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Global, Houses, Freelancers, Businesses, Assets, EntityGenerator, Utils
 
 load_dotenv()
 getUser = os.getenv('GET_USER')
@@ -154,8 +154,6 @@ class Admin(commands.Cog):
         await interaction.response.defer()
         
         await interaction.response.edit_message(result_message)
-
-
 
     @app_commands.command()
     @admins_only()
@@ -436,14 +434,9 @@ class Admin(commands.Cog):
                 total_boost = 0
 
                 # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
-                freelancers = session.query(Freelancers.Freelancer).filter_by(boss=u.user_id).all()
-                if freelancers:
-                    logging.warning('freelancers expenses')
-                    for f in freelancers:
-                        if f.type_of in "assistant" and (
-                            "wealth" in f.job_title.lower() or "business" in f.job_title.lower()
-                        ):
-                            total_boost += f.boost_amount
+                free_boost = Utils.Utils.get_boost(u.user_id, session, "business", "assistant")
+                item_boost = u.get_multiplier("business")
+                multi = free_boost + item_boost
 
                 # Calculate the revenue for each business
                 for b in businesses:
@@ -451,7 +444,7 @@ class Admin(commands.Cog):
                     daily_revenue = b.daily_revenue
 
                     # Apply the boost to the revenue
-                    boosted_revenue = daily_revenue * (1 + total_boost)
+                    boosted_revenue = daily_revenue * multi
 
                     # Add the boosted revenue to the total
                     business_rev += boosted_revenue

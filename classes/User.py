@@ -85,25 +85,20 @@ class User(Base):
         self.bail = 0
         self.premium_balance = 0
 
-    def get_base_multiplier(self, items):
-        multiplier = 0
-        # Load used_items from JSON
-        used_items = items if items else {}
+    def get_multiplier(self, type_of):
+        highest_multiplier = 0
+        used_items = self.used_items if self.used_items else {}
 
         for item in used_items:
-            if item.type_of == "wealth":
-                multiplier += item.boost_amount
-
-        
-        return multiplier
-    
-    def get_multiplier(self, items, type_of):
-        base_multi = self.get_base_multiplier(items)
-        multi = 1 + base_multi
-
-        for item in items:
             if item.type_of == type_of:
-                multi += item.boost_amount
+                highest_multiplier = max(highest_multiplier, item.boost_amount)
+        
+        # If no multiplier was found for the specified type, check for "wealth"
+        if highest_multiplier == 0:
+            for item in used_items:
+                if item.type_of == "wealth":
+                    highest_multiplier = max(highest_multiplier, item.boost_amount)
 
-        logging.warning(f"{self.name} has a {multi} total multiplier for {type_of}")
-        return multi
+        logging.warning(f"{self.name} has a highest multiplier of {highest_multiplier} for {type_of or 'wealth'}")
+        return highest_multiplier
+

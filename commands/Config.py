@@ -12,7 +12,7 @@ import json
 from zoneinfo import ZoneInfo
 import logging
 import math
-from classes import Servers, User, database, Jobs, Global, Stock, Assets, Freelancers, Businesses, Houses, EntityGenerator
+from classes import Servers, User, database, Jobs, Global, Stock, Assets, Freelancers, Businesses, Houses, EntityGenerator, Utils
 eastern = ZoneInfo("America/New_York")
 time_am = time(hour=8, tzinfo=eastern)  # 8:00 AM Eastern
 time_pm = time(hour=20, tzinfo=eastern)  # 8:00 PM Eastern
@@ -241,14 +241,7 @@ class Config(commands.Cog, name="Configuration"):
                 total_boost = 0
 
                 # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
-                freelancers = session.query(Freelancers.Freelancer).filter_by(boss=u.user_id).all()
-                if freelancers:
-                    logging.warning('freelancers expenses')
-                    for f in freelancers:
-                        if f.type_of in "assistant" and (
-                            "wealth" in f.job_title.lower() or "business" in f.job_title.lower()
-                        ):
-                            total_boost += f.boost_amount
+                multi = Utils.Utils.get_boost(u.user_id, session, "business", "assistant")
 
                 # Calculate the revenue for each business
                 for b in businesses:
@@ -256,7 +249,7 @@ class Config(commands.Cog, name="Configuration"):
                     daily_revenue = b.daily_revenue
 
                     # Apply the boost to the revenue
-                    boosted_revenue = daily_revenue * (1 + total_boost)
+                    boosted_revenue = daily_revenue * multi
 
                     # Add the boosted revenue to the total
                     business_rev += boosted_revenue

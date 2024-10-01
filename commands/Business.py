@@ -14,7 +14,7 @@ import random
 import logging
 import json
 from zoneinfo import ZoneInfo
-from classes import Servers, User, database, Jobs, ShopItem, Stock, Businesses, Freelancers
+from classes import Servers, User, database, Jobs, ShopItem, Stock, Businesses, Freelancers, Utils
 import asyncio
 import matplotlib.pyplot as plt
 
@@ -46,17 +46,6 @@ class Business(commands.Cog):
     async def on_ready(self):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
     
-    def check_agent(self, user, session):
-        freelancers = json.loads(user.freelancers)
-        if len(freelancers) > 0:
-            for freelancer in freelancers:
-                logging.warning(freelancer)
-                f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                if f and "business" in f.type_of.lower() and "agent" in f.job_title.lower():
-                    logging.warning("found Business Agent")
-                    return True
-        return False
-
     @commands.hybrid_command()
     async def acquire(self, ctx, *, name: str):
         Session = sessionmaker(bind=database.engine)
@@ -84,7 +73,7 @@ class Business(commands.Cog):
                 await ctx.send(f"The business '{name}' is not currently available for purchase.")
                 return
             
-            if not self.check_agent(user, session):
+            if not Utils.Utils.check_agent(user, session):
                 await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
                 return
 
@@ -156,7 +145,7 @@ class Business(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
             
-            if not self.check_agent(user, session):
+            if not Utils.Utils.check_agent(user, session):
                 await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
                 return
 
