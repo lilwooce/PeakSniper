@@ -83,6 +83,7 @@ class User(Base):
         self.freelancers = {}
         self.reminders = False
         self.bail = 0
+        self.premium_balance = 0
 
     def get_base_multiplier(self, items):
         multiplier = 0
