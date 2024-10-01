@@ -501,13 +501,13 @@ class Admin(commands.Cog):
 
     @commands.hybrid_command()
     @allowed()
-    async def daily_rev_exp(self, interaction: discord.Interaction):
+    async def daily_rev_exp(self, ctx): 
         try:
-            self.daily_expenses()
-            self.daily_revenue()
-            await interaction.response.send_message("Success!")
+            await self.daily_expenses()
+            await self.daily_revenue()
+            await ctx.send_message("Success!")
         except Exception as e:
-            await interaction.response.send_message(f"Error: {e}")
+            await ctx.send_message(f"Error: {e}")
 
 async def setup(bot):
     await bot.add_cog(Admin(bot))

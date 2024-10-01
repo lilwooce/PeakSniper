@@ -150,7 +150,8 @@ class FreelancerCog(commands.Cog):
             session.commit()
 
             await ctx.send(f"{ctx.author.mention} successfully poached {freelancer_name} from {old_boss.mention}!")
-        except NoResultFound:
+        except Exception as e:
+            logging.warning(e)
             await ctx.send(f"{ctx.author.mention}, {freelancer_name} is not available for poaching.")
 
     @commands.hybrid_command()

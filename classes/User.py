@@ -46,6 +46,7 @@ class User(Base):
     businesses = Column("businesses", JSON)
     revenue = Column("revenue", JSON)
     bail = Column("bail", Integer)
+    premium_balance = Column("premium_balance", BigInteger)
 
     def __init__(self, user):
         self.name = user.name
@@ -92,14 +93,6 @@ class User(Base):
             if item.type_of == "wealth":
                 multiplier += item.boost_amount
 
-        try:
-            # Check if user has a freelancer with type_of "assistant" and "wealth" in job_title
-            for freelancer in self.freelancers:
-                if freelancer["type_of"].lower() == "assistant" and "wealth" in freelancer["job_title"].lower():
-                    multiplier += freelancer.get("boost_amount", 0)
-        except:
-            logging.warning("user has no freelancers")
-
         
         return multiplier
     
@@ -110,15 +103,6 @@ class User(Base):
         for item in items:
             if item.type_of == type_of:
                 multi += item.boost_amount
-
-        
-        try:
-            # Check if user has a freelancer with type_of "assistant" and "wealth" in job_title
-            for freelancer in self.freelancers:
-                if freelancer["type_of"].lower() == "assistant" and type_of in freelancer["job_title"].lower():
-                    multi += freelancer.get("boost_amount", 0)
-        except:
-            logging.warning("user has no freelancers")
 
         logging.warning(f"{self.name} has a {multi} total multiplier for {type_of}")
         return multi
