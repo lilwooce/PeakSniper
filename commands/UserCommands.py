@@ -23,7 +23,7 @@ class UserCommands(commands.Cog):
         print(f"{self.__class__.__name__} Cog has been loaded\n----")
 
     # Helper function to format time
-    def format_time(end_time):
+    def format_time(self, end_time):
         now = datetime.now()
         if not end_time:
             return "Not Set"
