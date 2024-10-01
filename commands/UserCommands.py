@@ -974,8 +974,8 @@ class UserCommands(commands.Cog):
                 user.interest_cooldown = None
 
             # Check if the user is eligible for interest
-            if user.interest_cooldown and now - user.interest_cooldown < timedelta(days=1):
-                remaining_time = timedelta(days=1) - (now - user.interest_cooldown)
+            if user.interest_cooldown and user.interest_cooldown - now < timedelta(days=1):
+                remaining_time = timedelta(days=1) - (user.interest_cooldown - now)
                 hours, remainder = divmod(remaining_time.seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
                 await ctx.send(f"You can collect interest again in {hours} hours, {minutes} minutes, and {seconds} seconds.")
@@ -991,7 +991,7 @@ class UserCommands(commands.Cog):
 
             # Update the user's bank balance and the interest_cooldown time
             user.bank += interest_amount
-            user.interest_cooldown = now
+            user.interest_cooldown = now + timedelta(days=1)
             session.commit()
 
             await ctx.send(f"You have received {interest_amount} discoins as interest! Your new bank balance is {user.bank} discoins.")
