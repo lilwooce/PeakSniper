@@ -399,6 +399,7 @@ class Admin(commands.Cog):
                 await ctx.send("An error occurred while giving the items.")
         
     async def daily_revenue(self):
+        logging.warning('daily revenue')
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
