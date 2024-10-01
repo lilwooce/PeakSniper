@@ -414,13 +414,14 @@ class Admin(commands.Cog):
                 total_boost = 0
 
                 # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
-                freelancers = json.loads(u.freelancers) if u.freelancers else []
-                for freelancer in freelancers:
-                    freelancer = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if freelancer.type_of in "assistant" and (
-                        "wealth" in freelancer.job_title.lower() or "business" in freelancer.job_title.lower()
-                    ):
-                        total_boost += freelancer.boost_amount
+                freelancers = session.query(Freelancers.Freelancer).filter_by(boss=u.user_id).all()
+                if freelancers:
+                    logging.warning('freelancers expenses')
+                    for f in freelancers:
+                        if f.type_of in "assistant" and (
+                            "wealth" in f.job_title.lower() or "business" in f.job_title.lower()
+                        ):
+                            total_boost += f.boost_amount
 
                 # Calculate the revenue for each business
                 for b in businesses:
