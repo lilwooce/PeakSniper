@@ -435,7 +435,7 @@ class Admin(commands.Cog):
                     business_rev += boosted_revenue
 
                 # Update the user's revenue in the JSON variable
-                revenue_data["Business"] = revenue_data.get("Business", 0) + business_rev
+                revenue_data["business"] = revenue_data.get("business", 0) + business_rev
                 u.revenue = json.dumps(revenue_data)
 
                 # Commit the changes

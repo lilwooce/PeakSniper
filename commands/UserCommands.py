@@ -1074,7 +1074,7 @@ class UserCommands(commands.Cog):
     
     @commands.hybrid_command()
     async def pay(self, ctx, name: str, amount: str = "all"):
-        name = name.lower()
+        name = name.lower()  # Normalize the input to lowercase
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -1083,17 +1083,22 @@ class UserCommands(commands.Cog):
 
             bills = json.loads(u.bills) if u.bills else {}
 
-            if name not in bills or bills[name] <= 0:
+            # Create a temporary dictionary with lowercase keys for case-insensitive lookup
+            bills_lower = {key.lower(): value for key, value in bills.items()}
+
+            if name not in bills_lower or bills_lower[name] <= 0:
                 await ctx.send(f"You don't have a bill named {name}.", ephemeral=True)
                 return
 
-            if type(amount) == str and amount.lower() in "all":
-                amount = bills[name]
-            elif type(amount) == str and amount.lower() in "half":
-                amount = bills[name] / 2
+            # Determine the amount to pay
+            if type(amount) == str and amount.lower() == "all":
+                amount = bills_lower[name]
+            elif type(amount) == str and amount.lower() == "half":
+                amount = bills_lower[name] / 2
             else:
                 amount = int(amount)
-            
+
+            # Check if the user has enough balance
             if u.balance < amount:
                 await ctx.send("You don't have enough money. Next time don't bite off more than you can chew.")
                 return
@@ -1102,16 +1107,20 @@ class UserCommands(commands.Cog):
                 await ctx.send("User not found in the database.", ephemeral=True)
                 return
 
-            u.balance -= bills[name]
-            bills[name] -= amount
-            if bills[name] == 0:
-                del bills[name]
-            
+            # Find the original case-sensitive key for updating the original dictionary
+            original_name = next((key for key in bills if key.lower() == name), None)
+
+            # Update the user's balance and bills
+            u.balance -= amount
+            bills[original_name] -= amount
+            if bills[original_name] == 0:
+                del bills[original_name]
+
             u.bills = json.dumps(bills)
 
             session.commit()
 
-            await ctx.send(f"You paid {amount} towards your {name} bill.", ephemeral=True)
+            await ctx.send(f"You paid {amount} towards your {original_name} bill.", ephemeral=True)
 
         except Exception as e:
             await ctx.send("An error occurred while paying this bill.", ephemeral=True)
@@ -1189,7 +1198,7 @@ class UserCommands(commands.Cog):
     
     @commands.hybrid_command()
     async def claim(self, ctx, name: str):
-        name = name.lower()
+        name = name.lower()  # Normalize the input to lowercase
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
@@ -1198,26 +1207,31 @@ class UserCommands(commands.Cog):
 
             revenue = json.loads(u.revenue) if u.revenue else {}
 
-            if name not in revenue or revenue[name] <= 0:
+            # Create a temporary dictionary with lowercase keys for case-insensitive lookup
+            revenue_lower = {key.lower(): value for key, value in revenue.items()}
+
+            if name not in revenue_lower or revenue_lower[name] <= 0:
                 await ctx.send(f"You don't have any revenue named {name}.", ephemeral=True)
                 return
 
-            amount = revenue[name]
+            amount = revenue_lower[name]
 
             if not u:
                 await ctx.send("User not found in the database.", ephemeral=True)
                 return
 
             u.balance += amount
-            revenue[name] -= amount
-            if revenue[name] == 0:
-                del revenue[name]
-            
+            # Update the original dictionary
+            original_name = next((key for key in revenue if key.lower() == name), None)
+            revenue[original_name] -= amount
+            if revenue[original_name] == 0:
+                del revenue[original_name]
+
             u.bills = json.dumps(revenue)
 
             session.commit()
 
-            await ctx.send(f"You claimed {amount} from your {name} revenue.", ephemeral=True)
+            await ctx.send(f"You claimed {amount} from your {original_name} revenue.", ephemeral=True)
 
         except Exception as e:
             await ctx.send("An error occurred while claiming your revenue.", ephemeral=True)
