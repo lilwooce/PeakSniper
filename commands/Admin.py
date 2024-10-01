@@ -449,7 +449,7 @@ class Admin(commands.Cog):
             users = session.query(User.User).all()
             for u in users:
                 # Load the user's businesses and revenue (if any)
-                businesses = json.loads(u.businesses) if u.businesses else {}
+                businesses = session.query(Businesses.Business).filter_by(owner=u.user_id).all()
                 freelancers = json.loads(u.freelancers) if u.freelancers else {}
                 houses = session.query(Houses.House).filter_by(owner=u.user_id).all()
                 bills = json.loads(u.bills) if u.bills else {}
@@ -465,14 +465,14 @@ class Admin(commands.Cog):
                 #         total_boost += freelancer.boost_amount
 
                 # Calculate the revenue for each business
-                for business in businesses:
-                    logging.warning(business)
-                    b = session.query(Businesses.Business).filter_by(name=business).first()
-                    daily_expense = b.daily_expense
-                    if bills and b.name in bills:
-                        bills[b.name] += daily_expense
-                    else:
-                        bills[b.name] = daily_expense
+                if businesses:
+                    for b in businesses:
+                        logging.warning(b.name)
+                        daily_expense = b.daily_expense
+                        if bills and b.name in bills:
+                            bills[b.name] += daily_expense
+                        else:
+                            bills[b.name] = daily_expense
                 
                 for freelancer in freelancers:
                     logging.warning(freelancer)
