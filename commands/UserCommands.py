@@ -1075,7 +1075,7 @@ class UserCommands(commands.Cog):
             session.close()
     
     @commands.hybrid_command()
-    async def pay(self, ctx, amount: str = "all", *, name: str = None):
+    async def pay(self, ctx, *, name: str = None, amount: str = "all"):
         if not name:
             await ctx.send("You must provide a bill name.", ephemeral=True)
             return
