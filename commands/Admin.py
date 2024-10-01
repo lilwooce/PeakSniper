@@ -338,7 +338,7 @@ class Admin(commands.Cog):
 
                 # Commit the changes to the database
                 session.commit()
-                await interaction.response.send_message("Success")
+            await interaction.response.send_message("Success")
         except Exception as e:
             logging.warning(e)
         finally:
