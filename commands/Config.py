@@ -226,13 +226,14 @@ class Config(commands.Cog, name="Configuration"):
 
     @tasks.loop(time=[time_pm])
     async def daily_revenue(self):
+        logging.warning('daily revenue')
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
             users = session.query(User.User).all()
             for u in users:
                 # Load the user's businesses and revenue (if any)
-                businesses = json.loads(u.businesses) if u.businesses else {}
+                businesses = session.query(Businesses.Business).filter_by(owner=u.user_id).all()
                 revenue_data = json.loads(u.revenue) if u.revenue else {}
 
                 total_revenue = 0
@@ -240,30 +241,28 @@ class Config(commands.Cog, name="Configuration"):
                 total_boost = 0
 
                 # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
-                freelancers = json.loads(u.freelancers) if u.freelancers else []
-                for freelancer in freelancers:
-                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f:
-                        if "assistant" in f.type_of.lower() and (
+                freelancers = session.query(Freelancers.Freelancer).filter_by(boss=u.user_id).all()
+                if freelancers:
+                    logging.warning('freelancers expenses')
+                    for f in freelancers:
+                        if f.type_of in "assistant" and (
                             "wealth" in f.job_title.lower() or "business" in f.job_title.lower()
                         ):
                             total_boost += f.boost_amount
 
                 # Calculate the revenue for each business
-                for business in businesses:
-                    logging.warning(business)
-                    b = session.query(Businesses.Business).filter_by(name=business).first()
-                    if b:
-                        daily_revenue = b.daily_revenue
+                for b in businesses:
+                    logging.warning(b.name)
+                    daily_revenue = b.daily_revenue
 
-                        # Apply the boost to the revenue
-                        boosted_revenue = daily_revenue * (1 + total_boost)
+                    # Apply the boost to the revenue
+                    boosted_revenue = daily_revenue * (1 + total_boost)
 
-                        # Add the boosted revenue to the total
-                        business_rev += boosted_revenue
+                    # Add the boosted revenue to the total
+                    business_rev += boosted_revenue
 
                 # Update the user's revenue in the JSON variable
-                revenue_data["Business"] = revenue_data.get("Business", 0) + business_rev
+                revenue_data["business"] = revenue_data.get("business", 0) + business_rev
                 u.revenue = json.dumps(revenue_data)
 
                 # Commit the changes
@@ -274,14 +273,15 @@ class Config(commands.Cog, name="Configuration"):
     
     @tasks.loop(time=[time_pm])
     async def daily_expenses(self):
+        logging.warning("daily expense")
         Session = sessionmaker(bind=database.engine)
         session = Session()
         try:
             users = session.query(User.User).all()
             for u in users:
                 # Load the user's businesses and revenue (if any)
-                businesses = json.loads(u.businesses) if u.businesses else {}
-                freelancers = json.loads(u.freelancers) if u.freelancers else {}
+                businesses = session.query(Businesses.Business).filter_by(owner=u.user_id).all()
+                freelancers = session.query(Freelancers.Freelancer).filter_by(boss=u.user_id).all()
                 houses = session.query(Houses.House).filter_by(owner=u.user_id).all()
                 bills = json.loads(u.bills) if u.bills else {}
                 # total_boost = 0
@@ -296,19 +296,20 @@ class Config(commands.Cog, name="Configuration"):
                 #         total_boost += freelancer.boost_amount
 
                 # Calculate the revenue for each business
-                for business in businesses:
-                    logging.warning(business)
-                    b = session.query(Businesses.Business).filter_by(name=business).first()
-                    daily_expense = b.daily_expense
-                    if bills and b.name in bills:
-                        bills[b.name] += daily_expense
-                    else:
-                        bills[b.name] = daily_expense
+                if businesses:
+                    logging.warning('businesses expenses')
+                    for b in businesses:
+                        logging.warning(b.name)
+                        daily_expense = b.daily_expense
+                        if bills and b.name in bills:
+                            bills[b.name] += daily_expense
+                        else:
+                            bills[b.name] = daily_expense
                 
-                for freelancer in freelancers:
-                    logging.warning(freelancer)
-                    f = session.query(Freelancers.Freelancer).filter_by(name=freelancer).first()
-                    if f:
+                if freelancers:
+                    logging.warning('freelancers expenses')
+                    for f in freelancers:
+                        logging.warning(f.name)
                         daily_expense = f.daily_expense
                         if bills and f.name in bills:
                             bills[f.name] += daily_expense
@@ -316,6 +317,7 @@ class Config(commands.Cog, name="Configuration"):
                             bills[f.name] = daily_expense
                 
                 if houses:
+                    logging.warning('houses expenses')
                     for house in houses:
                         logging.warning(house.name)
                         daily_expense = house.daily_expense

@@ -281,7 +281,7 @@ class Admin(commands.Cog):
         try:
             users = session.query(User.User).all()
             for u in users:
-                if u.balance == 0 and u.in_jail == True:
+                if u.balance <= 0 and u.in_jail == True:
                     # Don't tax
                     continue
         
@@ -298,27 +298,28 @@ class Admin(commands.Cog):
                     bills["daily"] = 1000
                     u.bills = json.dumps(bills)
                 
-                # Check if reminders are enabled
-                if u.reminders == True:
-                    # Calculate current day (n) based on the daily tax amount
-                    n = math.log2(bills["daily"] / 1000) + 1
-                    
-                    # Calculate days left before going to jail
-                    days_left = 7 - n
-                    
-                    # Send reminder message
-                    if days_left > 0:
+                # Calculate current day (n) based on the daily tax amount
+                n = math.log2(bills["daily"] / 1000) + 1
+                
+                # Calculate days left before going to jail
+                days_left = 7 - n
+                
+                # Send reminder message
+                if days_left > 0:
+                    if u.reminders == True:
                         await self.send_reminder(u, f"You have {days_left} days left to pay your bills before you lose your job, all your money, and go to jail.")
-                    else:
-                        # Handle the case where the user should now go to jail
-                        u.in_jail = True
-                        u.balance = -10000
-                        u.bank = 0
-                        u.job = "beggar"
-                            
+                else:
+                    # Handle the case where the user should now go to jail
+                    u.in_jail = True
+                    u.balance = -10000
+                    u.bank = 0
+                    u.job = "beggar"
+
                 # Commit the changes to the database
                 session.commit()
                 await interaction.response.send_message("Success")
+        except Exception as e:
+            logging.warning(e)
         finally:
             session.close()
     
@@ -397,7 +398,7 @@ class Admin(commands.Cog):
             except Exception as e:
                 print(f"Error in give items command: {e}")
                 await ctx.send("An error occurred while giving the items.")
-        
+    
     async def daily_revenue(self):
         logging.warning('daily revenue')
         Session = sessionmaker(bind=database.engine)
