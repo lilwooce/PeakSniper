@@ -1073,7 +1073,8 @@ class UserCommands(commands.Cog):
             session.close()
     
     @commands.hybrid_command()
-    async def pay(self, ctx, name: str, amount: str = "all"):
+    async def pay(self, ctx, amount: str = "all", *, name: str):
+        amount = "all"
         name = name.lower()  # Normalize the input to lowercase
         Session = sessionmaker(bind=database.engine)
         session = Session()
@@ -1230,7 +1231,7 @@ class UserCommands(commands.Cog):
                 del revenue[original_name]
             logging.warning(revenue)
 
-            u.bills = json.dumps(revenue)
+            u.revenue = json.dumps(revenue)
 
             session.commit()
 
