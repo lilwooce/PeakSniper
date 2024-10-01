@@ -434,8 +434,18 @@ class Admin(commands.Cog):
                 total_boost = 0
 
                 # Check if the user has any freelancers of type "assistant" with "wealth" or "business" in their job_name
+                used_items = json.loads(u.used_items) if u.used_items else {}
+                used_items_objects = []
+                for item in used_items:
+                    shop_item = session.query(ShopItem.ShopItem).filter_by(name=item).first()
+                    
+                    if shop_item:
+                        # Add the queried ShopItem object to the used_items_objects array
+                        used_items_objects.append(shop_item)
+
+
+                item_boost = u.get_multiplier(used_items_objects, "business")
                 free_boost = Utils.Utils.get_boost(u.user_id, session, "business", "assistant")
-                item_boost = u.get_multiplier("business")
                 multi = free_boost + item_boost
 
                 # Calculate the revenue for each business

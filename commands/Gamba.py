@@ -63,8 +63,9 @@ class Gamba(commands.Cog, name="Gamba"):
                         # Add the queried ShopItem object to the used_items_objects array
                         used_items_objects.append(shop_item)
 
+
+                item_boost = u.get_multiplier(used_items_objects, "gamba")
                 free_boost = Utils.Utils.get_boost(u.user_id, session, "gamba", "assistant")
-                item_boost = u.get_multiplier("gamba")
                 multi = free_boost + item_boost
 
                 won = int(won * multi)
@@ -126,8 +127,8 @@ class Gamba(commands.Cog, name="Gamba"):
                         used_items_objects.append(shop_item)
 
 
+                item_boost = u.get_multiplier(used_items_objects, "gamba")
                 free_boost = Utils.Utils.get_boost(u.user_id, session, "gamba", "assistant")
-                item_boost = u.get_multiplier("gamba")
                 multi = free_boost + item_boost
 
                 won = int(won * multi)
@@ -285,6 +286,7 @@ class Gamba(commands.Cog, name="Gamba"):
             
             j = session.query(Jobs.Jobs).filter_by(name=job_name).first()
             am = j.salary + random.randint(1, j.salary)
+
             used_items = json.loads(u.used_items) if u.used_items else {}
             used_items_objects = []
             for item in used_items:
@@ -295,8 +297,8 @@ class Gamba(commands.Cog, name="Gamba"):
                     used_items_objects.append(shop_item)
 
 
+            item_boost = u.get_multiplier(used_items_objects, "work")
             free_boost = Utils.Utils.get_boost(u.user_id, session, "work", "assistant")
-            item_boost = u.get_multiplier("work")
             multi = free_boost + item_boost
 
             am = int(am * multi)

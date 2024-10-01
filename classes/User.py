@@ -85,9 +85,9 @@ class User(Base):
         self.bail = 0
         self.premium_balance = 0
 
-    def get_multiplier(self, type_of):
+    def get_multiplier(self, items, type_of):
         highest_multiplier = 0
-        used_items = self.used_items if self.used_items else {}
+        used_items = items if items else {}
 
         for item in used_items:
             if item.type_of == type_of:
