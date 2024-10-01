@@ -73,7 +73,7 @@ class Housing(commands.Cog):
                 await ctx.send(f"The house '{name}' is not currently available for purchase.")
                 return
 
-            if not Utils.Utils.check_agent(user, session):
+            if not Utils.Utils.check_agent(user.user_id, session, "agent"):
                 await ctx.send("You cannot buy a house unless you have a *Real Estate Agent*.")
                 return
                 
@@ -173,7 +173,7 @@ class Housing(commands.Cog):
 
             if business:
                 # Ensure the user has a Business Agent
-                if not Utils.Utils.check_agent(user, session, "business"):
+                if not Utils.Utils.check_agent(user.user_id, session, "business"):
                     await ctx.send("You cannot list a business unless you have a *Business Agent*.")
                     return
 

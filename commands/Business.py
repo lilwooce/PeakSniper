@@ -73,7 +73,7 @@ class Business(commands.Cog):
                 await ctx.send(f"The business '{name}' is not currently available for purchase.")
                 return
             
-            if not Utils.Utils.check_agent(user, session):
+            if not Utils.Utils.check_agent(user.user_id, session, "business"):
                 await ctx.send("You cannot buy a business unless you have a *Business Agent*.")
                 return
 
