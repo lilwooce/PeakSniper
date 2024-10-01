@@ -1074,17 +1074,34 @@ class UserCommands(commands.Cog):
         if not name:
             await interaction.response.send_message("You must provide a bill name.", ephemeral=True)
             return
+        
         name = name.lower()  # Normalize the input to lowercase
         Session = sessionmaker(bind=database.engine)
         session = Session()
 
         try:
             u = session.query(User.User).filter_by(user_id=interaction.user.id).first()
-
             bills = json.loads(u.bills) if u.bills else {}
 
             # Create a temporary dictionary with lowercase keys for case-insensitive lookup
             bills_lower = {key.lower(): value for key, value in bills.items()}
+
+            if name == "all":
+                total_due = sum(bills.values())
+                if u.balance < total_due:
+                    await interaction.response.send_message(
+                        f"You don't have enough money to pay all bills. You have {u.balance} discoins, "
+                        f"but need {total_due} discoins."
+                    )
+                    return
+
+                # Pay all bills
+                u.balance -= total_due
+                bills.clear()  # Clear all bills since they are all paid
+                u.bills = json.dumps(bills)
+                await interaction.response.send_message(f"You paid off all your bills totaling {total_due} discoins.", ephemeral=True)
+                session.commit()
+                return
 
             if name not in bills_lower or bills_lower[name] <= 0:
                 await interaction.response.send_message(f"You don't have a bill named {name}.", ephemeral=True)
@@ -1101,10 +1118,6 @@ class UserCommands(commands.Cog):
             # Check if the user has enough balance
             if u.balance < amount:
                 await interaction.response.send_message("You don't have enough money. Next time don't bite off more than you can chew.")
-                return
-
-            if not u:
-                await interaction.response.send_message("User not found in the database.", ephemeral=True)
                 return
 
             # Find the original case-sensitive key for updating the original dictionary
@@ -1128,6 +1141,7 @@ class UserCommands(commands.Cog):
 
         finally:
             session.close()
+
 
     @commands.hybrid_command()
     async def revenue(self, ctx):
