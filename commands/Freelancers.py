@@ -132,7 +132,7 @@ class FreelancerCog(commands.Cog):
         except Exception as e:
             logging.warning(e)
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(hidden=True)
     async def poach(self, ctx, *, freelancer_name: str):
         Session = sessionmaker(bind=database.engine)
         session = Session()
