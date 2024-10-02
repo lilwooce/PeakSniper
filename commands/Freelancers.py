@@ -43,7 +43,6 @@ class FreelancerCog(commands.Cog):
                     value=f"Job: {freelancer.job_title}\n"
                         f"Initial Cost: {freelancer.initial_cost}\n"
                         f"Daily Expense: {freelancer.daily_expense}\n"
-                        f"Poach Minimum: {freelancer.poach_minimum}\n"
                         f"Type: {freelancer.type_of}", 
                     inline=False
                 )
