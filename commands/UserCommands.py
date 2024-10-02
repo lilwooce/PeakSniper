@@ -751,10 +751,7 @@ class UserCommands(commands.Cog):
                 elif fail_outcome <= 95:  # 35% chance to lose nothing
                     await ctx.send(f"You failed to steal from {victim.name} but managed to escape without any penalties.")
                 else:  # 5% chance to lose your job and become a beggar
-                    guild = ctx.guild
-                    current_jobs = json.loads(t.jobs) if t.jobs else {}
-                    current_jobs[str(guild.id)] = "beggar"
-                    t.jobs = json.dumps(current_jobs)
+                    t.job = "beggar"
                     await ctx.send(f"You failed to steal from {victim.name} and got caught by the cops! You lost your job and are now a beggar.")
 
             # Set cooldown
@@ -842,9 +839,7 @@ class UserCommands(commands.Cog):
                     guild = ctx.guild
                     t.bank = 0
                     t.balance = 0
-                    current_jobs = json.loads(t.jobs) if t.jobs else {}
-                    current_jobs[str(guild.id)] = "beggar"
-                    t.jobs = json.dumps(current_jobs)
+                    t.job="beggar"
                     await ctx.send(f"The heist failed disastrously! {thief.name} lost all their discoins and their job, becoming a beggar.")
                 elif fail_outcome <= 40:  # 30% chance to lose half of your money
                     loss_amount = t.balance // 2
