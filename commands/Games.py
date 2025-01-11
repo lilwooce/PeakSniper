@@ -225,6 +225,39 @@ class Games(commands.Cog, name="Games"):
             rMember = await ctx.guild.fetch_member(reciever.getID())
             msg += f"{pMember.mention} gifted {player.getGift().getText()} to {rMember.mention} \n"
         await ctx.send(msg)        
-            
+
+    @commands.command(aliases=["rt"], description="Randomly assigns player numbers to teams")
+    async def randomteam(self, ctx, teamnums: int, playernums: int):
+        """
+        Randomly assigns player numbers (1 to playernums) to the specified number of teams.
+
+        Args:
+        - teamnums (int): Number of teams to create.
+        - playernums (int): Total number of players to assign.
+        """
+        if teamnums < 1:
+            await ctx.send("Please specify at least one team.")
+            return
+        if playernums < teamnums:
+            await ctx.send("Number of players must be greater than or equal to the number of teams.")
+            return
+
+        # Generate player numbers and shuffle them
+        players = list(range(1, playernums + 1))
+        random.shuffle(players)
+
+        # Distribute players among teams
+        teams = {f"Team {i + 1}": [] for i in range(teamnums)}
+
+        for idx, player in enumerate(players):
+            team_name = f"Team {(idx % teamnums) + 1}"
+            teams[team_name].append(player)
+
+        # Format and send the output
+        team_output = "\n\n".join(
+            [f"**{team}**: " + ", ".join(map(str, players)) for team, players in teams.items()]
+        )
+        await ctx.send(f"{ctx.author.mention}, here are the random teams:\n\n{team_output}")
+        
 async def setup(bot):
     await bot.add_cog(Games(bot)) 
