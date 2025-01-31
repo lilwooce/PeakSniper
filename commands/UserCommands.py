@@ -1272,6 +1272,29 @@ class UserCommands(commands.Cog):
 
         finally:
             session.close()
+    
+    @commands.command(name='dlvoice')
+    async def download_voice_message(self, ctx, message_id: int):
+        """Download a voice message from a given message ID."""
+        try:
+            # Fetch the message by ID
+            message = await ctx.channel.fetch_message(message_id)
+            
+            # Check for voice message attachment
+            for attachment in message.attachments:
+                if attachment.is_voice_message():
+                    await ctx.send(f"Voice message from {message.author.mention}:")
+                    await ctx.send(file=await attachment.to_file())
+                    return
+            
+            await ctx.send("No voice message found in the specified message.")
+        
+        except discord.NotFound:
+            await ctx.send("Message not found. Please ensure the message ID is correct.")
+        except discord.Forbidden:
+            await ctx.send("I do not have permission to access this message.")
+        except discord.HTTPException as e:
+            await ctx.send(f"An error occurred: {e}")
 
 async def setup(bot):
     await bot.add_cog(UserCommands(bot))
