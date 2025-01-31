@@ -1283,7 +1283,7 @@ class UserCommands(commands.Cog):
             # Check for voice message attachment
             for attachment in message.attachments:
                 if attachment.is_voice_message():
-                    await ctx.send(f"Voice message from {message.author.mention}:")
+                    await ctx.send(f"Voice message from {message.author.name}:")
                     await ctx.send(file=await attachment.to_file())
                     return
             
