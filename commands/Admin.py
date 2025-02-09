@@ -120,7 +120,7 @@ class Admin(commands.Cog):
         session = Session()
 
         try: 
-            s = Stock.Stock(name, full_name, growth_rate, start_value, volatility, swap_chance, ruination)
+            s = Stock.Stock(name, full_name, growth_rate, start_value, volatility, swap_chance, ruination, "stock")
             session.add(s)
             session.commit()
             await interaction.response.send_message(f"Successfully added a stock item: name {name}, full_name {full_name}, growth_rate {growth_rate}, start_value {start_value}, volatility {volatility}, swap_chance {swap_chance} ruination {ruination}")
