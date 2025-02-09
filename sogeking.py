@@ -20,6 +20,9 @@ from classes import Servers, User, database
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
+
 class Client(commands.Bot):
     def __init__(self):
         Session = sessionmaker(bind=database.engine)
