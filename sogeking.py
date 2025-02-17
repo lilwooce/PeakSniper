@@ -19,7 +19,6 @@ from classes import Servers, User, database
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
-
 class Client(commands.Bot):
     def __init__(self):
         Session = sessionmaker(bind=database.engine)
