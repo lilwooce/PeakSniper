@@ -914,6 +914,7 @@ class UserCommands(commands.Cog):
             p.balance -= u.bail
             u.bail = 0
             u.in_jail = False
+            session.commit()
             await ctx.send(f"{payer.name} has bailed out {user.mention}! Congrats! You're free!")
         finally:
             session.close()
