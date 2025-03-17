@@ -61,7 +61,7 @@ class Stocks(commands.Cog):
                 await ctx.send("User not found in the database.")
                 return
 
-            if user.in_jail:
+            if user.in_jail == True:
                 await ctx.send("You cannot purchase stocks while in jail.")
                 return
 
