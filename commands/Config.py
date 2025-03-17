@@ -77,7 +77,6 @@ class Config(commands.Cog, name="Configuration"):
         }
         #self.daily_generator.start()
         self.randomize_jobs.start()
-        self.daily_tax.start()
         self.daily_revenue.start()
         self.daily_expenses.start()
         self.update_stocks.start()
