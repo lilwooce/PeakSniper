@@ -162,7 +162,7 @@ class Stocks(commands.Cog):
                 elif amount.lower() == "half":
                     return available_amount // 2
                 else:
-                    return int(amount)
+                    return int(amount) if amount <= available_amount else available_amount
 
             if name:
                 stock = session.query(Stock.Stock).filter(or_(Stock.Stock.name == name, Stock.Stock.full_name == name)).first()
@@ -230,12 +230,12 @@ class Stocks(commands.Cog):
                             stock.growth_rate -= self.stock_multi * value
                             stock.swap_chance += self.stock_multi * value
                             if value > self.min_stock_amount:
-                                stock.ruination *= 1.1
+                                stock.ruination *= 1.01
                         elif stock.growth_direction == -1:
                             stock.growth_rate -= self.stock_multi * value
                             stock.swap_chance += self.stock_multi * value
                             if value > self.min_stock_amount:
-                                stock.ruination *= 1.35
+                                stock.ruination *= 1.035
 
                 tax = total_value * self.stock_tax
                 user.bank += total_value - tax
